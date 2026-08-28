@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>AETHERIA — 3D Real-Time Particle Sphere</title>
+  
+  <!-- Google Fonts: Serif Title & Modern Sans UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- MediaPipe Hands & Camera Utils CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --bg-dark: #050608;
+      --panel-bg: rgba(12, 16, 24, 0.65);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --panel-border-hover: rgba(255, 255, 255, 0.2);
+      --text-main: #f0f4fc;
+      --text-muted: #8a99ad;
+      --accent-cyan: #00f2fe;
+      --accent-magenta: #ff0844;
+      --accent-emerald: #00f5a0;
+      --accent-gold: #fee140;
+      --accent-glow: rgba(0, 242, 254, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-main);
+    }
+
+    /* Fullscreen Viewport Canvas & Video Layers */
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+
+    #webcam-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror webcam */
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+      pointer-events: none;
+      filter: brightness(0.4) contrast(1.1) saturate(0.8);
+    }
+
+    #webcam-video.active-fullscreen {
+      opacity: 0.45;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      background: radial-gradient(circle at 50% 50%, rgba(20, 26, 45, 0.4) 0%, rgba(5, 6, 8, 0.95) 75%);
+      pointer-events: none;
+    }
+
+    /* Mini PiP Webcam Preview */
+    #pip-container {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      width: 150px;
+      height: 110px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--panel-border);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      z-index: 25;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    #pip-container:hover {
+      border-color: var(--panel-border-hover);
+      transform: translateY(-2px);
+    }
+
+    #pip-canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .pip-label {
+      position: absolute;
+      bottom: 6px;
+      left: 8px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    /* UI Overlay Layer */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 30;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px;
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* Header & Serif Title */
+    .header-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #ffffff;
+      text-transform: uppercase;
+      text-shadow: 0 2px 20px rgba(255, 255, 255, 0.25);
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffaa00;
+      box-shadow: 0 0 8px #ffaa00;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .status-dot.active {
+      background: #00f5a0;
+      box-shadow: 0 0 10px #00f5a0;
+    }
+
+    /* Live HUD Stats Pill Box */
+    .hud-pills {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .glass-pill {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      padding: 8px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text-main);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .glass-pill:hover {
+      border-color: var(--panel-border-hover);
+    }
+
+    .pill-accent {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    /* Gesture Guide HUD */
+    .gesture-bar {
+      position: absolute;
+      top: 100px;
+      left: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 14px 18px;
+      max-width: 320px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: opacity 0.3s ease;
+    }
+
+    .gesture-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .gesture-icon {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .gesture-desc b {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Charge Ring HUD */
+    #charge-hud {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.1s ease;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .charge-svg {
+      width: 140px;
+      height: 140px;
+      transform: rotate(-90deg);
+    }
+
+    .charge-meter-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 6;
+    }
+
+    .charge-meter-val {
+      fill: none;
+      stroke: url(#charge-grad);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 377;
+      transition: stroke-dashoffset 0.04s linear;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.8));
+    }
+
+    .charge-text {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      text-shadow: 0 0 12px var(--accent-cyan);
+      text-transform: uppercase;
+    }
+
+    /* Bottom Control Bar */
+    .footer-panel {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-btn {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .action-btn.active-glow {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 20px var(--accent-glow);
+      color: #ffffff;
+    }
+
+    .btn-icon {
+      font-size: 15px;
+    }
+
+    /* Toast Notification */
+    #toast-msg {
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(15, 20, 30, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      border-radius: 30px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Responsive styling */
+    @media (max-width: 768px) {
+      .ui-layer {
+        padding: 18px;
+      }
+      .brand-title {
+        font-size: 20px;
+      }
+      .gesture-bar {
+        display: none;
+      }
+      #pip-container {
+        width: 100px;
+        height: 75px;
+        bottom: 18px;
+        left: 18px;
+      }
+      .action-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen WebGL Canvas Container -->
+  <div id="webgl-container"></div>
+
+  <!-- Ambient Backdrop -->
+  <div class="ambient-backdrop"></div>
+
+  <!-- Raw Webcam Video Feed (can be toggled fullscreen backdrop) -->
+  <video id="webcam-video" playsinline autoplay muted></video>
+
+  <!-- PiP Hand Skeleton / Camera Monitor -->
+  <div id="pip-container" class="interactive" title="Webcam hand tracking view">
+    <canvas id="pip-canvas"></canvas>
+    <div class="pip-label">CAM VIEW</div>
+  </div>
+
+  <!-- Floating Charge Ring -->
+  <div id="charge-hud">
+    <svg class="charge-svg" viewBox="0 0 140 140">
+      <defs>
+        <linearGradient id="charge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00f2fe" />
+          <stop offset="50%" stop-color="#ff0844" />
+          <stop offset="100%" stop-color="#fee140" />
+        </linearGradient>
+      </defs>
+      <circle class="charge-meter-bg" cx="70" cy="70" r="60"></circle>
+      <circle id="charge-meter-bar" class="charge-meter-val" cx="70" cy="70" r="60"></circle>
+    </svg>
+    <div id="charge-label" class="charge-text">CHARGING</div>
+  </div>
+
+  <!-- Dynamic Notification Toast -->
+  <div id="toast-msg">
+    <span id="toast-icon">✨</span>
+    <span id="toast-text">Hand tracking initialized</span>
+  </div>
+
+  <!-- Clean UI Layer -->
+  <div class="ui-layer">
+    
+    <!-- Top Header -->
+    <div class="header-panel">
+      <div class="brand-block">
+        <h1 class="brand-title">Aetheria</h1>
+        <div class="brand-subtitle">
+          <span id="cam-status-dot" class="status-dot"></span>
+          <span id="cam-status-text">INITIALIZING CAMERA...</span>
+        </div>
+      </div>
+
+      <!-- Top Right Status Indicators -->
+      <div class="hud-pills">
+        <div class="glass-pill" id="pill-gesture">
+          <span>MODE:</span>
+          <span class="pill-accent" id="active-mode-label">SEARCHING HANDS</span>
+        </div>
+        <div class="glass-pill" id="pill-fingers">
+          <span>THEME:</span>
+          <span class="pill-accent" id="active-theme-label">SPECTRUM (5)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gesture Guide Legend -->
+    <div class="gesture-bar">
+      <div class="gesture-item">
+        <div class="gesture-icon">☝️</div>
+        <div class="gesture-desc"><b>Single Hand:</b> Move & Rotate Sphere</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">👌</div>
+        <div class="gesture-desc"><b>Pinch & Hold:</b> Charge Ring → Release to Explode</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">👐</div>
+        <div class="gesture-desc"><b>Two Hands:</b> Spread apart / together to Scale</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">🖐️</div>
+        <div class="gesture-desc"><b>Finger Count:</b> 0 (Fist) to 5 changes Colors</div>
+      </div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="footer-panel interactive">
+      <button id="btn-toggle-cam" class="action-btn" title="Toggle webcam video as immersive fullscreen background">
+        <span class="btn-icon">📹</span>
+        <span id="cam-btn-text">Webcam Background</span>
+      </button>
+
+      <button id="btn-theme-cycle" class="action-btn" title="Cycle color theme manually">
+        <span class="btn-icon">🎨</span>
+        <span>Palette</span>
+      </button>
+
+      <button id="btn-explode-demo" class="action-btn" title="Trigger explosion burst">
+        <span class="btn-icon">💥</span>
+        <span>Trigger Burst</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. CORE CONFIGURATION & CONSTANTS
+       ========================================================================== */
+    const NUM_PARTICLES = 3000;
+    const SPHERE_RADIUS = 3.2;
+    const EXPLOSION_FORCE = 1.8;
+    const SPRING_STRENGTH = 0.045;
+    const DAMPING = 0.88;
+    const PINCH_THRESHOLD = 0.08; // Normalized landmark distance
+
+    // Color Palettes corresponding to finger counts [0..5]
+    const PALETTES = [
+      { name: "Void Ultraviolet", count: 0, colors: ["#6b11ff", "#9b51e0", "#d946ef", "#3b0764", "#c084fc"] },
+      { name: "Cyber Cyan",       count: 1, colors: ["#00f2fe", "#4facfe", "#00c6ff", "#0072ff", "#e0f2fe"] },
+      { name: "Sunset Magenta",   count: 2, colors: ["#ff0844", "#ffb199", "#f857a6", "#ff5858", "#fed6e3"] },
+      { name: "Hyper Emerald",    count: 3, colors: ["#00f5a0", "#00d9f5", "#10b981", "#34d399", "#d1fae5"] },
+      { name: "Solar Flare",      count: 4, colors: ["#fee140", "#fa709a", "#f59e0b", "#fbbf24", "#fef3c7"] },
+      { name: "Prismatic Spectrum", count: 5, colors: ["#00f2fe", "#ff0844", "#00f5a0", "#fee140", "#a855f7"] }
+    ];
+
+    /* ==========================================================================
+       2. THREE.JS 3D PARTICLE ENGINE
+       ========================================================================== */
+    let scene, camera, renderer, particleGeometry, particleMaterial, particleSystem;
+    let basePositions, currentPositions, velocities, colors, targetColors, sizes;
+    let particleGroup;
+
+    // Simulation state
+    let targetSpherePosition = new THREE.Vector3(0, 0, 0);
+    let targetSphereRotation = new THREE.Euler(0, 0, 0);
+    let sphereScale = 1.0;
+    let targetSphereScale = 1.0;
+    let activePaletteIndex = 5; // Default Prismatic
+    let isCharging = false;
+    let chargeAmount = 0.0; // 0.0 -> 1.0
+    let isExploded = false;
+    let wasPinching = false;
+    let explosionDecay = 0;
+
+    // Particle sprite generator
+    function createParticleTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+
+      const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.85)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.35)');
+      gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.08)');
+      gradient.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 128, 128);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    function initThree() {
+      const container = document.getElementById('webgl-container');
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+      camera.position.z = 10;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      particleGroup = new THREE.Group();
+      scene.add(particleGroup);
+
+      // Create Particle Arrays
+      basePositions = new Float32Array(NUM_PARTICLES * 3);
+      currentPositions = new Float32Array(NUM_PARTICLES * 3);
+      velocities = new Float32Array(NUM_PARTICLES * 3);
+      colors = new Float32Array(NUM_PARTICLES * 3);
+      targetColors = new Float32Array(NUM_PARTICLES * 3);
+      sizes = new Float32Array(NUM_PARTICLES);
+
+      // Generate 3000 Particles distributed uniformly on a 3D Sphere (Fibonacci Lattice)
+      const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const y = 1 - (i / (NUM_PARTICLES - 1)) * 2; // y goes from 1 to -1
+        const radiusAtY = Math.sqrt(1 - y * y);
+        const theta = phi * i;
+
+        // Add subtle organic depth variation (0.92 to 1.08 radius)
+        const radiusNoise = SPHERE_RADIUS * (0.92 + Math.random() * 0.16);
+        const x = Math.cos(theta) * radiusAtY * radiusNoise;
+        const z = Math.sin(theta) * radiusAtY * radiusNoise;
+        const posY = y * radiusNoise;
+
+        const i3 = i * 3;
+        basePositions[i3] = x;
+        basePositions[i3 + 1] = posY;
+        basePositions[i3 + 2] = z;
+
+        currentPositions[i3] = x;
+        currentPositions[i3 + 1] = posY;
+        currentPositions[i3 + 2] = z;
+
+        velocities[i3] = 0;
+        velocities[i3 + 1] = 0;
+        velocities[i3 + 2] = 0;
+
+        // Default initial color
+        const tempColor = new THREE.Color();
+        tempColor.setHSL((i / NUM_PARTICLES), 0.95, 0.65);
+        colors[i3] = tempColor.r;
+        colors[i3 + 1] = tempColor.g;
+        colors[i3 + 2] = tempColor.b;
+
+        targetColors[i3] = tempColor.r;
+        targetColors[i3 + 1] = tempColor.g;
+        targetColors[i3 + 2] = tempColor.b;
+
+        sizes[i] = 0.16 + Math.random() * 0.14;
+      }
+
+      particleGeometry = new THREE.BufferGeometry();
+      particleGeometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+      particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      particleMaterial = new THREE.PointsMaterial({
+        size: 0.28,
+        map: createParticleTexture(),
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+      particleGroup.add(particleSystem);
+
+      // Apply initial theme
+      setPalette(5);
+
+      window.addEventListener('resize', onWindowResize, false);
+      setupMouseFallback();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /* ==========================================================================
+       3. PALETTES & COLOR TRANSITIONS
+       ========================================================================== */
+    function setPalette(fingerCount) {
+      const palIdx = Math.max(0, Math.min(5, fingerCount));
+      activePaletteIndex = palIdx;
+      const palette = PALETTES[palIdx];
+
+      document.getElementById('active-theme-label').innerText = `${palette.name.toUpperCase()} (${fingerCount})`;
+
+      const colorObjs = palette.colors.map(c => new THREE.Color(c));
+
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const i3 = i * 3;
+        let chosenColor;
+
+        if (palIdx === 5) {
+          // Spectrum gradient
+          const hue = (i / NUM_PARTICLES + 0.1) % 1.0;
+          chosenColor = new THREE.Color().setHSL(hue, 0.95, 0.65);
+        } else {
+          // Blend across palette swatches
+          const colorA = colorObjs[i % colorObjs.length];
+          const colorB = colorObjs[(i + 1) % colorObjs.length];
+          chosenColor = colorA.clone().lerp(colorB, (i % 10) / 10);
+        }
+
+        targetColors[i3] = chosenColor.r;
+        targetColors[i3 + 1] = chosenColor.g;
+        targetColors[i3 + 2] = chosenColor.b;
+      }
+    }
+
+    /* ==========================================================================
+       4. EXPLOSION & REFORMATION DYNAMICS
+       ========================================================================== */
+    function triggerExplosion(power = 1.0) {
+      isExploded = true;
+      const magnitude = EXPLOSION_FORCE * (0.8 + power * 1.6);
+
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const i3 = i * 3;
+
+        // Direction outward from center + chaotic angular burst
+        const px = currentPositions[i3];
+        const py = currentPositions[i3 + 1];
+        const pz = currentPositions[i3 + 2];
+        const dist = Math.sqrt(px * px + py * py + pz * pz) || 1.0;
+
+        const dirX = px / dist;
+        const dirY = py / dist;
+        const dirZ = pz / dist;
+
+        const randomJitter = 0.45;
+        const speed = magnitude * (0.6 + Math.random() * 0.9);
+
+        velocities[i3] = (dirX + (Math.random() - 0.5) * randomJitter) * speed;
+        velocities[i3 + 1] = (dirY + (Math.random() - 0.5) * randomJitter) * speed;
+        velocities[i3 + 2] = (dirZ + (Math.random() - 0.5) * randomJitter) * speed;
+      }
+
+      showToast("💥 Sphere Supernova Exploded!");
+    }
+
+    /* ==========================================================================
+       5. MAIN ANIMATION LOOP & PHYSICS UPDATE
+       ========================================================================== */
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const elapsedTime = clock.getElapsedTime();
+      const posAttr = particleGeometry.attributes.position;
+      const colAttr = particleGeometry.attributes.color;
+
+      // Smoothly interpolate Sphere Group Position & Rotation
+      particleGroup.position.lerp(targetSpherePosition, 0.12);
+      particleGroup.rotation.x += (targetSphereRotation.x - particleGroup.rotation.x) * 0.1;
+      particleGroup.rotation.y += (targetSphereRotation.y - particleGroup.rotation.y) * 0.1;
+      particleGroup.rotation.z += (targetSphereRotation.z - particleGroup.rotation.z) * 0.1;
+
+      // Auto idle spin when resting
+      particleGroup.rotation.y += 0.003;
+
+      // Smoothly interpolate Scale
+      sphereScale += (targetSphereScale - sphereScale) * 0.1;
+      particleGroup.scale.set(sphereScale, sphereScale, sphereScale);
+
+      // Charge vibration intensity
+      const chargeVibe = isCharging ? chargeAmount * 0.14 : 0.0;
+
+      // Physics loop for each particle
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const i3 = i * 3;
+
+        // Base resting coordinate with subtle wave undulation
+        const wave = Math.sin(elapsedTime * 2.2 + i * 0.15) * 0.05;
+        const targetX = basePositions[i3] * (1 + wave);
+        const targetY = basePositions[i3 + 1] * (1 + wave);
+        const targetZ = basePositions[i3 + 2] * (1 + wave);
+
+        // Apply velocity from explosions
+        currentPositions[i3] += velocities[i3];
+        currentPositions[i3 + 1] += velocities[i3 + 1];
+        currentPositions[i3 + 2] += velocities[i3 + 2];
+
+        // Gravitational Spring return force pulling particles back to sphere shape
+        const dx = targetX - currentPositions[i3];
+        const dy = targetY - currentPositions[i3 + 1];
+        const dz = targetZ - currentPositions[i3 + 2];
+
+        velocities[i3] += dx * SPRING_STRENGTH;
+        velocities[i3 + 1] += dy * SPRING_STRENGTH;
+        velocities[i3 + 2] += dz * SPRING_STRENGTH;
+
+        // Velocity Damping
+        velocities[i3] *= DAMPING;
+        velocities[i3 + 1] *= DAMPING;
+        velocities[i3 + 2] *= DAMPING;
+
+        // Add charging trembling effect if charging
+        if (chargeVibe > 0) {
+          currentPositions[i3] += (Math.random() - 0.5) * chargeVibe;
+          currentPositions[i3 + 1] += (Math.random() - 0.5) * chargeVibe;
+          currentPositions[i3 + 2] += (Math.random() - 0.5) * chargeVibe;
+        }
+
+        // Color Lerp (smooth theme transitions)
+        colors[i3] += (targetColors[i3] - colors[i3]) * 0.08;
+        colors[i3 + 1] += (targetColors[i3 + 1] - colors[i3 + 1]) * 0.08;
+        colors[i3 + 2] += (targetColors[i3 + 2] - colors[i3 + 2]) * 0.08;
+      }
+
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
+
+      // Update Charge HUD Ring
+      updateChargeHud();
+
+      renderer.render(scene, camera);
+    }
+
+    function updateChargeHud() {
+      const chargeHud = document.getElementById('charge-hud');
+      const meterBar = document.getElementById('charge-meter-bar');
+      const maxOffset = 377; // 2 * PI * 60
+
+      if (isCharging) {
+        chargeAmount = Math.min(1.0, chargeAmount + 0.035);
+        chargeHud.style.opacity = '1';
+        const offset = maxOffset * (1.0 - chargeAmount);
+        meterBar.style.strokeDashoffset = offset;
+        document.getElementById('charge-label').innerText = `CHARGING ${Math.round(chargeAmount * 100)}%`;
+      } else {
+        if (chargeAmount > 0) {
+          chargeAmount = Math.max(0, chargeAmount - 0.08);
+          const offset = maxOffset * (1.0 - chargeAmount);
+          meterBar.style.strokeDashoffset = offset;
+        }
+        if (chargeAmount <= 0.02) {
+          chargeHud.style.opacity = '0';
+        }
+      }
+    }
+
+    /* ==========================================================================
+       6. MEDIAPIPE HANDS VISION PIPELINE
+       ========================================================================== */
+    let hands, cameraUtilsInstance;
+    const videoElement = document.getElementById('webcam-video');
+    const pipCanvas = document.getElementById('pip-canvas');
+    const pipCtx = pipCanvas.getContext('2d');
+    let isWebcamBackground = false;
+    let handDetected = false;
+
+    // Helper to calculate Euclidean distance between two landmarks
+    function getDistance(p1, p2) {
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      const dz = (p1.z || 0) - (p2.z || 0);
+      return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    // Heuristic finger extension counter
+    function countFingers(landmarks) {
+      let count = 0;
+      const wrist = landmarks[0];
+
+      // Index (Tip 8 vs PIP 6)
+      if (getDistance(landmarks[8], wrist) > getDistance(landmarks[6], wrist) && landmarks[8].y < landmarks[6].y + 0.03) count++;
+      // Middle (Tip 12 vs PIP 10)
+      if (getDistance(landmarks[12], wrist) > getDistance(landmarks[10], wrist) && landmarks[12].y < landmarks[10].y + 0.03) count++;
+      // Ring (Tip 16 vs PIP 14)
+      if (getDistance(landmarks[16], wrist) > getDistance(landmarks[14], wrist) && landmarks[16].y < landmarks[14].y + 0.03) count++;
+      // Pinky (Tip 20 vs PIP 18)
+      if (getDistance(landmarks[20], wrist) > getDistance(landmarks[18], wrist) && landmarks[20].y < landmarks[18].y + 0.03) count++;
+
+      // Thumb (Tip 4 vs MCP 2 distance to Pinky MCP 17)
+      const pinkyMCP = landmarks[17];
+      if (getDistance(landmarks[4], pinkyMCP) > getDistance(landmarks[2], pinkyMCP) * 1.15) {
+        count++;
+      }
+
+      return count;
+    }
+
+    function onHandResults(results) {
+      pipCanvas.width = videoElement.videoWidth || 320;
+      pipCanvas.height = videoElement.videoHeight || 240;
+
+      // Draw skeleton to PiP canvas
+      pipCtx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+      pipCtx.drawImage(results.image, 0, 0, pipCanvas.width, pipCanvas.height);
+
+      const numHands = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+
+      if (numHands > 0) {
+        if (!handDetected) {
+          handDetected = true;
+          document.getElementById('cam-status-dot').classList.add('active');
+          document.getElementById('cam-status-text').innerText = 'HAND TRACKING ACTIVE';
+        }
+
+        // Draw skeleton connections on PiP
+        drawHandPip(results.multiHandLandmarks);
+
+        if (numHands === 1) {
+          // --- SINGLE HAND MODE ---
+          document.getElementById('active-mode-label').innerText = '1 HAND (MOVE & PINCH)';
+          const landmarks = results.multiHandLandmarks[0];
+
+          // 1. Calculate Palm Center (Average of wrist and knuckle joints)
+          const palmX = (landmarks[0].x + landmarks[5].x + landmarks[9].x + landmarks[13].x + landmarks[17].x) / 5;
+          const palmY = (landmarks[0].y + landmarks[5].y + landmarks[9].y + landmarks[13].y + landmarks[17].y) / 5;
+          const palmZ = (landmarks[0].z + landmarks[9].z) / 2;
+
+          // Map normalized coords (0..1) to 3D Scene space (mirrored X)
+          const sceneX = ((1 - palmX) - 0.5) * 12.0;
+          const sceneY = -(palmY - 0.5) * 8.0;
+          const sceneZ = (-palmZ * 6.0);
+
+          targetSpherePosition.set(sceneX, sceneY, sceneZ);
+
+          // 2. Hand Orientation / Tilt
+          const wrist = landmarks[0];
+          const middleKnuckle = landmarks[9];
+          const tiltX = (middleKnuckle.y - wrist.y) * 2.5;
+          const tiltY = ((1 - middleKnuckle.x) - (1 - wrist.x)) * 3.0;
+          targetSphereRotation.set(tiltX, tiltY, 0);
+
+          // 3. Pinch Detection (Thumb Tip 4 & Index Tip 8)
+          const pinchDist = getDistance(landmarks[4], landmarks[8]);
+          const isPinching = pinchDist < PINCH_THRESHOLD;
+
+          if (isPinching) {
+            isCharging = true;
+            document.getElementById('active-mode-label').innerText = '⚡ PINCH CHARGING';
+          } else {
+            if (wasPinching && chargeAmount > 0.2) {
+              // Pinch released after charging -> EXPLODE!
+              triggerExplosion(chargeAmount);
+            }
+            isCharging = false;
+          }
+          wasPinching = isPinching;
+
+          // 4. Finger Count -> Color Palette change
+          const fingers = countFingers(landmarks);
+          setPalette(fingers);
+
+        } else if (numHands >= 2) {
+          // --- TWO HANDS MODE: SPREAD / SHRINK ---
+          document.getElementById('active-mode-label').innerText = '2 HANDS (SCALE ORB)';
+          isCharging = false;
+          wasPinching = false;
+
+          const handA = results.multiHandLandmarks[0];
+          const handB = results.multiHandLandmarks[1];
+
+          // Palm centers
+          const palmA = { x: (1 - handA[9].x), y: handA[9].y };
+          const palmB = { x: (1 - handB[9].x), y: handB[9].y };
+
+          // Midpoint position
+          const midX = ((palmA.x + palmB.x) / 2 - 0.5) * 10.0;
+          const midY = -((palmA.y + palmB.y) / 2 - 0.5) * 7.0;
+          targetSpherePosition.set(midX, midY, 0);
+
+          // Distance between two hands controls sphere radius scale
+          const handDistance = Math.hypot(palmA.x - palmB.x, palmA.y - palmB.y);
+          // Map distance ~0.15..0.85 to scale ~0.4..2.8
+          const newScale = THREE.MathUtils.clamp((handDistance - 0.15) * 3.2 + 0.5, 0.4, 2.8);
+          targetSphereScale = newScale;
+
+          // Finger count from both hands combined or dominant
+          const fingersTotal = Math.min(5, countFingers(handA) + countFingers(handB));
+          setPalette(fingersTotal);
+        }
+
+      } else {
+        // No hand visible
+        if (handDetected) {
+          handDetected = false;
+          document.getElementById('cam-status-dot').classList.remove('active');
+          document.getElementById('cam-status-text').innerText = 'SEARCHING FOR HANDS...';
+          document.getElementById('active-mode-label').innerText = 'NO HAND DETECTED';
+        }
+        isCharging = false;
+        wasPinching = false;
+        // Gently return to center
+        targetSpherePosition.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+        targetSphereScale = 1.0;
+      }
+    }
+
+    // Draw skeleton joints on PiP canvas
+    function drawHandPip(allHands) {
+      pipCtx.lineWidth = 2;
+      allHands.forEach(landmarks => {
+        // Connections
+        const connections = [
+          [0,1],[1,2],[2,3],[3,4], // Thumb
+          [0,5],[5,6],[6,7],[7,8], // Index
+          [0,9],[9,10],[10,11],[11,12], // Middle
+          [0,13],[13,14],[14,15],[15,16], // Ring
+          [0,17],[17,18],[18,19],[19,20], // Pinky
+          [5,9],[9,13],[13,17] // Palm bridge
+        ];
+
+        pipCtx.strokeStyle = 'rgba(0, 242, 254, 0.6)';
+        connections.forEach(([i, j]) => {
+          const p1 = landmarks[i];
+          const p2 = landmarks[j];
+          pipCtx.beginPath();
+          pipCtx.moveTo(p1.x * pipCanvas.width, p1.y * pipCanvas.height);
+          pipCtx.lineTo(p2.x * pipCanvas.width, p2.y * pipCanvas.height);
+          pipCtx.stroke();
+        });
+
+        // Key Points
+        landmarks.forEach((p, idx) => {
+          pipCtx.fillStyle = (idx === 4 || idx === 8) ? '#ff0844' : '#00f5a0';
+          pipCtx.beginPath();
+          pipCtx.arc(p.x * pipCanvas.width, p.y * pipCanvas.height, (idx === 4 || idx === 8) ? 4 : 2.5, 0, Math.PI * 2);
+          pipCtx.fill();
+        });
+      });
+    }
+
+    async function initMediaPipe() {
+      try {
+        hands = new Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+          maxNumHands: 2,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.6,
+          minTrackingConfidence: 0.6
+        });
+
+        hands.onResults(onHandResults);
+
+        cameraUtilsInstance = new Camera(videoElement, {
+          onFrame: async () => {
+            await hands.send({ image: videoElement });
+          },
+          width: 640,
+          height: 480
+        });
+
+        await cameraUtilsInstance.start();
+        document.getElementById('cam-status-text').innerText = 'CAMERA ONLINE';
+        showToast("📷 Webcam & MediaPipe Hands Ready!");
+      } catch (err) {
+        console.warn("MediaPipe / Camera initialization error:", err);
+        document.getElementById('cam-status-text').innerText = 'MOUSE CONTROLS ACTIVE';
+        showToast("⚠️ Webcam access unavailable. Mouse control enabled.");
+      }
+    }
+
+    /* ==========================================================================
+       7. MOUSE & TOUCH FALLBACK CONTROLS
+       ========================================================================== */
+    function setupMouseFallback() {
+      let isMouseDown = false;
+      let mouseX = 0, mouseY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        if (!handDetected) {
+          mouseX = (e.clientX / window.innerWidth - 0.5) * 10;
+          mouseY = -(e.clientY / window.innerHeight - 0.5) * 6;
+          targetSpherePosition.set(mouseX, mouseY, 0);
+          targetSphereRotation.set(mouseY * 0.3, mouseX * 0.3, 0);
+        }
+      });
+
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.interactive') || e.target.closest('button')) return;
+        if (!handDetected) {
+          isMouseDown = true;
+          isCharging = true;
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          if (chargeAmount > 0.2) {
+            triggerExplosion(chargeAmount);
+          }
+          isCharging = false;
+        }
+      });
+
+      window.addEventListener('wheel', (e) => {
+        if (!handDetected) {
+          targetSphereScale = THREE.MathUtils.clamp(targetSphereScale - e.deltaY * 0.0015, 0.4, 3.0);
+        }
+      });
+
+      // Keyboard 0-5 color switch shortcut
+      window.addEventListener('keydown', (e) => {
+        if (e.key >= '0' && e.key <= '5') {
+          setPalette(parseInt(e.key));
+          showToast(`🎨 Palette changed to ${PALETTES[parseInt(e.key)].name}`);
+        } else if (e.key === 'c' || e.key === 'C') {
+          toggleWebcamBackground();
+        } else if (e.key === ' ') {
+          triggerExplosion(1.0);
+        }
+      });
+    }
+
+    /* ==========================================================================
+       8. UI ACTIONS & BUTTON HANDLERS
+       ========================================================================== */
+    function toggleWebcamBackground() {
+      isWebcamBackground = !isWebcamBackground;
+      const btn = document.getElementById('btn-toggle-cam');
+      if (isWebcamBackground) {
+        videoElement.classList.add('active-fullscreen');
+        btn.classList.add('active-glow');
+        showToast("📹 Webcam Fullscreen Background Enabled");
+      } else {
+        videoElement.classList.remove('active-fullscreen');
+        btn.classList.remove('active-glow');
+        showToast("🌑 Dark Space Background Restored");
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-msg');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+
+    // UI Event Listeners
+    document.getElementById('btn-toggle-cam').addEventListener('click', toggleWebcamBackground);
+
+    document.getElementById('btn-theme-cycle').addEventListener('click', () => {
+      const next = (activePaletteIndex + 1) % 6;
+      setPalette(next);
+      showToast(`🎨 Theme: ${PALETTES[next].name}`);
+    });
+
+    document.getElementById('btn-explode-demo').addEventListener('click', () => {
+      triggerExplosion(1.0);
+    });
+
+    /* ==========================================================================
+       9. INITIALIZATION ENTRYPOINT
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initThree();
+      animate();
+      initMediaPipe();
+    });
+  </script>
+</body>
+</html>
