@@ -62,7 +62,7 @@ src/
 │   ├── ParticleRenderer.ts      # BufferGeometry, PointsMaterial, radial glow sprite generator
 │   └── RenderLoop.ts            # requestAnimationFrame loop, delta time, scene interpolation
 ├── tracking/
-│   └── HandTracker.ts           # MediaPipe Hands & Camera lifecycle, PiP skeleton renderer
+│   └── HandTracker.ts           # MediaPipe Hands & Camera lifecycle, PiP skeletal renderer
 ├── gestures/
 │   └── GestureRecognizer.ts     # Palm centroid, tilt Euler, pinch detection, finger counting
 ├── input/
@@ -126,4 +126,5 @@ npm run preview
 ---
 
 ## 📄 License
+
 MIT License. Open-source and free for personal or commercial use.
