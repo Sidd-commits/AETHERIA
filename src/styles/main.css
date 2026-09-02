@@ -1,0 +1,410 @@
+:root {
+  --bg-dark: #050608;
+  --panel-bg: rgba(12, 16, 24, 0.65);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-hover: rgba(255, 255, 255, 0.2);
+  --text-main: #f0f4fc;
+  --text-muted: #8a99ad;
+  --accent-cyan: #00f2fe;
+  --accent-magenta: #ff0844;
+  --accent-emerald: #00f5a0;
+  --accent-gold: #fee140;
+  --accent-glow: rgba(0, 242, 254, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-main);
+}
+
+/* Fullscreen Viewport Canvas & Video Layers */
+#webgl-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+#webcam-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror webcam */
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+  pointer-events: none;
+  filter: brightness(0.4) contrast(1.1) saturate(0.8);
+}
+
+#webcam-video.active-fullscreen {
+  opacity: 0.45;
+}
+
+/* Ambient Background Glow */
+.ambient-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 26, 45, 0.4) 0%, rgba(5, 6, 8, 0.95) 75%);
+  pointer-events: none;
+}
+
+/* Mini PiP Webcam Preview */
+#pip-container {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 150px;
+  height: 110px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 25;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#pip-container:hover {
+  border-color: var(--panel-border-hover);
+  transform: translateY(-2px);
+}
+
+#pip-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.pip-label {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* UI Overlay Layer */
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+}
+
+.interactive {
+  pointer-events: auto;
+}
+
+/* Header & Serif Title */
+.header-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.brand-title {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 0 2px 20px rgba(255, 255, 255, 0.25);
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffaa00;
+  box-shadow: 0 0 8px #ffaa00;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.status-dot.active {
+  background: #00f5a0;
+  box-shadow: 0 0 10px #00f5a0;
+}
+
+/* Live HUD Stats Pill Box */
+.hud-pills {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.glass-pill {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  padding: 8px 16px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s ease;
+}
+
+.glass-pill:hover {
+  border-color: var(--panel-border-hover);
+}
+
+.pill-accent {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+/* Gesture Guide HUD */
+.gesture-bar {
+  position: absolute;
+  top: 100px;
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.3s ease;
+}
+
+.gesture-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.gesture-icon {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.gesture-desc b {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Charge Ring HUD */
+#charge-hud {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.charge-svg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.charge-meter-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 6;
+}
+
+.charge-meter-val {
+  fill: none;
+  stroke: url(#charge-grad);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 377;
+  stroke-dashoffset: 377;
+  transition: stroke-dashoffset 0.04s linear;
+  filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.8));
+}
+
+.charge-text {
+  position: absolute;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-shadow: 0 0 12px var(--accent-cyan);
+  text-transform: uppercase;
+}
+
+/* Bottom Control Bar */
+.footer-panel {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-btn {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  color: var(--text-main);
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.action-btn.active-glow {
+  background: rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px var(--accent-glow);
+  color: #ffffff;
+}
+
+.btn-icon {
+  font-size: 15px;
+}
+
+/* Toast Notification */
+#toast-msg {
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(15, 20, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#toast-msg.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .ui-layer {
+    padding: 18px;
+  }
+  .brand-title {
+    font-size: 20px;
+  }
+  .gesture-bar {
+    display: none;
+  }
+  #pip-container {
+    width: 100px;
+    height: 75px;
+    bottom: 18px;
+    left: 18px;
+  }
+  .action-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}

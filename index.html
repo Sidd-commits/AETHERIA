@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>AETHERIA — 3D Real-Time Particle Sphere</title>
+  
+  <!-- Google Fonts: Serif Title & Modern Sans UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- MediaPipe Hands & Camera Utils CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Fullscreen WebGL Canvas Container -->
+  <div id="webgl-container"></div>
+
+  <!-- Ambient Backdrop -->
+  <div class="ambient-backdrop"></div>
+
+  <!-- Raw Webcam Video Feed (can be toggled fullscreen backdrop) -->
+  <video id="webcam-video" playsinline autoplay muted></video>
+
+  <!-- PiP Hand Skeleton / Camera Monitor -->
+  <div id="pip-container" class="interactive" title="Webcam hand tracking view">
+    <canvas id="pip-canvas"></canvas>
+    <div class="pip-label">CAM VIEW</div>
+  </div>
+
+  <!-- Floating Charge Ring -->
+  <div id="charge-hud">
+    <svg class="charge-svg" viewBox="0 0 140 140">
+      <defs>
+        <linearGradient id="charge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00f2fe" />
+          <stop offset="50%" stop-color="#ff0844" />
+          <stop offset="100%" stop-color="#fee140" />
+        </linearGradient>
+      </defs>
+      <circle class="charge-meter-bg" cx="70" cy="70" r="60"></circle>
+      <circle id="charge-meter-bar" class="charge-meter-val" cx="70" cy="70" r="60"></circle>
+    </svg>
+    <div id="charge-label" class="charge-text">CHARGING</div>
+  </div>
+
+  <!-- Dynamic Notification Toast -->
+  <div id="toast-msg">
+    <span id="toast-icon">✨</span>
+    <span id="toast-text">Hand tracking initialized</span>
+  </div>
+
+  <!-- Clean UI Layer -->
+  <div class="ui-layer">
+    
+    <!-- Top Header -->
+    <div class="header-panel">
+      <div class="brand-block">
+        <h1 class="brand-title">Aetheria</h1>
+        <div class="brand-subtitle">
+          <span id="cam-status-dot" class="status-dot"></span>
+          <span id="cam-status-text">INITIALIZING CAMERA...</span>
+        </div>
+      </div>
+
+      <!-- Top Right Status Indicators -->
+      <div class="hud-pills">
+        <div class="glass-pill" id="pill-gesture">
+          <span>MODE:</span>
+          <span class="pill-accent" id="active-mode-label">SEARCHING HANDS</span>
+        </div>
+        <div class="glass-pill" id="pill-fingers">
+          <span>THEME:</span>
+          <span class="pill-accent" id="active-theme-label">SPECTRUM (5)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gesture Guide Legend -->
+    <div class="gesture-bar">
+      <div class="gesture-item">
+        <div class="gesture-icon">☝️</div>
+        <div class="gesture-desc"><b>Single Hand:</b> Move & Rotate Sphere</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">👌</div>
+        <div class="gesture-desc"><b>Pinch & Hold:</b> Charge Ring → Release to Explode</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">👐</div>
+        <div class="gesture-desc"><b>Two Hands:</b> Spread apart / together to Scale</div>
+      </div>
+      <div class="gesture-item">
+        <div class="gesture-icon">🖐️</div>
+        <div class="gesture-desc"><b>Finger Count:</b> 0 (Fist) to 5 changes Colors</div>
+      </div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="footer-panel interactive">
+      <button id="btn-toggle-cam" class="action-btn" title="Toggle webcam video as immersive fullscreen background">
+        <span class="btn-icon">📹</span>
+        <span id="cam-btn-text">Webcam Background</span>
+      </button>
+
+      <button id="btn-theme-cycle" class="action-btn" title="Cycle color theme manually">
+        <span class="btn-icon">🎨</span>
+        <span>Palette</span>
+      </button>
+
+      <button id="btn-explode-demo" class="action-btn" title="Trigger explosion burst">
+        <span class="btn-icon">💥</span>
+        <span>Trigger Burst</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Vite Module Entry -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
