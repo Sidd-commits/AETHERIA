@@ -1,14 +1,16 @@
-import { getRequiredElement } from '../utils/dom';
+import { getRequiredElement, getOptionalElement } from '../utils/dom';
 import { CommandBus } from '../core/CommandBus';
 import { WorldState } from '../core/WorldState';
 import { HUDController } from './HUDController';
 import { ChargeRingController } from './ChargeRingController';
 import { ToastController } from './ToastController';
+import { DebugOverlay } from './DebugOverlay';
 import { UniverseState } from '../types/universe';
+import { GestureDetector } from '../gestures/GestureDetector';
 
 /**
  * UI Manager
- * Orchestrates all UI overlays, controllers, HUD elements, and user button inputs
+ * Orchestrates all UI overlays, controllers, HUD elements, user button inputs, and debug visualizer
  */
 export class UIManager {
   private commandBus: CommandBus;
@@ -16,14 +18,17 @@ export class UIManager {
   private hudController: HUDController;
   private chargeRingController: ChargeRingController;
   private toastController: ToastController;
+  private debugOverlay: DebugOverlay;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
   private themeCycleBtn: HTMLButtonElement;
   private explodeDemoBtn: HTMLButtonElement;
+  private toggleDebugBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
+    gestureDetector: GestureDetector,
     commandBus: CommandBus = CommandBus.getInstance()
   ) {
     this.worldState = worldState;
@@ -32,11 +37,13 @@ export class UIManager {
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
     this.toastController = new ToastController(this.commandBus);
+    this.debugOverlay = new DebugOverlay(gestureDetector);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
     this.themeCycleBtn = getRequiredElement<HTMLButtonElement>('btn-theme-cycle');
     this.explodeDemoBtn = getRequiredElement<HTMLButtonElement>('btn-explode-demo');
+    this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -58,6 +65,16 @@ export class UIManager {
         icon: '💥'
       }, 'UI');
     });
+
+    if (this.toggleDebugBtn) {
+      this.toggleDebugBtn.addEventListener('click', () => {
+        const isDebug = this.debugOverlay.toggle();
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: isDebug ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
+          icon: '🛠️'
+        }, 'UI');
+      });
+    }
   }
 
   private bindStateUpdates(): void {
@@ -85,5 +102,9 @@ export class UIManager {
 
   public getToastController(): ToastController {
     return this.toastController;
+  }
+
+  public getDebugOverlay(): DebugOverlay {
+    return this.debugOverlay;
   }
 }

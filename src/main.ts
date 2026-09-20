@@ -44,12 +44,18 @@ export class AetheriaApp {
     this.particleRenderer = new ParticleRenderer(this.particleSimulator.getBuffer());
     this.sceneManager.getParticleGroup().add(this.particleRenderer.getMesh());
 
-    // 4. User Interface & Interaction Subsystems
-    this.uiManager = new UIManager(this.worldState, this.commandBus);
-    this.inputManager = new InputManager(this.worldState, this.commandBus);
+    // 4. Gesture Recognition & Fallback Input Subsystems
     this.gestureRecognizer = new GestureRecognizer(this.worldState, this.commandBus);
+    this.inputManager = new InputManager(this.worldState, this.commandBus);
 
-    // 5. Render Animation Loop (linked with UI frame updates)
+    // 5. User Interface Subsystem (with real-time Debug visualizer)
+    this.uiManager = new UIManager(
+      this.worldState,
+      this.gestureRecognizer.getDetector(),
+      this.commandBus
+    );
+
+    // 6. Render Animation Loop (linked with UI frame updates)
     this.renderLoop = new RenderLoop(
       this.sceneManager,
       this.particleSimulator,
@@ -58,7 +64,7 @@ export class AetheriaApp {
       this.uiManager
     );
 
-    // 6. Hand Tracking Vision Subsystem
+    // 7. Hand Tracking Vision Subsystem
     const videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     const pipCanvas = getRequiredElement<HTMLCanvasElement>('pip-canvas');
     this.handTracker = new HandTracker(videoElement, pipCanvas, this.commandBus);
