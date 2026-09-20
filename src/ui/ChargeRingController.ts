@@ -1,4 +1,4 @@
-import { getRequiredElement } from '../utils/dom';
+import { getRequiredElement, getOptionalElement } from '../utils/dom';
 import { UniverseState } from '../types/universe';
 
 /**
@@ -13,7 +13,13 @@ export class ChargeRingController {
 
   constructor() {
     this.chargeHud = getRequiredElement<HTMLElement>('charge-hud');
-    this.meterBar = getRequiredElement<SVGCircleElement>('charge-meter-bar');
+    const circle =
+      getOptionalElement<SVGCircleElement>('charge-meter-bar') ??
+      getOptionalElement<SVGCircleElement>('charge-circle');
+    if (!circle) {
+      throw new Error('Required DOM element with id "charge-meter-bar" was not found.');
+    }
+    this.meterBar = circle;
     this.chargeLabel = getRequiredElement<HTMLElement>('charge-label');
   }
 

@@ -41,7 +41,7 @@ export class UIManager {
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
   private themeCycleBtn: HTMLButtonElement;
-  private explodeDemoBtn: HTMLButtonElement;
+  private explodeDemoBtn: HTMLButtonElement | null = null;
   private toggleDebugBtn: HTMLButtonElement | null = null;
   private toggleEcoBtn: HTMLButtonElement | null = null;
   private toggleVoiceBtn: HTMLButtonElement | null = null;
@@ -75,7 +75,7 @@ export class UIManager {
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
     this.themeCycleBtn = getRequiredElement<HTMLButtonElement>('btn-theme-cycle');
-    this.explodeDemoBtn = getRequiredElement<HTMLButtonElement>('btn-explode-demo');
+    this.explodeDemoBtn = getOptionalElement<HTMLButtonElement>('btn-explode-demo');
     this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
     this.toggleEcoBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-eco');
     this.toggleVoiceBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-voice');
@@ -96,17 +96,19 @@ export class UIManager {
       this.commandBus.dispatch('CYCLE_PALETTE', undefined, 'UI');
     });
 
-    this.explodeDemoBtn.addEventListener('click', () => {
-      this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.0 }, 'UI');
-      this.commandBus.dispatch(
-        'SHOW_TOAST',
-        {
-          message: '💥 Supernova Explosion Triggered!',
-          icon: '💥'
-        },
-        'UI'
-      );
-    });
+    if (this.explodeDemoBtn) {
+      this.explodeDemoBtn.addEventListener('click', () => {
+        this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.0 }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Supernova Explosion Triggered!',
+            icon: '💥'
+          },
+          'UI'
+        );
+      });
+    }
 
     if (this.toggleDebugBtn) {
       this.toggleDebugBtn.addEventListener('click', () => {
