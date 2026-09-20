@@ -213,10 +213,14 @@ export class PopulationMonitor {
     if (seedBtn) {
       seedBtn.addEventListener('click', () => {
         this.commandBus.dispatch('SEED_ORGANISMS', { count: 150 }, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '🌱 Seeded 150 Organisms into Ecosystem',
-          icon: '🌱'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '🌱 Seeded 150 Organisms into Ecosystem',
+            icon: '🌱'
+          },
+          'UI'
+        );
       });
     }
 
@@ -224,10 +228,14 @@ export class PopulationMonitor {
     if (energyBtn) {
       energyBtn.addEventListener('click', () => {
         this.commandBus.dispatch('SPAWN_ENERGY_BURST', { count: 250 }, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '⚡ Radiant Energy Bloom Released',
-          icon: '⚡'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '⚡ Radiant Energy Bloom Released',
+            icon: '⚡'
+          },
+          'UI'
+        );
       });
     }
 
@@ -235,10 +243,14 @@ export class PopulationMonitor {
     if (supernovaBtn) {
       supernovaBtn.addEventListener('click', () => {
         this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.2 }, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '💥 Supernova Shockwave: Matter Ionized into Energy!',
-          icon: '💥'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Supernova Shockwave: Matter Ionized into Energy!',
+            icon: '💥'
+          },
+          'UI'
+        );
       });
     }
 
@@ -246,10 +258,14 @@ export class PopulationMonitor {
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         this.commandBus.dispatch('RESET_ECOSYSTEM', undefined, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '🔄 Ecosystem State Reset to Primordial Baseline',
-          icon: '🔄'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '🔄 Ecosystem State Reset to Primordial Baseline',
+            icon: '🔄'
+          },
+          'UI'
+        );
       });
     }
   }

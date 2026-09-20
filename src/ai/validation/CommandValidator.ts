@@ -99,7 +99,10 @@ export class CommandValidator {
         // Influence radius: 10.0 - 60.0
         if (sanitizedParams.gravitationalInfluenceRadius !== undefined) {
           const inf = Number(sanitizedParams.gravitationalInfluenceRadius);
-          sanitizedParams.gravitationalInfluenceRadius = Math.max(10.0, Math.min(60.0, inf || 30.0));
+          sanitizedParams.gravitationalInfluenceRadius = Math.max(
+            10.0,
+            Math.min(60.0, inf || 30.0)
+          );
         }
 
         // Accretion strength: 0.5 - 5.0
@@ -178,7 +181,9 @@ export class CommandValidator {
         if (sanitizedParams.preset) {
           const presetStr = String(sanitizedParams.preset).toUpperCase().replace(/\s+/g, '_');
           if (!VALID_PRESETS.has(presetStr as UniversePresetId)) {
-            errors.push(`Invalid universe preset "${sanitizedParams.preset}". Valid options: ${Array.from(VALID_PRESETS).join(', ')}`);
+            errors.push(
+              `Invalid universe preset "${sanitizedParams.preset}". Valid options: ${Array.from(VALID_PRESETS).join(', ')}`
+            );
           } else {
             sanitizedParams.preset = presetStr as UniversePresetId;
           }

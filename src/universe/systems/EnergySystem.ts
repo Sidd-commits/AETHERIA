@@ -10,7 +10,12 @@ export class EnergySystem {
   /**
    * Update energy transfer across stars, planets, and energy fields
    */
-  public update(entities: UniverseEntity[], config: UniverseConfig, dt: number, elapsedTime: number): void {
+  public update(
+    entities: UniverseEntity[],
+    config: UniverseConfig,
+    dt: number,
+    elapsedTime: number
+  ): void {
     const count = entities.length;
     const transferRate = config.energyTransferRate;
 
@@ -36,7 +41,10 @@ export class EnergySystem {
 
           // Solar flux: F = L / (4 * PI * r^2)
           const solarFlux = (e.energy * (e.luminosity || 1.0)) / (distSq * 4.0);
-          planet.energy = Math.min(planet.maxEnergy || 100, planet.energy + solarFlux * transferRate * dt);
+          planet.energy = Math.min(
+            planet.maxEnergy || 100,
+            planet.energy + solarFlux * transferRate * dt
+          );
         }
       }
 

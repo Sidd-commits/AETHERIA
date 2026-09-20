@@ -271,10 +271,14 @@ export class AIObservationPanel {
     this.entityCountsEl = this.container.querySelector('#obs-entity-counts') as HTMLElement;
     this.energyHotspotEl = this.container.querySelector('#obs-energy-hotspot') as HTMLElement;
     this.anomaliesListEl = this.container.querySelector('#obs-anomalies-list') as HTMLElement;
-    this.recommendationsListEl = this.container.querySelector('#obs-recommendations-list') as HTMLElement;
+    this.recommendationsListEl = this.container.querySelector(
+      '#obs-recommendations-list'
+    ) as HTMLElement;
     this.chatHistoryEl = this.container.querySelector('#obs-chat-history') as HTMLElement;
     this.chatInputEl = this.container.querySelector('#input-aether-query') as HTMLInputElement;
-    this.recentCommandsListEl = this.container.querySelector('#obs-recent-commands-list') as HTMLElement;
+    this.recentCommandsListEl = this.container.querySelector(
+      '#obs-recent-commands-list'
+    ) as HTMLElement;
   }
 
   private bindEvents(): void {
@@ -390,11 +394,19 @@ export class AIObservationPanel {
         if (actionBtn) {
           actionBtn.addEventListener('click', () => {
             if (response.suggestedAction) {
-              this.commandBus.dispatch(response.suggestedAction.actionCommand as any, response.suggestedAction.payload, 'VOICE_AI');
-              this.commandBus.dispatch('SHOW_TOAST', {
-                message: `✨ Executed ${response.suggestedAction.label}`,
-                icon: '👁️'
-              }, 'VOICE_AI');
+              this.commandBus.dispatch(
+                response.suggestedAction.actionCommand as any,
+                response.suggestedAction.payload,
+                'VOICE_AI'
+              );
+              this.commandBus.dispatch(
+                'SHOW_TOAST',
+                {
+                  message: `✨ Executed ${response.suggestedAction.label}`,
+                  icon: '👁️'
+                },
+                'VOICE_AI'
+              );
             }
           });
         }
@@ -448,11 +460,17 @@ export class AIObservationPanel {
 
     // 5. Anomalies Feed
     if (telemetry.anomalies.length === 0) {
-      this.anomaliesListEl.innerHTML = '<div style="font-size: 11px; color: #8a99ad; font-style: italic;">No critical anomalies detected in the cosmos.</div>';
+      this.anomaliesListEl.innerHTML =
+        '<div style="font-size: 11px; color: #8a99ad; font-style: italic;">No critical anomalies detected in the cosmos.</div>';
     } else {
       this.anomaliesListEl.innerHTML = telemetry.anomalies
         .map((anom: CosmicAnomaly) => {
-          const color = anom.severity === 'CRITICAL' ? '#ff0844' : anom.severity === 'WARNING' ? '#ffd200' : '#00f2fe';
+          const color =
+            anom.severity === 'CRITICAL'
+              ? '#ff0844'
+              : anom.severity === 'WARNING'
+                ? '#ffd200'
+                : '#00f2fe';
           return `
             <div style="background: rgba(255, 255, 255, 0.03); border-left: 2px solid ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
               <div style="display: flex; justify-content: space-between;">
@@ -468,7 +486,8 @@ export class AIObservationPanel {
 
     // 6. Recommendations
     this.recommendationsListEl.innerHTML = telemetry.recommendations
-      .map((rec: GuardianRecommendation) => `
+      .map(
+        (rec: GuardianRecommendation) => `
         <div class="aether-rec-card">
           <div style="flex: 1; padding-right: 8px;">
             <b style="color: #ffffff;">${rec.title}</b>
@@ -476,7 +495,8 @@ export class AIObservationPanel {
           </div>
           ${rec.suggestedActionCommand ? `<button class="aether-apply-btn" data-action="${rec.suggestedActionCommand}">${rec.suggestedActionName || 'Apply'}</button>` : ''}
         </div>
-      `)
+      `
+      )
       .join('');
 
     // Bind recommendation apply buttons
@@ -486,10 +506,14 @@ export class AIObservationPanel {
         const action = (e.currentTarget as HTMLElement).dataset.action;
         if (action) {
           this.commandBus.dispatch(action as any, undefined, 'VOICE_AI');
-          this.commandBus.dispatch('SHOW_TOAST', {
-            message: `✨ Applied Guardian Recommendation: ${action}`,
-            icon: '👁️'
-          }, 'VOICE_AI');
+          this.commandBus.dispatch(
+            'SHOW_TOAST',
+            {
+              message: `✨ Applied Guardian Recommendation: ${action}`,
+              icon: '👁️'
+            },
+            'VOICE_AI'
+          );
         }
       });
     });
@@ -497,16 +521,19 @@ export class AIObservationPanel {
     // 7. Recent Commands
     const history = this.aiManager.getHistory();
     if (history.length === 0) {
-      this.recentCommandsListEl.innerHTML = '<div style="color: #8a99ad;">No commands registered yet.</div>';
+      this.recentCommandsListEl.innerHTML =
+        '<div style="color: #8a99ad;">No commands registered yet.</div>';
     } else {
       this.recentCommandsListEl.innerHTML = history
         .slice(0, 3)
-        .map((item) => `
+        .map(
+          (item) => `
           <div style="display: flex; justify-content: space-between; color: #cbd5e1;">
             <span>"${item.transcript}"</span>
             <span style="color: ${item.status === 'SUCCESS' ? '#00f5a0' : '#ff5e62'}; font-weight: 600; font-size: 10px;">${item.status}</span>
           </div>
-        `)
+        `
+        )
         .join('');
     }
   }

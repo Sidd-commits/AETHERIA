@@ -98,69 +98,105 @@ export class UIManager {
 
     this.explodeDemoBtn.addEventListener('click', () => {
       this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.0 }, 'UI');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '💥 Supernova Explosion Triggered!',
-        icon: '💥'
-      }, 'UI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '💥 Supernova Explosion Triggered!',
+          icon: '💥'
+        },
+        'UI'
+      );
     });
 
     if (this.toggleDebugBtn) {
       this.toggleDebugBtn.addEventListener('click', () => {
         const isDebug = this.debugOverlay.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isDebug ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
-          icon: '🛠️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isDebug ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
+            icon: '🛠️'
+          },
+          'UI'
+        );
       });
     }
 
     if (this.toggleEcoBtn) {
       this.toggleEcoBtn.addEventListener('click', () => {
         const isVisible = this.populationMonitor.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isVisible ? '🌿 Population Monitor Open (Press E)' : '🌿 Population Monitor Hidden',
-          icon: '🌿'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible
+              ? '🌿 Population Monitor Open (Press E)'
+              : '🌿 Population Monitor Hidden',
+            icon: '🌿'
+          },
+          'UI'
+        );
       });
     }
 
     if (this.toggleVoiceBtn) {
       this.toggleVoiceBtn.addEventListener('click', () => {
         const isVisible = this.voiceAIHUD.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isVisible ? '🎙️ Voice AI HUD Open (Press V)' : '🎙️ Voice AI HUD Hidden',
-          icon: '🎙️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible ? '🎙️ Voice AI HUD Open (Press V)' : '🎙️ Voice AI HUD Hidden',
+            icon: '🎙️'
+          },
+          'UI'
+        );
       });
     }
 
     if (this.toggleAetherBtn) {
       this.toggleAetherBtn.addEventListener('click', () => {
         const isVisible = this.observationPanel.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isVisible ? '👁️ AETHER Observatory Open (Press A)' : '👁️ AETHER Observatory Hidden',
-          icon: '👁️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible
+              ? '👁️ AETHER Observatory Open (Press A)'
+              : '👁️ AETHER Observatory Hidden',
+            icon: '👁️'
+          },
+          'UI'
+        );
       });
     }
 
     if (this.toggleWorldGenBtn) {
       this.toggleWorldGenBtn.addEventListener('click', () => {
         const isVisible = this.worldGenStudio.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isVisible ? '🌌 World Gen Studio Open (Press W)' : '🌌 World Gen Studio Hidden',
-          icon: '🌌'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible
+              ? '🌌 World Gen Studio Open (Press W)'
+              : '🌌 World Gen Studio Hidden',
+            icon: '🌌'
+          },
+          'UI'
+        );
       });
     }
 
     if (this.togglePerfBtn) {
       this.togglePerfBtn.addEventListener('click', () => {
         const isVisible = this.perfMonitor.toggle();
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: isVisible ? '⚡ Performance HUD Active (Press P)' : '⚡ Performance HUD Hidden',
-          icon: '⚡'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible
+              ? '⚡ Performance HUD Active (Press P)'
+              : '⚡ Performance HUD Hidden',
+            icon: '⚡'
+          },
+          'UI'
+        );
       });
     }
   }

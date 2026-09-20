@@ -358,7 +358,10 @@ export class VoiceAIHUD {
     this.aiManager.processNaturalLanguageInput(val);
   }
 
-  private handleStateChange(state: VoiceState, details?: { transcript?: string; error?: string; command?: AIStructuredCommand }): void {
+  private handleStateChange(
+    state: VoiceState,
+    details?: { transcript?: string; error?: string; command?: AIStructuredCommand }
+  ): void {
     switch (state) {
       case 'IDLE':
         this.statusBadge.textContent = 'READY TO LISTEN';
@@ -402,7 +405,10 @@ export class VoiceAIHUD {
         this.confirmModalEl.style.display = 'block';
         if (details?.command) {
           const descEl = this.confirmModalEl.querySelector('#voice-confirm-desc');
-          if (descEl) descEl.textContent = details.command.explanation || `Execute destructive operation "${details.command.action}"?`;
+          if (descEl)
+            descEl.textContent =
+              details.command.explanation ||
+              `Execute destructive operation "${details.command.action}"?`;
         }
         break;
 
@@ -445,7 +451,7 @@ export class VoiceAIHUD {
   private updateWaveform(level: number): void {
     const bars = this.waveformContainer.querySelectorAll('.wave-bar') as NodeListOf<HTMLElement>;
     bars.forEach((bar, idx) => {
-      const height = Math.max(4, Math.min(16, (level * 16) * (0.5 + Math.sin(idx * 0.8) * 0.5)));
+      const height = Math.max(4, Math.min(16, level * 16 * (0.5 + Math.sin(idx * 0.8) * 0.5)));
       bar.style.height = `${height}px`;
     });
   }
@@ -455,7 +461,8 @@ export class VoiceAIHUD {
     const history = this.aiManager.getHistory();
 
     if (history.length === 0) {
-      this.historyListEl.innerHTML = '<div style="font-size: 11px; color: #8a99ad;">No commands yet.</div>';
+      this.historyListEl.innerHTML =
+        '<div style="font-size: 11px; color: #8a99ad;">No commands yet.</div>';
       return;
     }
 

@@ -127,10 +127,14 @@ export class QualityScaler {
     this.universeEngine.setActiveParticleCount(profile.particleCount);
 
     if (notify) {
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `⚡ Adaptive Quality Scaled: ${profile.label} Particles`,
-        icon: '⚡'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `⚡ Adaptive Quality Scaled: ${profile.label} Particles`,
+          icon: '⚡'
+        },
+        'SYSTEM'
+      );
     }
   }
 }

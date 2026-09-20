@@ -73,7 +73,8 @@ export interface AdjustGravityParams {
 }
 
 export interface DestroyEntityParams {
-  targetType?: 'PLANET' | 'STAR' | 'BLACK_HOLE' | 'ASTEROID' | 'ALL_PLANETS' | 'ALL_BLACK_HOLES' | 'ALL';
+  targetType?:
+    'PLANET' | 'STAR' | 'BLACK_HOLE' | 'ASTEROID' | 'ALL_PLANETS' | 'ALL_BLACK_HOLES' | 'ALL';
   targetId?: string;
   all?: boolean;
 }
@@ -105,13 +106,7 @@ export interface CommandValidationResult {
  * Voice Recognition & AI Agent State
  */
 export type VoiceState =
-  | 'IDLE'
-  | 'LISTENING'
-  | 'TRANSCRIBING'
-  | 'REASONING'
-  | 'CONFIRMING'
-  | 'EXECUTING'
-  | 'ERROR';
+  'IDLE' | 'LISTENING' | 'TRANSCRIBING' | 'REASONING' | 'CONFIRMING' | 'EXECUTING' | 'ERROR';
 
 /**
  * Command History Item

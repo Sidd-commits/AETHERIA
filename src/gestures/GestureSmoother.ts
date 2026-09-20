@@ -14,7 +14,10 @@ interface TrajectoryPoint {
 export class GestureSmoother {
   private smoothedLandmarksMap: Map<number, HandLandmark[]> = new Map();
   private trajectoryHistories: Map<number, TrajectoryPoint[]> = new Map();
-  private gestureVoteHistories: Map<number, Array<{ gesture: SemanticGestureType; confidence: number; timestamp: number }>> = new Map();
+  private gestureVoteHistories: Map<
+    number,
+    Array<{ gesture: SemanticGestureType; confidence: number; timestamp: number }>
+  > = new Map();
   private cooldownTimestamps: Map<string, number> = new Map();
 
   // Smoothing parameters
@@ -24,7 +27,11 @@ export class GestureSmoother {
   /**
    * Smooth raw 21-point landmarks using adaptive Exponential Moving Average (EMA)
    */
-  public smoothLandmarks(handIndex: number, rawLandmarks: HandLandmarks, dt: number): HandLandmarks {
+  public smoothLandmarks(
+    handIndex: number,
+    rawLandmarks: HandLandmarks,
+    dt: number
+  ): HandLandmarks {
     let smoothed = this.smoothedLandmarksMap.get(handIndex);
 
     if (!smoothed || smoothed.length !== rawLandmarks.length) {
@@ -56,7 +63,11 @@ export class GestureSmoother {
   /**
    * Push palm centroid into trajectory history buffer
    */
-  public recordTrajectory(handIndex: number, centroid: { x: number; y: number; z: number }, now: number): void {
+  public recordTrajectory(
+    handIndex: number,
+    centroid: { x: number; y: number; z: number },
+    now: number
+  ): void {
     let history = this.trajectoryHistories.get(handIndex);
     if (!history) {
       history = [];

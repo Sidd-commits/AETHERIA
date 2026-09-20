@@ -4,7 +4,8 @@
 
 export interface UniverseConfiguration {
   theme: 'peaceful' | 'chaotic' | 'harmonic' | 'nebular' | 'void' | 'cosmic' | string;
-  colorPalette: 'blue' | 'purple' | 'cyan' | 'green' | 'amber' | 'spectrum' | 'magenta' | 'solar' | string;
+  colorPalette:
+    'blue' | 'purple' | 'cyan' | 'green' | 'amber' | 'spectrum' | 'magenta' | 'solar' | string;
   stars: number;
   planets?: number;
   blackHoles: number;
@@ -75,21 +76,24 @@ export const CURATED_WORLD_GEN_PROMPTS: WorldGenPresetPrompt[] = [
   {
     id: 'solar_tranquil_system',
     title: 'Tranquil Solar Haven',
-    prompt: 'A serene solar system with a radiant golden sun, 6 colorful planets, and peaceful asteroid rings.',
+    prompt:
+      'A serene solar system with a radiant golden sun, 6 colorful planets, and peaceful asteroid rings.',
     icon: '☀️',
     tag: 'Solar / Harmonious'
   },
   {
     id: 'void_dual_singularities',
     title: 'Deep Ultraviolet Dual Void',
-    prompt: 'A dark purple void with two supermassive black holes, high energy density, and turbulent accretion discs.',
+    prompt:
+      'A dark purple void with two supermassive black holes, high energy density, and turbulent accretion discs.',
     icon: '🕳️',
     tag: 'Singularity / Void'
   },
   {
     id: 'prismatic_nebula_burst',
     title: 'Prismatic Hyper-Nebula',
-    prompt: 'A vibrant rainbow prismatic universe with rapidly forming stars, high energy density, and dense asteroid clusters.',
+    prompt:
+      'A vibrant rainbow prismatic universe with rapidly forming stars, high energy density, and dense asteroid clusters.',
     icon: '✨',
     tag: 'Nebular / Prismatic'
   }

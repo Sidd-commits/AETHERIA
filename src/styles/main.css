@@ -20,12 +20,17 @@
   -webkit-user-select: none;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: var(--bg-dark);
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Outfit',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   color: var(--text-main);
 }
 
@@ -49,7 +54,9 @@ html, body {
   transform: scaleX(-1); /* Mirror webcam */
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.6s ease;
   pointer-events: none;
   filter: brightness(0.4) contrast(1.1) saturate(0.8);
 }
@@ -85,7 +92,7 @@ html, body {
   -webkit-backdrop-filter: blur(12px);
   z-index: 25;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 #pip-container:hover {
@@ -173,7 +180,9 @@ html, body {
   border-radius: 50%;
   background: #ffaa00;
   box-shadow: 0 0 8px #ffaa00;
-  transition: background 0.3s, box-shadow 0.3s;
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
 }
 
 .status-dot.active {
@@ -269,7 +278,9 @@ html, body {
   transform: translate(-50%, -50%);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.1s ease;
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -374,7 +385,7 @@ html, body {
   opacity: 0;
   pointer-events: none;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   z-index: 100;
   display: flex;
   align-items: center;

@@ -29,7 +29,12 @@ export class AIManager {
   private voiceState: VoiceState = 'IDLE';
   private history: CommandHistoryItem[] = [];
   private pendingDestructiveCommand: AIStructuredCommand | null = null;
-  private stateChangeListeners: Set<(state: VoiceState, details?: { transcript?: string; error?: string; command?: AIStructuredCommand }) => void> = new Set();
+  private stateChangeListeners: Set<
+    (
+      state: VoiceState,
+      details?: { transcript?: string; error?: string; command?: AIStructuredCommand }
+    ) => void
+  > = new Set();
 
   constructor(worldState: WorldState, commandBus: CommandBus = CommandBus.getInstance()) {
     this.worldState = worldState;
@@ -58,10 +63,14 @@ export class AIManager {
       },
       onError: (errorMsg) => {
         this.setState('ERROR', { error: errorMsg });
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: `🎙️ ${errorMsg}`,
-          icon: '⚠️'
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: `🎙️ ${errorMsg}`,
+            icon: '⚠️'
+          },
+          'VOICE_AI'
+        );
       },
       onEnd: () => {
         if (this.voiceState === 'LISTENING' || this.voiceState === 'TRANSCRIBING') {
@@ -91,12 +100,20 @@ export class AIManager {
     return this.pendingDestructiveCommand;
   }
 
-  public onStateChange(listener: (state: VoiceState, details?: { transcript?: string; error?: string; command?: AIStructuredCommand }) => void): () => void {
+  public onStateChange(
+    listener: (
+      state: VoiceState,
+      details?: { transcript?: string; error?: string; command?: AIStructuredCommand }
+    ) => void
+  ): () => void {
     this.stateChangeListeners.add(listener);
     return () => this.stateChangeListeners.delete(listener);
   }
 
-  private setState(state: VoiceState, details?: { transcript?: string; error?: string; command?: AIStructuredCommand }): void {
+  private setState(
+    state: VoiceState,
+    details?: { transcript?: string; error?: string; command?: AIStructuredCommand }
+  ): void {
     this.voiceState = state;
     this.stateChangeListeners.forEach((l) => {
       try {
@@ -117,10 +134,20 @@ export class AIManager {
     // Check if answering pending confirmation (e.g. "yes", "confirm", "no", "cancel")
     if (this.pendingDestructiveCommand) {
       const lower = transcript.toLowerCase();
-      if (lower.includes('yes') || lower.includes('confirm') || lower.includes('proceed') || lower.includes('do it')) {
+      if (
+        lower.includes('yes') ||
+        lower.includes('confirm') ||
+        lower.includes('proceed') ||
+        lower.includes('do it')
+      ) {
         this.confirmPendingDestructiveCommand();
         return;
-      } else if (lower.includes('no') || lower.includes('cancel') || lower.includes('abort') || lower.includes('stop')) {
+      } else if (
+        lower.includes('no') ||
+        lower.includes('cancel') ||
+        lower.includes('abort') ||
+        lower.includes('stop')
+      ) {
         this.cancelPendingDestructiveCommand();
         return;
       }
@@ -139,10 +166,14 @@ export class AIManager {
       this.recordHistory(transcript, null, 'REJECTED', errorMsg, [errorMsg], adapter.name);
       this.setState('ERROR', { transcript, error: errorMsg });
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `🤖 ${errorMsg}`,
-        icon: '❓'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `🤖 ${errorMsg}`,
+          icon: '❓'
+        },
+        'VOICE_AI'
+      );
       return;
     }
 
@@ -151,13 +182,24 @@ export class AIManager {
 
     if (!validation.isValid || !validation.sanitizedCommand) {
       const errorMsg = `Command validation failed: ${validation.errors.join(', ')}`;
-      this.recordHistory(transcript, parseResult.command, 'REJECTED', errorMsg, validation.errors, adapter.name);
+      this.recordHistory(
+        transcript,
+        parseResult.command,
+        'REJECTED',
+        errorMsg,
+        validation.errors,
+        adapter.name
+      );
       this.setState('ERROR', { transcript, error: errorMsg });
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `❌ Invalid Command: ${validation.errors[0]}`,
-        icon: '❌'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `❌ Invalid Command: ${validation.errors[0]}`,
+          icon: '❌'
+        },
+        'VOICE_AI'
+      );
       return;
     }
 
@@ -168,10 +210,14 @@ export class AIManager {
       this.pendingDestructiveCommand = command;
       this.setState('CONFIRMING', { transcript, command });
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `⚠️ Destructive Action "${command.action}": Say "Confirm" or Click Confirm`,
-        icon: '⚠️'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `⚠️ Destructive Action "${command.action}": Say "Confirm" or Click Confirm`,
+          icon: '⚠️'
+        },
+        'VOICE_AI'
+      );
       return;
     }
 
@@ -199,30 +245,56 @@ export class AIManager {
     this.pendingDestructiveCommand = null;
     const adapter = this.adapterRegistry.getActiveAdapter();
 
-    this.recordHistory(cmd.rawTranscript || '', cmd, 'CANCELLED', 'Operation cancelled by user', undefined, adapter.name);
+    this.recordHistory(
+      cmd.rawTranscript || '',
+      cmd,
+      'CANCELLED',
+      'Operation cancelled by user',
+      undefined,
+      adapter.name
+    );
     this.setState('IDLE');
 
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: '🛑 Action Cancelled',
-      icon: '🛑'
-    }, 'VOICE_AI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: '🛑 Action Cancelled',
+        icon: '🛑'
+      },
+      'VOICE_AI'
+    );
   }
 
   /**
    * Dispatches validated AI command strictly to CommandBus
    */
-  private executeCommand(command: AIStructuredCommand, transcript: string, providerName: string): void {
+  private executeCommand(
+    command: AIStructuredCommand,
+    transcript: string,
+    providerName: string
+  ): void {
     this.setState('EXECUTING', { transcript, command });
 
     try {
       this.dispatchToBus(command);
 
-      this.recordHistory(transcript, command, 'SUCCESS', command.explanation || `Executed ${command.action}`, undefined, providerName);
+      this.recordHistory(
+        transcript,
+        command,
+        'SUCCESS',
+        command.explanation || `Executed ${command.action}`,
+        undefined,
+        providerName
+      );
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `✨ ${command.explanation || `Executed ${command.action}`}`,
-        icon: '🤖'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `✨ ${command.explanation || `Executed ${command.action}`}`,
+          icon: '🤖'
+        },
+        'VOICE_AI'
+      );
 
       setTimeout(() => {
         if (this.voiceState === 'EXECUTING') {
@@ -234,10 +306,14 @@ export class AIManager {
       this.recordHistory(transcript, command, 'ERROR', errorMsg, [errorMsg], providerName);
       this.setState('ERROR', { transcript, error: errorMsg });
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `❌ ${errorMsg}`,
-        icon: '❌'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `❌ ${errorMsg}`,
+          icon: '❌'
+        },
+        'VOICE_AI'
+      );
     }
   }
 
@@ -249,34 +325,46 @@ export class AIManager {
 
     switch (action as AIActionType) {
       case 'CREATE_PLANET':
-        this.commandBus.dispatch('SPAWN_ENTITY', {
-          entity: {
-            type: 'PLANET',
-            name: parameters.name || 'AI Planet',
-            radius: parameters.radius || 0.35,
-            mass: parameters.mass || 1.5,
-            color: parameters.color || '#00f5a0',
-            orbitalRadius: parameters.orbitalRadius || 4.5,
-            position: parameters.position
-          }
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SPAWN_ENTITY',
+          {
+            entity: {
+              type: 'PLANET',
+              name: parameters.name || 'AI Planet',
+              radius: parameters.radius || 0.35,
+              mass: parameters.mass || 1.5,
+              color: parameters.color || '#00f5a0',
+              orbitalRadius: parameters.orbitalRadius || 4.5,
+              position: parameters.position
+            }
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'CREATE_BLACK_HOLE':
-        this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
-          position: parameters.position,
-          mass: parameters.mass || 120.0,
-          radius: parameters.radius || 1.0,
-          gravitationalInfluenceRadius: parameters.gravitationalInfluenceRadius || 30.0,
-          accretionStrength: parameters.accretionStrength || 2.2
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SPAWN_BLACK_HOLE',
+          {
+            position: parameters.position,
+            mass: parameters.mass || 120.0,
+            radius: parameters.radius || 1.0,
+            gravitationalInfluenceRadius: parameters.gravitationalInfluenceRadius || 30.0,
+            accretionStrength: parameters.accretionStrength || 2.2
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'CREATE_SUPERNOVA':
-        this.commandBus.dispatch('TRIGGER_SUPERNOVA', {
-          power: parameters.power || 1.2,
-          entityId: parameters.targetEntityId
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'TRIGGER_SUPERNOVA',
+          {
+            power: parameters.power || 1.2,
+            entityId: parameters.targetEntityId
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'SET_COLOR_PALETTE':
@@ -289,26 +377,38 @@ export class AIManager {
 
       case 'SET_GRAVITY':
       case 'ADJUST_GRAVITY':
-        this.commandBus.dispatch('SET_GRAVITY', {
-          gravityConstant: parameters.gravityConstant,
-          multiplier: parameters.multiplier
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SET_GRAVITY',
+          {
+            gravityConstant: parameters.gravityConstant,
+            multiplier: parameters.multiplier
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'ALIGN_ORBITS':
-        this.commandBus.dispatch('ALIGN_ORBITS', {
-          center: parameters.center,
-          speedMultiplier: parameters.speedMultiplier
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'ALIGN_ORBITS',
+          {
+            center: parameters.center,
+            speedMultiplier: parameters.speedMultiplier
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'DESTROY_ENTITY':
       case 'CLEAR_ENTITIES':
-        this.commandBus.dispatch('DESTROY_ENTITY', {
-          targetId: parameters.targetId,
-          targetType: parameters.targetType,
-          all: parameters.all
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'DESTROY_ENTITY',
+          {
+            targetId: parameters.targetId,
+            targetType: parameters.targetType,
+            all: parameters.all
+          },
+          'VOICE_AI'
+        );
         break;
 
       case 'PAUSE_SIMULATION':
@@ -328,7 +428,11 @@ export class AIManager {
         break;
 
       case 'SPAWN_ENERGY_BURST':
-        this.commandBus.dispatch('SPAWN_ENERGY_BURST', { count: parameters.count || 250 }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SPAWN_ENERGY_BURST',
+          { count: parameters.count || 250 },
+          'VOICE_AI'
+        );
         break;
 
       case 'LOAD_PRESET':

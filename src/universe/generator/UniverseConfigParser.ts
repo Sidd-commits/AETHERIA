@@ -32,7 +32,9 @@ export class UniverseConfigParser {
   public async parseDescription(prompt: string): Promise<WorldGenValidationResult> {
     const cleanPrompt = (prompt || '').trim();
     if (!cleanPrompt) {
-      return WorldGenValidator.validate(WorldGenValidator.getDefaultConfig('Empty prompt provided.'));
+      return WorldGenValidator.validate(
+        WorldGenValidator.getDefaultConfig('Empty prompt provided.')
+      );
     }
 
     // 1. If a cloud adapter is active (e.g. OpenAI / Gemini), attempt cloud JSON synthesis
@@ -45,7 +47,10 @@ export class UniverseConfigParser {
             return WorldGenValidator.validate(cloudConfig);
           }
         } catch (err) {
-          console.warn('Cloud world generation parser failed, falling back to local NLP heuristics:', err);
+          console.warn(
+            'Cloud world generation parser failed, falling back to local NLP heuristics:',
+            err
+          );
         }
       }
     } catch {
@@ -65,31 +70,94 @@ export class UniverseConfigParser {
 
     // 1. Extract Theme
     let theme = 'peaceful';
-    if (t.includes('chao') || t.includes('turbul') || t.includes('viol') || t.includes('wild') || t.includes('unstable') || t.includes('frenzy')) {
+    if (
+      t.includes('chao') ||
+      t.includes('turbul') ||
+      t.includes('viol') ||
+      t.includes('wild') ||
+      t.includes('unstable') ||
+      t.includes('frenzy')
+    ) {
       theme = 'chaotic';
-    } else if (t.includes('harm') || t.includes('zen') || t.includes('balan') || t.includes('order')) {
+    } else if (
+      t.includes('harm') ||
+      t.includes('zen') ||
+      t.includes('balan') ||
+      t.includes('order')
+    ) {
       theme = 'harmonic';
-    } else if (t.includes('neb') || t.includes('gas') || t.includes('cloud') || t.includes('dust')) {
+    } else if (
+      t.includes('neb') ||
+      t.includes('gas') ||
+      t.includes('cloud') ||
+      t.includes('dust')
+    ) {
       theme = 'nebular';
-    } else if (t.includes('void') || t.includes('dark') || t.includes('abyss') || t.includes('deep space')) {
+    } else if (
+      t.includes('void') ||
+      t.includes('dark') ||
+      t.includes('abyss') ||
+      t.includes('deep space')
+    ) {
       theme = 'void';
-    } else if (t.includes('peace') || t.includes('seren') || t.includes('calm') || t.includes('tranquil')) {
+    } else if (
+      t.includes('peace') ||
+      t.includes('seren') ||
+      t.includes('calm') ||
+      t.includes('tranquil')
+    ) {
       theme = 'peaceful';
     }
 
     // 2. Extract Color Palette
     let colorPalette = 'blue';
-    if (t.includes('green') || t.includes('emerald') || t.includes('jade') || t.includes('forest') || t.includes('bio') || t.includes('sanctuary')) {
+    if (
+      t.includes('green') ||
+      t.includes('emerald') ||
+      t.includes('jade') ||
+      t.includes('forest') ||
+      t.includes('bio') ||
+      t.includes('sanctuary')
+    ) {
       colorPalette = 'green';
-    } else if (t.includes('purple') || t.includes('violet') || t.includes('ultraviolet') || t.includes('amethyst')) {
+    } else if (
+      t.includes('purple') ||
+      t.includes('violet') ||
+      t.includes('ultraviolet') ||
+      t.includes('amethyst')
+    ) {
       colorPalette = 'purple';
-    } else if (t.includes('pink') || t.includes('magenta') || t.includes('sunset') || t.includes('rose') || t.includes('fuchsia')) {
+    } else if (
+      t.includes('pink') ||
+      t.includes('magenta') ||
+      t.includes('sunset') ||
+      t.includes('rose') ||
+      t.includes('fuchsia')
+    ) {
       colorPalette = 'magenta';
-    } else if (t.includes('yellow') || t.includes('gold') || t.includes('amber') || t.includes('solar') || t.includes('flare') || t.includes('orange')) {
+    } else if (
+      t.includes('yellow') ||
+      t.includes('gold') ||
+      t.includes('amber') ||
+      t.includes('solar') ||
+      t.includes('flare') ||
+      t.includes('orange')
+    ) {
       colorPalette = 'amber';
-    } else if (t.includes('rainbow') || t.includes('prismatic') || t.includes('spectrum') || t.includes('multi')) {
+    } else if (
+      t.includes('rainbow') ||
+      t.includes('prismatic') ||
+      t.includes('spectrum') ||
+      t.includes('multi')
+    ) {
       colorPalette = 'spectrum';
-    } else if (t.includes('blue') || t.includes('cyan') || t.includes('azure') || t.includes('aqua') || t.includes('ocean')) {
+    } else if (
+      t.includes('blue') ||
+      t.includes('cyan') ||
+      t.includes('azure') ||
+      t.includes('aqua') ||
+      t.includes('ocean')
+    ) {
       colorPalette = 'blue';
     } else {
       // Default palette aligned with theme
@@ -124,19 +192,38 @@ export class UniverseConfigParser {
     if (!starMatched) {
       if (t.includes('binary')) stars = 2;
       else if (t.includes('trinary') || t.includes('three suns') || t.includes('3 suns')) stars = 3;
-      else if (t.includes('rapidly forming stars') || t.includes('stellar nursery') || t.includes('star cluster')) stars = 4;
+      else if (
+        t.includes('rapidly forming stars') ||
+        t.includes('stellar nursery') ||
+        t.includes('star cluster')
+      )
+        stars = 4;
       else if (theme === 'void') stars = 0;
       else stars = 1;
     }
 
     // 4. Extract Black Holes ("giant black hole in the center", "two black holes", "singularities")
     let blackHoles = 0;
-    if (t.includes('black hole') || t.includes('singularity') || t.includes('event horizon') || t.includes('abyss')) {
-      if (t.includes('two black holes') || t.includes('2 black holes') || t.includes('dual singularities') || t.includes('pair of black holes')) {
+    if (
+      t.includes('black hole') ||
+      t.includes('singularity') ||
+      t.includes('event horizon') ||
+      t.includes('abyss')
+    ) {
+      if (
+        t.includes('two black holes') ||
+        t.includes('2 black holes') ||
+        t.includes('dual singularities') ||
+        t.includes('pair of black holes')
+      ) {
         blackHoles = 2;
       } else if (t.includes('three black holes') || t.includes('3 black holes')) {
         blackHoles = 3;
-      } else if (t.includes('no black hole') || t.includes('zero black hole') || t.includes('without black hole')) {
+      } else if (
+        t.includes('no black hole') ||
+        t.includes('zero black hole') ||
+        t.includes('without black hole')
+      ) {
         blackHoles = 0;
       } else {
         blackHoles = 1;
@@ -149,9 +236,19 @@ export class UniverseConfigParser {
     if (explicitGravityMatch) {
       gravity = parseFloat(explicitGravityMatch[1]);
     } else {
-      if (t.includes('high gravity') || t.includes('strong gravity') || t.includes('heavy gravity') || t.includes('extreme gravity')) {
+      if (
+        t.includes('high gravity') ||
+        t.includes('strong gravity') ||
+        t.includes('heavy gravity') ||
+        t.includes('extreme gravity')
+      ) {
         gravity = theme === 'chaotic' ? 2.2 : 1.6;
-      } else if (t.includes('low gravity') || t.includes('gentle gravity') || t.includes('microgravity') || t.includes('weak gravity')) {
+      } else if (
+        t.includes('low gravity') ||
+        t.includes('gentle gravity') ||
+        t.includes('microgravity') ||
+        t.includes('weak gravity')
+      ) {
         gravity = 0.45;
       } else if (t.includes('zero gravity') || t.includes('no gravity')) {
         gravity = 0.15;
@@ -168,13 +265,25 @@ export class UniverseConfigParser {
 
     // 6. Extract Energy Density ("high energy", "energy 0.7", "low energy", "dense energy fields", "radiant")
     let energyDensity = 1.0;
-    const explicitEnergyMatch = t.match(/energy\s*(?:density|level)?\s*(?:of|is|at|:|=)?\s*([0-9]+(?:\.[0-9]+)?)/);
+    const explicitEnergyMatch = t.match(
+      /energy\s*(?:density|level)?\s*(?:of|is|at|:|=)?\s*([0-9]+(?:\.[0-9]+)?)/
+    );
     if (explicitEnergyMatch) {
       energyDensity = parseFloat(explicitEnergyMatch[1]);
     } else {
-      if (t.includes('high energy') || t.includes('dense energy') || t.includes('supercharged') || t.includes('hyper')) {
+      if (
+        t.includes('high energy') ||
+        t.includes('dense energy') ||
+        t.includes('supercharged') ||
+        t.includes('hyper')
+      ) {
         energyDensity = 1.8;
-      } else if (t.includes('low energy') || t.includes('peaceful') || t.includes('dim') || t.includes('faint')) {
+      } else if (
+        t.includes('low energy') ||
+        t.includes('peaceful') ||
+        t.includes('dim') ||
+        t.includes('faint')
+      ) {
         energyDensity = 0.65;
       } else if (theme === 'chaotic') {
         energyDensity = 1.7;
@@ -187,13 +296,25 @@ export class UniverseConfigParser {
 
     // 7. Extract Formation Rate ("rapidly forming stars", "formation rate 0.3", "fast accretion", "slow formation")
     let formationRate = 0.5;
-    const explicitFormationMatch = t.match(/formation\s*(?:rate)?\s*(?:of|is|at|:|=)?\s*([0-9]+(?:\.[0-9]+)?)/);
+    const explicitFormationMatch = t.match(
+      /formation\s*(?:rate)?\s*(?:of|is|at|:|=)?\s*([0-9]+(?:\.[0-9]+)?)/
+    );
     if (explicitFormationMatch) {
       formationRate = parseFloat(explicitFormationMatch[1]);
     } else {
-      if (t.includes('rapidly forming') || t.includes('fast forming') || t.includes('rapid stars') || t.includes('active accretion')) {
+      if (
+        t.includes('rapidly forming') ||
+        t.includes('fast forming') ||
+        t.includes('rapid stars') ||
+        t.includes('active accretion')
+      ) {
         formationRate = 1.5;
-      } else if (t.includes('slowly forming') || t.includes('peaceful') || t.includes('stable') || t.includes('quiescent')) {
+      } else if (
+        t.includes('slowly forming') ||
+        t.includes('peaceful') ||
+        t.includes('stable') ||
+        t.includes('quiescent')
+      ) {
         formationRate = 0.3;
       } else if (theme === 'chaotic') {
         formationRate = 1.4;
@@ -221,14 +342,25 @@ export class UniverseConfigParser {
 
     // 9. Asteroid Belts
     let asteroidBelts = 1;
-    if (t.includes('asteroid') || t.includes('debris') || t.includes('belt') || t.includes('ring')) {
+    if (
+      t.includes('asteroid') ||
+      t.includes('debris') ||
+      t.includes('belt') ||
+      t.includes('ring')
+    ) {
       asteroidBelts = 2;
     } else if (theme === 'chaotic') {
       asteroidBelts = 2;
     }
 
     // 10. Seed Organisms
-    const seedOrganisms = t.includes('organism') || t.includes('life') || t.includes('sanctuary') || t.includes('ecosystem') || theme === 'peaceful' || theme === 'harmonic';
+    const seedOrganisms =
+      t.includes('organism') ||
+      t.includes('life') ||
+      t.includes('sanctuary') ||
+      t.includes('ecosystem') ||
+      theme === 'peaceful' ||
+      theme === 'harmonic';
 
     return {
       theme,
@@ -267,15 +399,18 @@ Do NOT output code, explanations, markdown quotes, or executable JavaScript. Onl
   "seedOrganisms": boolean
 }`;
 
-    const res = await activeAdapter.parseCommand(`GENERATE_WORLD: ${prompt}\n\nSchema requirement:\n${systemPrompt}`, {
-      dominantBodiesCount: 3,
-      activePreset: 'SOLAR_SYSTEM',
-      isPaused: false,
-      timeScale: 1.0,
-      gravityConstant: 1.0,
-      organismCount: 500,
-      entities: []
-    });
+    const res = await activeAdapter.parseCommand(
+      `GENERATE_WORLD: ${prompt}\n\nSchema requirement:\n${systemPrompt}`,
+      {
+        dominantBodiesCount: 3,
+        activePreset: 'SOLAR_SYSTEM',
+        isPaused: false,
+        timeScale: 1.0,
+        gravityConstant: 1.0,
+        organismCount: 500,
+        entities: []
+      }
+    );
 
     if (res.success && res.command?.parameters) {
       return res.command.parameters as unknown as UniverseConfiguration;

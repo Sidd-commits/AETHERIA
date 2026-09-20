@@ -12,6 +12,11 @@ import { AIManager } from './ai/AIManager';
 import { UIManager } from './ui/UIManager';
 import { WorldGenValidator } from './universe/generator/WorldGenValidator';
 import { getRequiredElement } from './utils/dom';
+import { ErrorBoundary } from './core/ErrorBoundary';
+import { Logger } from './utils/logger';
+
+const logger = Logger.create('AppBootstrap');
+ErrorBoundary.initialize();
 
 /**
  * AETHERIA Application Bootstrap Entry Point
@@ -180,10 +185,14 @@ export class AetheriaApp {
       const result = this.universeEngine.generateFromConfig(cmd.payload.config);
       const paletteIdx = WorldGenValidator.getPaletteIndex(cmd.payload.config.colorPalette);
       this.commandBus.dispatch('SET_PALETTE', { index: paletteIdx }, 'SYSTEM');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `🌌 Generated Universe: ${cmd.payload.config.theme.toUpperCase()} (${result.entitiesGenerated.stars}★, ${result.entitiesGenerated.planets}♁, ${result.entitiesGenerated.blackHoles}🕳️)`,
-        icon: '🪐'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `🌌 Generated Universe: ${cmd.payload.config.theme.toUpperCase()} (${result.entitiesGenerated.stars}★, ${result.entitiesGenerated.planets}♁, ${result.entitiesGenerated.blackHoles}🕳️)`,
+          icon: '🪐'
+        },
+        'SYSTEM'
+      );
     });
   }
 
@@ -199,11 +208,21 @@ export class AetheriaApp {
 // Bootstrap application safely regardless of DOM load timing
 function bootstrap(): void {
   try {
+    logger.info('Initializing AETHERIA Universe Engine & Systems...');
     const app = new AetheriaApp();
     app.start();
     (window as any).__aetheriaApp = app;
+    logger.info('AETHERIA successfully mounted and operational.');
   } catch (err) {
-    console.error('Failed to initialize Aetheria:', err);
+    logger.error('Failed to initialize Aetheria:', err);
+    ErrorBoundary.getInstance().handleError(
+      {
+        message: err instanceof Error ? err.message : String(err),
+        error: err,
+        timestamp: new Date().toISOString()
+      },
+      true
+    );
   }
 }
 

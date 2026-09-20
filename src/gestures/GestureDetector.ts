@@ -1,9 +1,5 @@
 import { HandLandmarks } from '../types/hand';
-import {
-  SemanticGestureType,
-  DebugTelemetry,
-  HandFeatures
-} from '../types/gesture';
+import { SemanticGestureType, DebugTelemetry, HandFeatures } from '../types/gesture';
 import { GestureSmoother } from './GestureSmoother';
 import { GestureClassifier } from './GestureClassifier';
 import { GestureEventBus } from './GestureEventBus';
@@ -128,7 +124,13 @@ export class GestureDetector {
       );
 
       // Update Hand Lifecycle State Machine
-      this.updateSingleHandLifecycle(i, stabilized.dominantGesture, stabilized.confidence, features, now);
+      this.updateSingleHandLifecycle(
+        i,
+        stabilized.dominantGesture,
+        stabilized.confidence,
+        features,
+        now
+      );
 
       telemetryGestures.push({
         handIndex: i,
@@ -201,7 +203,7 @@ export class GestureDetector {
 
     // Continuous 3D mapping coordinates
     const palm = features.palmCentroid;
-    const sceneX = ((1 - palm.x) - 0.5) * GESTURE_CONFIG.singleHandSceneScaleX;
+    const sceneX = (1 - palm.x - 0.5) * GESTURE_CONFIG.singleHandSceneScaleX;
     const sceneY = -(palm.y - 0.5) * GESTURE_CONFIG.singleHandSceneScaleY;
     const sceneZ = -palm.z * GESTURE_CONFIG.singleHandSceneScaleZ;
     const sceneRot = {
@@ -323,7 +325,8 @@ export class GestureDetector {
   ): void {
     const rawDist = features.interHandDistance;
     const mappedScale = clamp(
-      (rawDist - GESTURE_CONFIG.twoHandScaleDistanceMin) * GESTURE_CONFIG.twoHandScaleFactor + GESTURE_CONFIG.twoHandScaleBase,
+      (rawDist - GESTURE_CONFIG.twoHandScaleDistanceMin) * GESTURE_CONFIG.twoHandScaleFactor +
+        GESTURE_CONFIG.twoHandScaleBase,
       GESTURE_CONFIG.minScale,
       GESTURE_CONFIG.maxScale
     );

@@ -18,7 +18,8 @@ export class WorldGenStudio {
 
   // State
   public currentStep: 1 | 2 | 3 = 1;
-  private promptText: string = 'A peaceful blue universe with three suns and a giant black hole in the center.';
+  private promptText: string =
+    'A peaceful blue universe with three suns and a giant black hole in the center.';
   private currentValidation: WorldGenValidationResult | null = null;
   private isSynthesizing: boolean = false;
 
@@ -723,7 +724,9 @@ export class WorldGenStudio {
       this.container.querySelector('#wg-section-2') as HTMLElement,
       this.container.querySelector('#wg-section-3') as HTMLElement
     ];
-    this.stepIndicatorEls = Array.from(this.container.querySelectorAll('.wg-step-item')) as HTMLElement[];
+    this.stepIndicatorEls = Array.from(
+      this.container.querySelectorAll('.wg-step-item')
+    ) as HTMLElement[];
 
     // Set initial prompt
     this.promptInput.value = this.promptText;
@@ -731,7 +734,8 @@ export class WorldGenStudio {
 
     // Populate preset chips
     const chipsContainer = this.container.querySelector('#wg-preset-chips') as HTMLElement;
-    chipsContainer.innerHTML = CURATED_WORLD_GEN_PROMPTS.map((p) => `
+    chipsContainer.innerHTML = CURATED_WORLD_GEN_PROMPTS.map(
+      (p) => `
       <button class="wg-preset-chip" data-prompt="${this.escapeHtml(p.prompt)}">
         <div class="wg-chip-top">
           <span class="wg-chip-title">${p.icon} ${p.title}</span>
@@ -739,7 +743,8 @@ export class WorldGenStudio {
         </div>
         <div class="wg-chip-prompt">${p.prompt}</div>
       </button>
-    `).join('');
+    `
+    ).join('');
 
     chipsContainer.querySelectorAll('.wg-preset-chip').forEach((chip) => {
       chip.addEventListener('click', () => {
@@ -753,7 +758,9 @@ export class WorldGenStudio {
 
     // Close button & backdrop click
     this.container.querySelector('#wg-close-btn')?.addEventListener('click', () => this.hide());
-    this.container.querySelector('.world-gen-backdrop')?.addEventListener('click', () => this.hide());
+    this.container
+      .querySelector('.world-gen-backdrop')
+      ?.addEventListener('click', () => this.hide());
 
     // Prompt input typing
     this.promptInput.addEventListener('input', () => {
@@ -772,16 +779,24 @@ export class WorldGenStudio {
     this.container.querySelector('#wg-voice-btn')?.addEventListener('click', () => {
       const speech = this.aiManager.getSpeechEngine();
       if (!speech.getIsSupported()) {
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: 'Speech recognition is not supported in this browser.',
-          icon: '⚠️'
-        }, 'VOICE_AI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: 'Speech recognition is not supported in this browser.',
+            icon: '⚠️'
+          },
+          'VOICE_AI'
+        );
         return;
       }
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '🎙️ Listening... Speak your universe description.',
-        icon: '🎙️'
-      }, 'VOICE_AI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '🎙️ Listening... Speak your universe description.',
+          icon: '🎙️'
+        },
+        'VOICE_AI'
+      );
       const unsubscribe = speech.addCallbacks({
         onFinal: (transcript: string) => {
           this.promptInput.value = transcript;
@@ -801,9 +816,15 @@ export class WorldGenStudio {
     });
 
     // Step Navigation buttons
-    this.container.querySelector('#wg-back-to-1-btn')?.addEventListener('click', () => this.setStep(1));
-    this.container.querySelector('#wg-proceed-to-3-btn')?.addEventListener('click', () => this.setStep(3));
-    this.container.querySelector('#wg-back-to-2-btn')?.addEventListener('click', () => this.setStep(2));
+    this.container
+      .querySelector('#wg-back-to-1-btn')
+      ?.addEventListener('click', () => this.setStep(1));
+    this.container
+      .querySelector('#wg-proceed-to-3-btn')
+      ?.addEventListener('click', () => this.setStep(3));
+    this.container
+      .querySelector('#wg-back-to-2-btn')
+      ?.addEventListener('click', () => this.setStep(2));
 
     // Stepper header clicks
     this.stepIndicatorEls.forEach((item) => {
@@ -816,11 +837,17 @@ export class WorldGenStudio {
     // Copy JSON button
     this.container.querySelector('#wg-copy-json-btn')?.addEventListener('click', () => {
       if (this.currentValidation) {
-        navigator.clipboard.writeText(JSON.stringify(this.currentValidation.sanitizedConfig, null, 2));
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '📋 UniverseConfiguration JSON copied to clipboard!',
-          icon: '✓'
-        }, 'UI');
+        navigator.clipboard.writeText(
+          JSON.stringify(this.currentValidation.sanitizedConfig, null, 2)
+        );
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '📋 UniverseConfiguration JSON copied to clipboard!',
+            icon: '✓'
+          },
+          'UI'
+        );
       }
     });
 
@@ -918,7 +945,7 @@ export class WorldGenStudio {
 
       <div class="wg-metric-card">
         <span class="wg-metric-label">🪐 Orbiting Planets</span>
-        <span class="wg-metric-value">${cfg.planets ?? (cfg.stars * 3)} ♁</span>
+        <span class="wg-metric-value">${cfg.planets ?? cfg.stars * 3} ♁</span>
       </div>
 
       <div class="wg-metric-card">
@@ -946,7 +973,7 @@ export class WorldGenStudio {
           <div class="wg-tel-label">Stars</div>
         </div>
         <div class="wg-tel-item">
-          <div class="wg-tel-val">${cfg.planets ?? (cfg.stars * 3)}</div>
+          <div class="wg-tel-val">${cfg.planets ?? cfg.stars * 3}</div>
           <div class="wg-tel-label">Planets</div>
         </div>
         <div class="wg-tel-item">
@@ -976,10 +1003,14 @@ export class WorldGenStudio {
     // Dispatch typed command to UniverseEngine
     this.commandBus.dispatch('GENERATE_PROCEDURAL_UNIVERSE', { config }, 'UI');
 
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: `🌌 Manifesting Universe: "${config.prompt || config.theme}"`,
-      icon: '🪐'
-    }, 'UI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: `🌌 Manifesting Universe: "${config.prompt || config.theme}"`,
+        icon: '🪐'
+      },
+      'UI'
+    );
 
     this.hide();
   }
@@ -989,7 +1020,7 @@ export class WorldGenStudio {
 
     // Toggle section visibility
     this.stepSections.forEach((sec, idx) => {
-      sec.style.display = (idx + 1 === step) ? 'block' : 'none';
+      sec.style.display = idx + 1 === step ? 'block' : 'none';
     });
 
     // Update stepper bar items
@@ -1018,6 +1049,10 @@ export class WorldGenStudio {
   }
 
   private escapeHtml(str: string): string {
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 }

@@ -66,10 +66,14 @@ export class HandTracker {
 
   public async initialize(): Promise<void> {
     try {
-      this.commandBus.dispatch('SET_TRACKING_STATUS', {
-        active: false,
-        message: 'INITIALIZING CAMERA...'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SET_TRACKING_STATUS',
+        {
+          active: false,
+          message: 'INITIALIZING CAMERA...'
+        },
+        'SYSTEM'
+      );
 
       // Wait for CDN scripts if needed
       const ready = await this.waitForMediaPipe();
@@ -119,26 +123,42 @@ export class HandTracker {
       await this.cameraInstance.start();
       this.isTracking = true;
 
-      this.commandBus.dispatch('SET_TRACKING_STATUS', {
-        active: false,
-        message: 'CAMERA ONLINE'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SET_TRACKING_STATUS',
+        {
+          active: false,
+          message: 'CAMERA ONLINE'
+        },
+        'SYSTEM'
+      );
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '📷 Webcam & MediaPipe Hands Ready!',
-        icon: '📷'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '📷 Webcam & MediaPipe Hands Ready!',
+          icon: '📷'
+        },
+        'SYSTEM'
+      );
     } catch (err) {
       console.warn('HandTracker initialization note (fallback to mouse):', err);
-      this.commandBus.dispatch('SET_TRACKING_STATUS', {
-        active: false,
-        message: 'MOUSE CONTROLS ACTIVE'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SET_TRACKING_STATUS',
+        {
+          active: false,
+          message: 'MOUSE CONTROLS ACTIVE'
+        },
+        'SYSTEM'
+      );
 
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '⚠️ Webcam unavailable. Mouse fallback active.',
-        icon: '⚠️'
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '⚠️ Webcam unavailable. Mouse fallback active.',
+          icon: '⚠️'
+        },
+        'SYSTEM'
+      );
     }
   }
 
@@ -171,12 +191,29 @@ export class HandTracker {
     this.pipCtx.lineWidth = 2;
 
     const connections: [number, number][] = [
-      [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-      [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-      [0, 9], [9, 10], [10, 11], [11, 12],   // Middle
-      [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-      [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-      [5, 9], [9, 13], [13, 17]             // Palm bridge
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4], // Thumb
+      [0, 5],
+      [5, 6],
+      [6, 7],
+      [7, 8], // Index
+      [0, 9],
+      [9, 10],
+      [10, 11],
+      [11, 12], // Middle
+      [0, 13],
+      [13, 14],
+      [14, 15],
+      [15, 16], // Ring
+      [0, 17],
+      [17, 18],
+      [18, 19],
+      [19, 20], // Pinky
+      [5, 9],
+      [9, 13],
+      [13, 17] // Palm bridge
     ];
 
     allHands.forEach((landmarks) => {
@@ -195,12 +232,12 @@ export class HandTracker {
 
       // Key Joints
       landmarks.forEach((p, idx) => {
-        this.pipCtx.fillStyle = (idx === 4 || idx === 8) ? '#ff0844' : '#00f5a0';
+        this.pipCtx.fillStyle = idx === 4 || idx === 8 ? '#ff0844' : '#00f5a0';
         this.pipCtx.beginPath();
         this.pipCtx.arc(
           p.x * this.pipCanvas.width,
           p.y * this.pipCanvas.height,
-          (idx === 4 || idx === 8) ? 4 : 2.5,
+          idx === 4 || idx === 8 ? 4 : 2.5,
           0,
           Math.PI * 2
         );

@@ -3,13 +3,7 @@
  */
 
 export type EntityType =
-  | 'STAR'
-  | 'PLANET'
-  | 'ASTEROID'
-  | 'NEBULA'
-  | 'ENERGY_FIELD'
-  | 'BLACK_HOLE'
-  | 'PARTICLE';
+  'STAR' | 'PLANET' | 'ASTEROID' | 'NEBULA' | 'ENERGY_FIELD' | 'BLACK_HOLE' | 'PARTICLE';
 
 export interface Vector3D {
   x: number;

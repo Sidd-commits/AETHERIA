@@ -1,4 +1,10 @@
-import { CosmicParticleBuffer, UniverseEntity, ECO_TYPE_MATTER, ECO_TYPE_ENERGY, ECO_TYPE_ORGANISM } from '../../types/entity';
+import {
+  CosmicParticleBuffer,
+  UniverseEntity,
+  ECO_TYPE_MATTER,
+  ECO_TYPE_ENERGY,
+  ECO_TYPE_ORGANISM
+} from '../../types/entity';
 import { EcosystemStats, UniverseConfig } from '../../types/universe';
 import { SpatialHashGrid } from '../spatial/SpatialHashGrid';
 
@@ -51,7 +57,19 @@ export class EcosystemSystem {
     organismCount: number = 600,
     energyCount: number = 2400
   ): void {
-    const { count, types, energies, healths, ages, lifetimes, reproductionThresholds, energyConsumptionRates, attractionPreferences, sizes, colors } = buffer;
+    const {
+      count,
+      types,
+      energies,
+      healths,
+      ages,
+      lifetimes,
+      reproductionThresholds,
+      energyConsumptionRates,
+      attractionPreferences,
+      sizes,
+      colors
+    } = buffer;
 
     const total = Math.min(count, buffer.maxCount);
 
@@ -189,7 +207,10 @@ export class EcosystemSystem {
         totalOrgHealth += healths[i];
 
         // A. Basal Metabolism & Kinetic Energy Loss
-        const speedSq = velocities[i3] * velocities[i3] + velocities[i3 + 1] * velocities[i3 + 1] + velocities[i3 + 2] * velocities[i3 + 2];
+        const speedSq =
+          velocities[i3] * velocities[i3] +
+          velocities[i3 + 1] * velocities[i3 + 1] +
+          velocities[i3 + 2] * velocities[i3 + 2];
         const metabolicDrain = (energyConsumptionRates[i] + speedSq * 0.012) * dt;
         energies[i] -= metabolicDrain;
 
@@ -200,7 +221,9 @@ export class EcosystemSystem {
 
         // B. Sensory Energy Seeking & Local Foraging via O(1) Spatial Hash Grid
         const closestEnergy = this.spatialGrid.findClosestOfType(
-          px, py, pz,
+          px,
+          py,
+          pz,
           sensoryRadius,
           positions,
           types,
@@ -328,7 +351,6 @@ export class EcosystemSystem {
 
         // Living heartbeat pulsation
         sizes[i] = (0.34 + energies[i] * 0.12) * (0.95 + Math.sin(ages[i] * 5.0) * 0.08);
-
       } else if (type === ECO_TYPE_ENERGY) {
         energyParticlesCount++;
 
@@ -337,7 +359,6 @@ export class EcosystemSystem {
         colors[i3] = 1.0 * shimmer;
         colors[i3 + 1] = 0.85 * shimmer;
         colors[i3 + 2] = 0.25 * shimmer;
-
       } else {
         // MATTER (Type 0)
         matterParticlesCount++;
@@ -408,7 +429,20 @@ export class EcosystemSystem {
    * Mitotic Reproduction: Split parent energy and activate child slot
    */
   private spawnOffspring(buffer: CosmicParticleBuffer, parentIdx: number, childIdx: number): void {
-    const { positions, velocities, energies, healths, ages, lifetimes, reproductionThresholds, energyConsumptionRates, attractionPreferences, types, sizes, colors } = buffer;
+    const {
+      positions,
+      velocities,
+      energies,
+      healths,
+      ages,
+      lifetimes,
+      reproductionThresholds,
+      energyConsumptionRates,
+      attractionPreferences,
+      types,
+      sizes,
+      colors
+    } = buffer;
 
     const p3 = parentIdx * 3;
     const c3 = childIdx * 3;
@@ -437,9 +471,16 @@ export class EcosystemSystem {
     lifetimes[childIdx] = lifetimes[parentIdx] * (0.95 + Math.random() * 0.1);
 
     // Natural variation mutation
-    reproductionThresholds[childIdx] = Math.max(1.1, reproductionThresholds[parentIdx] * (0.95 + Math.random() * 0.1));
-    energyConsumptionRates[childIdx] = Math.max(0.02, energyConsumptionRates[parentIdx] * (0.96 + Math.random() * 0.08));
-    attractionPreferences[childIdx] = attractionPreferences[parentIdx] * (0.95 + Math.random() * 0.1);
+    reproductionThresholds[childIdx] = Math.max(
+      1.1,
+      reproductionThresholds[parentIdx] * (0.95 + Math.random() * 0.1)
+    );
+    energyConsumptionRates[childIdx] = Math.max(
+      0.02,
+      energyConsumptionRates[parentIdx] * (0.96 + Math.random() * 0.08)
+    );
+    attractionPreferences[childIdx] =
+      attractionPreferences[parentIdx] * (0.95 + Math.random() * 0.1);
 
     sizes[childIdx] = sizes[parentIdx] * 0.85;
     colors[c3] = 0.0;
@@ -468,8 +509,25 @@ export class EcosystemSystem {
   /**
    * Spawn a sudden burst of organisms
    */
-  public seedOrganisms(buffer: CosmicParticleBuffer, count: number = 50, origin?: { x: number; y: number; z: number }): number {
-    const { types, positions, velocities, energies, healths, ages, lifetimes, reproductionThresholds, energyConsumptionRates, attractionPreferences, colors, sizes } = buffer;
+  public seedOrganisms(
+    buffer: CosmicParticleBuffer,
+    count: number = 50,
+    origin?: { x: number; y: number; z: number }
+  ): number {
+    const {
+      types,
+      positions,
+      velocities,
+      energies,
+      healths,
+      ages,
+      lifetimes,
+      reproductionThresholds,
+      energyConsumptionRates,
+      attractionPreferences,
+      colors,
+      sizes
+    } = buffer;
     const center = origin || { x: 0, y: 0, z: 0 };
     let spawned = 0;
 
@@ -511,7 +569,11 @@ export class EcosystemSystem {
   /**
    * Spawn a burst of harvestable energy particles
    */
-  public spawnEnergyBurst(buffer: CosmicParticleBuffer, count: number = 200, origin?: { x: number; y: number; z: number }): number {
+  public spawnEnergyBurst(
+    buffer: CosmicParticleBuffer,
+    count: number = 200,
+    origin?: { x: number; y: number; z: number }
+  ): number {
     const { types, positions, energies, colors, sizes } = buffer;
     const center = origin || { x: 0, y: 0, z: 0 };
     let spawned = 0;

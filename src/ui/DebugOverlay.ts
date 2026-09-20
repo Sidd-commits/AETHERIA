@@ -25,10 +25,7 @@ export class DebugOverlay {
   private bhAccretionStrength: number = 2.2;
   private bhEventHorizonRadius: number = 1.2;
 
-  constructor(
-    detector: GestureDetector,
-    commandBus: CommandBus = CommandBus.getInstance()
-  ) {
+  constructor(detector: GestureDetector, commandBus: CommandBus = CommandBus.getInstance()) {
     this.detector = detector;
     this.commandBus = commandBus;
     this.createElements();
@@ -189,12 +186,29 @@ export class DebugOverlay {
     const h = this.canvas.height;
 
     const connections: [number, number][] = [
-      [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-      [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-      [0, 9], [9, 10], [10, 11], [11, 12],   // Middle
-      [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-      [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-      [5, 9], [9, 13], [13, 17]             // Palm
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4], // Thumb
+      [0, 5],
+      [5, 6],
+      [6, 7],
+      [7, 8], // Index
+      [0, 9],
+      [9, 10],
+      [10, 11],
+      [11, 12], // Middle
+      [0, 13],
+      [13, 14],
+      [14, 15],
+      [15, 16], // Ring
+      [0, 17],
+      [17, 18],
+      [18, 19],
+      [19, 20], // Pinky
+      [5, 9],
+      [9, 13],
+      [13, 17] // Palm
     ];
 
     telemetry.smoothedLandmarks.forEach((landmarks, hIdx) => {
@@ -215,7 +229,7 @@ export class DebugOverlay {
       // Draw Joints
       landmarks.forEach((p, idx) => {
         const isTip = idx === 4 || idx === 8 || idx === 12 || idx === 16 || idx === 20;
-        ctx.fillStyle = isTip ? '#fee140' : (idx === 0 ? '#00f2fe' : '#00f5a0');
+        ctx.fillStyle = isTip ? '#fee140' : idx === 0 ? '#00f2fe' : '#00f5a0';
         ctx.beginPath();
         ctx.arc((1 - p.x) * w, p.y * h, isTip ? 6 : 4, 0, Math.PI * 2);
         ctx.fill();
@@ -225,8 +239,10 @@ export class DebugOverlay {
       });
 
       // Draw Palm Centroid & Scale circle
-      const palmX = (landmarks[0].x + landmarks[5].x + landmarks[9].x + landmarks[13].x + landmarks[17].x) / 5;
-      const palmY = (landmarks[0].y + landmarks[5].y + landmarks[9].y + landmarks[13].y + landmarks[17].y) / 5;
+      const palmX =
+        (landmarks[0].x + landmarks[5].x + landmarks[9].x + landmarks[13].x + landmarks[17].x) / 5;
+      const palmY =
+        (landmarks[0].y + landmarks[5].y + landmarks[9].y + landmarks[13].y + landmarks[17].y) / 5;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.beginPath();
       ctx.arc((1 - palmX) * w, palmY * h, 8, 0, Math.PI * 2);
@@ -326,9 +342,15 @@ export class DebugOverlay {
     if (!this.controlsContainer) return;
 
     const inputMass = this.controlsContainer.querySelector('#bh-input-mass') as HTMLInputElement;
-    const inputRadius = this.controlsContainer.querySelector('#bh-input-radius') as HTMLInputElement;
-    const inputAccretion = this.controlsContainer.querySelector('#bh-input-accretion') as HTMLInputElement;
-    const inputHorizon = this.controlsContainer.querySelector('#bh-input-horizon') as HTMLInputElement;
+    const inputRadius = this.controlsContainer.querySelector(
+      '#bh-input-radius'
+    ) as HTMLInputElement;
+    const inputAccretion = this.controlsContainer.querySelector(
+      '#bh-input-accretion'
+    ) as HTMLInputElement;
+    const inputHorizon = this.controlsContainer.querySelector(
+      '#bh-input-horizon'
+    ) as HTMLInputElement;
 
     const valMass = this.controlsContainer.querySelector('#bh-val-mass') as HTMLElement;
     const valRadius = this.controlsContainer.querySelector('#bh-val-radius') as HTMLElement;
@@ -336,12 +358,16 @@ export class DebugOverlay {
     const valHorizon = this.controlsContainer.querySelector('#bh-val-horizon') as HTMLElement;
 
     const syncParams = () => {
-      this.commandBus.dispatch('UPDATE_BLACK_HOLE_PARAMS', {
-        mass: this.bhMass,
-        gravitationalInfluenceRadius: this.bhInfluenceRadius,
-        accretionStrength: this.bhAccretionStrength,
-        eventHorizonRadius: this.bhEventHorizonRadius
-      }, 'UI');
+      this.commandBus.dispatch(
+        'UPDATE_BLACK_HOLE_PARAMS',
+        {
+          mass: this.bhMass,
+          gravitationalInfluenceRadius: this.bhInfluenceRadius,
+          accretionStrength: this.bhAccretionStrength,
+          eventHorizonRadius: this.bhEventHorizonRadius
+        },
+        'UI'
+      );
     };
 
     if (inputMass) {
@@ -379,18 +405,30 @@ export class DebugOverlay {
     const spawnBtn = this.controlsContainer.querySelector('#btn-spawn-bh-debug');
     if (spawnBtn) {
       spawnBtn.addEventListener('click', () => {
-        this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
-          position: { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 2, z: (Math.random() - 0.5) * 4 },
-          mass: this.bhMass,
-          radius: 1.0,
-          gravitationalInfluenceRadius: this.bhInfluenceRadius,
-          accretionStrength: this.bhAccretionStrength,
-          eventHorizonRadius: this.bhEventHorizonRadius
-        }, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '🕳️ Black Hole Spawned from Debug Panel!',
-          icon: '🕳️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SPAWN_BLACK_HOLE',
+          {
+            position: {
+              x: (Math.random() - 0.5) * 4,
+              y: (Math.random() - 0.5) * 2,
+              z: (Math.random() - 0.5) * 4
+            },
+            mass: this.bhMass,
+            radius: 1.0,
+            gravitationalInfluenceRadius: this.bhInfluenceRadius,
+            accretionStrength: this.bhAccretionStrength,
+            eventHorizonRadius: this.bhEventHorizonRadius
+          },
+          'UI'
+        );
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '🕳️ Black Hole Spawned from Debug Panel!',
+            icon: '🕳️'
+          },
+          'UI'
+        );
       });
     }
 
@@ -398,10 +436,14 @@ export class DebugOverlay {
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         this.commandBus.dispatch('CLEAR_BLACK_HOLES', undefined, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '🗑️ Cleared All Black Holes',
-          icon: '🗑️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '🗑️ Cleared All Black Holes',
+            icon: '🗑️'
+          },
+          'UI'
+        );
       });
     }
   }
@@ -415,13 +457,14 @@ export class DebugOverlay {
     if (telemetry.singleHandGestures.length === 0) {
       handsHtml = `<div style="color: #8a99ad; padding: 8px 0;">Searching for hand landmarks...</div>`;
     } else {
-      handsHtml = telemetry.singleHandGestures.map((h) => {
-        const pct = Math.round(h.confidence * 100);
-        const fistVortexBadge = h.features?.isFistCircular
-          ? `<span style="background: rgba(254, 225, 64, 0.25); color: #fee140; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;">🌀 VORTEX</span>`
-          : '';
+      handsHtml = telemetry.singleHandGestures
+        .map((h) => {
+          const pct = Math.round(h.confidence * 100);
+          const fistVortexBadge = h.features?.isFistCircular
+            ? `<span style="background: rgba(254, 225, 64, 0.25); color: #fee140; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;">🌀 VORTEX</span>`
+            : '';
 
-        return `
+          return `
           <div style="margin-top: 8px; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-weight: 600; color: #00f2fe;">HAND #${h.handIndex + 1}</span>
@@ -446,7 +489,8 @@ export class DebugOverlay {
             </div>
           </div>
         `;
-      }).join('');
+        })
+        .join('');
     }
 
     let dualHtml = '';

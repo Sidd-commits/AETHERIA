@@ -20,7 +20,16 @@ export class UniverseStateSummarizer {
     snapshot: UniverseSnapshot,
     config: UniverseConfig
   ): UniverseTelemetrySummary {
-    const { entities, particles, ecosystemStats, time, tickCount, isPaused, timeScale, activePreset } = snapshot;
+    const {
+      entities,
+      particles,
+      ecosystemStats,
+      time,
+      tickCount,
+      isPaused,
+      timeScale,
+      activePreset
+    } = snapshot;
     const { count, positions, velocities, energies } = particles;
 
     // 1. Entity Classification & Planet Summaries
@@ -33,7 +42,12 @@ export class UniverseStateSummarizer {
     let totalCelestialEnergy = 0;
 
     const planetSummary: UniverseTelemetrySummary['planetSummary'] = [];
-    const activeBlackHoles: Array<{ id: string; name: string; mass: number; pos: { x: number; y: number; z: number } }> = [];
+    const activeBlackHoles: Array<{
+      id: string;
+      name: string;
+      mass: number;
+      pos: { x: number; y: number; z: number };
+    }> = [];
 
     for (let i = 0; i < entities.length; i++) {
       const e = entities[i];
@@ -136,9 +150,9 @@ export class UniverseStateSummarizer {
       'Sector Theta (North-East-Outer)'
     ];
 
-    const posX = (maxOctantIdx & 1) ? 6.0 : -6.0;
-    const posY = (maxOctantIdx & 2) ? 3.0 : -3.0;
-    const posZ = (maxOctantIdx & 4) ? 6.0 : -6.0;
+    const posX = maxOctantIdx & 1 ? 6.0 : -6.0;
+    const posY = maxOctantIdx & 2 ? 3.0 : -3.0;
+    const posZ = maxOctantIdx & 4 ? 6.0 : -6.0;
 
     // Check if primary star or black hole is the dominant energy source
     const primaryStar = entities.find((ent) => !ent.isDead && ent.type === 'STAR');
@@ -174,7 +188,11 @@ export class UniverseStateSummarizer {
 
     const stabilityScore = Math.max(10, Math.min(100, Math.round(100 - stabilityPenalty)));
     const stabilityStatus: UniverseTelemetrySummary['stabilityStatus'] =
-      stabilityScore >= 75 ? 'STABLE' : stabilityScore >= 45 ? 'MODERATE_FLUCTUATION' : 'CRITICAL_INSTABILITY';
+      stabilityScore >= 75
+        ? 'STABLE'
+        : stabilityScore >= 45
+          ? 'MODERATE_FLUCTUATION'
+          : 'CRITICAL_INSTABILITY';
 
     // 4. Active Cosmic Anomalies Detection
     const anomalies: CosmicAnomaly[] = [];
@@ -215,7 +233,7 @@ export class UniverseStateSummarizer {
       anomalies.push({
         id: 'anom_high_kinetic',
         title: 'High Velocity Dispersion',
-        description: `Cosmic particles exhibit high turbulent dispersion ($\sigma_v = ${velocityDispersion.toFixed(2)}$), indicating orbital chaos.`,
+        description: `Cosmic particles exhibit high turbulent dispersion ($\\\\sigma_v = ${velocityDispersion.toFixed(2)}$), indicating orbital chaos.`,
         severity: 'WARNING',
         timestamp: Date.now()
       });
@@ -286,7 +304,10 @@ export class UniverseStateSummarizer {
       stabilityFactors: {
         velocityDispersion: Math.round(velocityDispersion * 100) / 100,
         gravitationalStress: Math.round(stabilityPenalty * 10) / 10,
-        orbitalDecayRisk: Math.min(1.0, blackHoleCount * 0.4 + (config.gravityConstant - 1.0) * 0.2),
+        orbitalDecayRisk: Math.min(
+          1.0,
+          blackHoleCount * 0.4 + (config.gravityConstant - 1.0) * 0.2
+        ),
         boundaryPressure: Math.min(1.0, velocityDispersion / 4.0)
       },
       entityCounts: {

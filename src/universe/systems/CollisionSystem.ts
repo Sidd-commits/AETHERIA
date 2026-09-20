@@ -82,7 +82,8 @@ export class CollisionSystem {
           if (velAlongNormal < 0) {
             // Bodies moving toward each other
             const restitution = 0.35; // Inelastic collision
-            const impulseMagnitude = -(1 + restitution) * velAlongNormal / (1 / eA.mass + 1 / eB.mass);
+            const impulseMagnitude =
+              (-(1 + restitution) * velAlongNormal) / (1 / eA.mass + 1 / eB.mass);
 
             const impX = impulseMagnitude * nx;
             const impY = impulseMagnitude * ny;
@@ -135,7 +136,7 @@ export class CollisionSystem {
       const bh = blackHoles[b];
       if (bh.isDead) continue;
       const horizon = bh.eventHorizonRadius || bh.radius * 0.75;
-      const accretionR = bh.accretionRadius || (bh.radius * 3.8);
+      const accretionR = bh.accretionRadius || bh.radius * 3.8;
 
       for (let p = 0; p < buffer.count; p++) {
         const p3 = p * 3;
@@ -149,7 +150,8 @@ export class CollisionSystem {
           const angle = Math.random() * Math.PI * 2;
           const outerR = accretionR * (0.85 + Math.random() * 0.45);
           buffer.positions[p3] = bh.position.x + Math.cos(angle) * outerR;
-          buffer.positions[p3 + 1] = bh.position.y + (Math.random() - 0.5) * 0.15 * (outerR / accretionR);
+          buffer.positions[p3 + 1] =
+            bh.position.y + (Math.random() - 0.5) * 0.15 * (outerR / accretionR);
           buffer.positions[p3 + 2] = bh.position.z + Math.sin(angle) * outerR;
 
           // Relativistic Keplerian orbital speed

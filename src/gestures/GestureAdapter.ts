@@ -32,10 +32,14 @@ export class GestureAdapter {
     // 1. OPEN_PALM: 3D navigation & Prismatic Theme (5)
     this.gestureBus.onUpdate('OPEN_PALM', (e) => {
       if (e.handIndex !== -1 && e.continuousParams?.scenePosition) {
-        this.commandBus.dispatch('SET_TRANSFORM', {
-          position: e.continuousParams.scenePosition,
-          rotation: e.continuousParams.sceneRotation
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SET_TRANSFORM',
+          {
+            position: e.continuousParams.scenePosition,
+            rotation: e.continuousParams.sceneRotation
+          },
+          'GESTURE'
+        );
       }
     });
 
@@ -65,10 +69,14 @@ export class GestureAdapter {
     // 3. POINT: Cyber Cyan Theme (1) & Precise steering
     this.gestureBus.onUpdate('POINT', (e) => {
       if (e.continuousParams?.scenePosition) {
-        this.commandBus.dispatch('SET_TRANSFORM', {
-          position: e.continuousParams.scenePosition,
-          rotation: e.continuousParams.sceneRotation
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SET_TRANSFORM',
+          {
+            position: e.continuousParams.scenePosition,
+            rotation: e.continuousParams.sceneRotation
+          },
+          'GESTURE'
+        );
       }
     });
 
@@ -85,7 +93,11 @@ export class GestureAdapter {
 
     // 5. THREE_FINGERS: Hyper Emerald Theme (3)
     this.gestureBus.onTrigger('THREE_FINGERS', () => {
-      this.commandBus.dispatch('SET_MODE_LABEL', { label: '🤟 THREE FINGERS (EMERALD)' }, 'GESTURE');
+      this.commandBus.dispatch(
+        'SET_MODE_LABEL',
+        { label: '🤟 THREE FINGERS (EMERALD)' },
+        'GESTURE'
+      );
       this.setPaletteSafely(3);
     });
 
@@ -99,10 +111,14 @@ export class GestureAdapter {
     this.gestureBus.onUpdate('PINCH', (e) => {
       this.isPinching = true;
       if (e.continuousParams?.scenePosition) {
-        this.commandBus.dispatch('SET_TRANSFORM', {
-          position: e.continuousParams.scenePosition,
-          rotation: e.continuousParams.sceneRotation
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SET_TRANSFORM',
+          {
+            position: e.continuousParams.scenePosition,
+            rotation: e.continuousParams.sceneRotation
+          },
+          'GESTURE'
+        );
       }
       this.commandBus.dispatch('SET_CHARGE', { charging: true }, 'GESTURE');
       this.commandBus.dispatch('SET_MODE_LABEL', { label: '⚡ PINCH CHARGING' }, 'GESTURE');
@@ -112,10 +128,14 @@ export class GestureAdapter {
       const charge = this.worldState.getState().chargeAmount;
       if (this.isPinching && charge > 0.18) {
         this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: charge }, 'GESTURE');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '💥 Sphere Supernova Exploded!',
-          icon: '💥'
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Sphere Supernova Exploded!',
+            icon: '💥'
+          },
+          'GESTURE'
+        );
       }
       this.isPinching = false;
       this.commandBus.dispatch('SET_CHARGE', { charging: false }, 'GESTURE');
@@ -126,10 +146,14 @@ export class GestureAdapter {
       const charge = this.worldState.getState().chargeAmount;
       if (charge > 0.18) {
         this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: charge }, 'GESTURE');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '💥 Supernova Release Exploded!',
-          icon: '💥'
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Supernova Release Exploded!',
+            icon: '💥'
+          },
+          'GESTURE'
+        );
       }
       this.isPinching = false;
       this.commandBus.dispatch('SET_CHARGE', { charging: false }, 'GESTURE');
@@ -154,10 +178,14 @@ export class GestureAdapter {
           y: (e.continuousParams?.sceneRotation?.y || 0) + e.features.angularVelocity * 0.4,
           z: e.features.angularVelocity * 0.2
         };
-        this.commandBus.dispatch('SET_TRANSFORM', {
-          position: e.continuousParams?.scenePosition,
-          rotation: spinImpulse
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SET_TRANSFORM',
+          {
+            position: e.continuousParams?.scenePosition,
+            rotation: spinImpulse
+          },
+          'GESTURE'
+        );
       }
     });
 
@@ -168,10 +196,14 @@ export class GestureAdapter {
       this.commandBus.dispatch('SET_MODE_LABEL', { label }, 'GESTURE');
 
       if (e.continuousParams) {
-        this.commandBus.dispatch('SET_TRANSFORM', {
-          position: e.continuousParams.scenePosition,
-          scale: e.continuousParams.scale
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SET_TRANSFORM',
+          {
+            position: e.continuousParams.scenePosition,
+            scale: e.continuousParams.scale
+          },
+          'GESTURE'
+        );
       }
     };
 
@@ -190,10 +222,14 @@ export class GestureAdapter {
       this.commandBus.dispatch('SET_PALETTE', { index }, 'GESTURE');
       const palette = PALETTES[index];
       if (palette) {
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: `🎨 ${palette.name} (${index})`,
-          icon: '🎨'
-        }, 'GESTURE');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: `🎨 ${palette.name} (${index})`,
+            icon: '🎨'
+          },
+          'GESTURE'
+        );
       }
     }
   }
@@ -203,18 +239,26 @@ export class GestureAdapter {
     if (now - this.lastBlackHoleSpawnTime > 1800) {
       this.lastBlackHoleSpawnTime = now;
       const pos = e.continuousParams?.scenePosition || { x: 0, y: 0, z: 0 };
-      this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
-        position: pos,
-        mass: 140.0,
-        radius: 1.0,
-        gravitationalInfluenceRadius: 30.0,
-        accretionStrength: 2.2
-      }, 'GESTURE');
+      this.commandBus.dispatch(
+        'SPAWN_BLACK_HOLE',
+        {
+          position: pos,
+          mass: 140.0,
+          radius: 1.0,
+          gravitationalInfluenceRadius: 30.0,
+          accretionStrength: 2.2
+        },
+        'GESTURE'
+      );
       this.commandBus.dispatch('SET_MODE_LABEL', { label: '🕳️ BLACK HOLE CREATED' }, 'GESTURE');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '🕳️ Black Hole Spawned via Fist Vortex!',
-        icon: '🕳️'
-      }, 'GESTURE');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '🕳️ Black Hole Spawned via Fist Vortex!',
+          icon: '🕳️'
+        },
+        'GESTURE'
+      );
     }
   }
 

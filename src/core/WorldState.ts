@@ -51,9 +51,13 @@ export class WorldState {
     this.commandBus.on('CYCLE_PALETTE', () => {
       const nextIdx = (this.state.activePaletteIndex + 1) % PALETTES.length;
       this.state.activePaletteIndex = nextIdx;
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `🎨 Theme: ${PALETTES[nextIdx].name}`
-      }, 'SYSTEM');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `🎨 Theme: ${PALETTES[nextIdx].name}`
+        },
+        'SYSTEM'
+      );
       this.notify();
     });
 
@@ -93,13 +97,20 @@ export class WorldState {
     });
 
     this.commandBus.on('TOGGLE_WEBCAM_BACKGROUND', (cmd) => {
-      const next = cmd.payload && cmd.payload.enabled !== undefined
-        ? cmd.payload.enabled
-        : !this.state.isWebcamBackground;
+      const next =
+        cmd.payload && cmd.payload.enabled !== undefined
+          ? cmd.payload.enabled
+          : !this.state.isWebcamBackground;
       this.state.isWebcamBackground = next;
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: next ? '📹 Webcam Fullscreen Background Enabled' : '🌑 Dark Space Background Restored'
-      }, 'UI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: next
+            ? '📹 Webcam Fullscreen Background Enabled'
+            : '🌑 Dark Space Background Restored'
+        },
+        'UI'
+      );
       this.notify();
     });
 
@@ -127,7 +138,8 @@ export class WorldState {
     });
 
     this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
-      this.state.isPaused = cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.state.isPaused;
+      this.state.isPaused =
+        cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.state.isPaused;
       this.notify();
     });
   }
@@ -155,10 +167,16 @@ export class WorldState {
    */
   public updateChargeTick(): number {
     if (this.state.isCharging) {
-      this.state.chargeAmount = Math.min(1.0, this.state.chargeAmount + ANIMATION_CONFIG.chargeIncrement);
+      this.state.chargeAmount = Math.min(
+        1.0,
+        this.state.chargeAmount + ANIMATION_CONFIG.chargeIncrement
+      );
     } else {
       if (this.state.chargeAmount > 0) {
-        this.state.chargeAmount = Math.max(0, this.state.chargeAmount - ANIMATION_CONFIG.chargeDecrement);
+        this.state.chargeAmount = Math.max(
+          0,
+          this.state.chargeAmount - ANIMATION_CONFIG.chargeDecrement
+        );
       }
     }
     return this.state.chargeAmount;

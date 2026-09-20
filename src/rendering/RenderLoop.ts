@@ -114,7 +114,10 @@ export class RenderLoop {
       }
 
       // Generate compact aggregated telemetry (Zero raw particle array overhead)
-      const telemetry = UniverseStateSummarizer.summarize(snapshot, this.universeEngine.getConfig());
+      const telemetry = UniverseStateSummarizer.summarize(
+        snapshot,
+        this.universeEngine.getConfig()
+      );
       this.uiManager.getAIObservationPanel().update(telemetry);
 
       // Feed FPS into QualityScaler

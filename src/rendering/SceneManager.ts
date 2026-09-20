@@ -82,9 +82,12 @@ export class SceneManager {
     this.particleGroup.position.lerp(targetPosition, ANIMATION_CONFIG.lerpPosition);
 
     // Lerp rotation
-    this.particleGroup.rotation.x += (targetRotation.x - this.particleGroup.rotation.x) * ANIMATION_CONFIG.lerpRotation;
-    this.particleGroup.rotation.y += (targetRotation.y - this.particleGroup.rotation.y) * ANIMATION_CONFIG.lerpRotation;
-    this.particleGroup.rotation.z += (targetRotation.z - this.particleGroup.rotation.z) * ANIMATION_CONFIG.lerpRotation;
+    this.particleGroup.rotation.x +=
+      (targetRotation.x - this.particleGroup.rotation.x) * ANIMATION_CONFIG.lerpRotation;
+    this.particleGroup.rotation.y +=
+      (targetRotation.y - this.particleGroup.rotation.y) * ANIMATION_CONFIG.lerpRotation;
+    this.particleGroup.rotation.z +=
+      (targetRotation.z - this.particleGroup.rotation.z) * ANIMATION_CONFIG.lerpRotation;
 
     // Idle spin
     this.particleGroup.rotation.y += ANIMATION_CONFIG.idleSpinY;

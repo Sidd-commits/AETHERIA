@@ -32,7 +32,12 @@ export interface GuardianRecommendation {
  * Gravitational Event in the Cosmos
  */
 export interface GravitationalEvent {
-  type: 'SINGULARITY_FORMATION' | 'TIDAL_DISRUPTION' | 'HIGH_SHEAR_ACCRETION' | 'ORBITAL_RESONANCE' | 'SUPERNOVA_SHOCKWAVE';
+  type:
+    | 'SINGULARITY_FORMATION'
+    | 'TIDAL_DISRUPTION'
+    | 'HIGH_SHEAR_ACCRETION'
+    | 'ORBITAL_RESONANCE'
+    | 'SUPERNOVA_SHOCKWAVE';
   description: string;
   severity: AnomalySeverity;
   origin?: { x: number; y: number; z: number };

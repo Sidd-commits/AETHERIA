@@ -33,7 +33,7 @@ export class ProceduralUniverseGenerator {
     const paletteIndex = WorldGenValidator.getPaletteIndex(validConfig.colorPalette);
     const palette = PALETTES[paletteIndex] || PALETTES[1];
 
-    let generatedCounts = {
+    const generatedCounts = {
       stars: 0,
       planets: 0,
       blackHoles: 0,
@@ -47,7 +47,7 @@ export class ProceduralUniverseGenerator {
     const blackHoleEntities: UniverseEntity[] = [];
     if (validConfig.blackHoles > 0) {
       for (let i = 0; i < validConfig.blackHoles; i++) {
-        const isCenter = (i === 0 && validConfig.blackHoles === 1);
+        const isCenter = i === 0 && validConfig.blackHoles === 1;
         const bhPos = isCenter
           ? { x: 0, y: 0, z: 0 }
           : {
@@ -150,7 +150,11 @@ export class ProceduralUniverseGenerator {
         const trinaryRadius = 7.5;
         const centerMass = blackHoleEntities.length > 0 ? blackHoleEntities[0].mass : 90.0;
         const orbitSpeed = Math.sqrt((validConfig.gravity * centerMass) / trinaryRadius);
-        const starColors = [palette.colors[4] || '#fee140', palette.colors[1] || '#00f2fe', palette.colors[2] || '#f857a6'];
+        const starColors = [
+          palette.colors[4] || '#fee140',
+          palette.colors[1] || '#00f2fe',
+          palette.colors[2] || '#f857a6'
+        ];
         const starNames = ['Solaris Astra', 'Solaris Cyane', 'Solaris Rubor'];
 
         for (let i = 0; i < 3; i++) {
@@ -161,7 +165,7 @@ export class ProceduralUniverseGenerator {
             name: starNames[i],
             position: {
               x: Math.cos(angle) * trinaryRadius,
-              y: (Math.sin(i * 2) * 0.5),
+              y: Math.sin(i * 2) * 0.5,
               z: Math.sin(angle) * trinaryRadius
             },
             velocity: {
@@ -214,7 +218,7 @@ export class ProceduralUniverseGenerator {
             age: 0,
             isDead: false,
             color: palette.colors[i % palette.colors.length],
-            temperature: 5000 + (i * 1000) % 6000,
+            temperature: 5000 + ((i * 1000) % 6000),
             luminosity: 1.1
           };
           entities.push(star);
@@ -228,15 +232,15 @@ export class ProceduralUniverseGenerator {
     const primaryAttractor = starEntities[0] || blackHoleEntities[0];
     const attractorMass = primaryAttractor ? primaryAttractor.mass : 80.0;
     const attractorPos = primaryAttractor ? primaryAttractor.position : { x: 0, y: 0, z: 0 };
-    const numPlanets = validConfig.planets ?? (validConfig.stars * 3);
+    const numPlanets = validConfig.planets ?? validConfig.stars * 3;
 
     if (numPlanets > 0 && primaryAttractor) {
-      const startOrbit = (validConfig.stars >= 3 || validConfig.blackHoles > 0) ? 10.5 : 2.5;
-      const orbitSpacing = (validConfig.stars >= 3) ? 2.2 : 1.8;
+      const startOrbit = validConfig.stars >= 3 || validConfig.blackHoles > 0 ? 10.5 : 2.5;
+      const orbitSpacing = validConfig.stars >= 3 ? 2.2 : 1.8;
 
       for (let i = 0; i < numPlanets; i++) {
         const orbitR = startOrbit + i * orbitSpacing;
-        const angle = (i * 1.6180339887) * Math.PI * 2; // Golden ratio angular distribution
+        const angle = i * 1.6180339887 * Math.PI * 2; // Golden ratio angular distribution
         const orbitSpeed = Math.sqrt((validConfig.gravity * attractorMass) / orbitR);
         const planetMass = 0.5 + Math.random() * 2.5;
         const planetSize = 0.2 + (planetMass / 3.0) * 0.35;
@@ -312,13 +316,23 @@ export class ProceduralUniverseGenerator {
     }
 
     // 5. Procedurally Synthesize Cosmic Particle Buffers & Velocity Dynamics
-    this.synthesizeParticleField(validConfig, palette, particleSystem, starEntities, blackHoleEntities);
+    this.synthesizeParticleField(
+      validConfig,
+      palette,
+      particleSystem,
+      starEntities,
+      blackHoleEntities
+    );
 
     // 6. Seed Ecosystem Organisms & Ambient Energy Bursts
     ecosystemSystem.reset();
     const particleBuffer = particleSystem.getBuffer();
     const energyCount = Math.round(1800 * validConfig.energyDensity);
-    const organismCount = validConfig.seedOrganisms ? (validConfig.theme === 'chaotic' ? 250 : 600) : 0;
+    const organismCount = validConfig.seedOrganisms
+      ? validConfig.theme === 'chaotic'
+        ? 250
+        : 600
+      : 0;
 
     ecosystemSystem.initializeEcosystem(particleBuffer, organismCount, energyCount);
     generatedCounts.organisms = organismCount;
@@ -352,8 +366,12 @@ export class ProceduralUniverseGenerator {
     const hasCenterBH = blackHoles.length > 0;
 
     for (let i = 0; i < count; i++) {
-      let x = 0, y = 0, z = 0;
-      let vx = 0, vy = 0, vz = 0;
+      let x = 0,
+        y = 0,
+        z = 0;
+      let vx = 0,
+        vy = 0,
+        vz = 0;
 
       if (hasCenterBH) {
         // Relativistic Accretion Swirl around central Black Hole

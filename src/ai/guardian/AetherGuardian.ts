@@ -38,7 +38,10 @@ export class AetherGuardian {
           const cloudResponse = await this.queryCloudGuardian(question, telemetry);
           if (cloudResponse) return cloudResponse;
         } catch (err) {
-          console.warn('Cloud guardian query failed, falling back to built-in AETHER intelligence:', err);
+          console.warn(
+            'Cloud guardian query failed, falling back to built-in AETHER intelligence:',
+            err
+          );
         }
       }
     } catch {
@@ -56,10 +59,28 @@ export class AetherGuardian {
     q: string,
     telemetry: UniverseTelemetrySummary
   ): AetherQueryResponse {
-    const { entityCounts, planetSummary, energyStats, stabilityScore, stabilityStatus, anomalies, ecosystem, gravityConstant, activePreset, epochTime } = telemetry;
+    const {
+      entityCounts,
+      planetSummary,
+      energyStats,
+      stabilityScore,
+      stabilityStatus,
+      anomalies,
+      ecosystem,
+      gravityConstant,
+      activePreset,
+      epochTime
+    } = telemetry;
 
     // QUESTION 1: "How many planets exist?"
-    if (q.includes('planet') && (q.includes('how many') || q.includes('count') || q.includes('list') || q.includes('exist') || q.includes('number'))) {
+    if (
+      q.includes('planet') &&
+      (q.includes('how many') ||
+        q.includes('count') ||
+        q.includes('list') ||
+        q.includes('exist') ||
+        q.includes('number'))
+    ) {
       const count = entityCounts.planets;
       if (count === 0) {
         return {
@@ -75,7 +96,12 @@ export class AetherGuardian {
         };
       }
 
-      const planetListStr = planetSummary.map((p, i) => `${i + 1}. **${p.name}** (Orbit: ${p.orbitalRadius ? p.orbitalRadius.toFixed(1) + ' AU' : 'Free'}, Mass: ${p.mass.toFixed(1)} M☉, Radius: ${p.radius.toFixed(2)})`).join('\n');
+      const planetListStr = planetSummary
+        .map(
+          (p, i) =>
+            `${i + 1}. **${p.name}** (Orbit: ${p.orbitalRadius ? p.orbitalRadius.toFixed(1) + ' AU' : 'Free'}, Mass: ${p.mass.toFixed(1)} M☉, Radius: ${p.radius.toFixed(2)})`
+        )
+        .join('\n');
 
       return {
         question: q,
@@ -94,39 +120,57 @@ export class AetherGuardian {
     }
 
     // QUESTION 2: "What is causing the instability?"
-    if (q.includes('instab') || q.includes('unstable') || q.includes('collapse') || q.includes('chaos') || q.includes('stability')) {
+    if (
+      q.includes('instab') ||
+      q.includes('unstable') ||
+      q.includes('collapse') ||
+      q.includes('chaos') ||
+      q.includes('stability')
+    ) {
       const issues: string[] = [];
 
       if (entityCounts.blackHoles > 0) {
-        issues.push(`**${entityCounts.blackHoles} Active Singularity${entityCounts.blackHoles > 1 ? 'ies' : ''}**: Gravitational tidal forces and accretion suction are exerting intense asymmetric shear on nearby orbits.`);
+        issues.push(
+          `**${entityCounts.blackHoles} Active Singularity${entityCounts.blackHoles > 1 ? 'ies' : ''}**: Gravitational tidal forces and accretion suction are exerting intense asymmetric shear on nearby orbits.`
+        );
       }
 
       if (gravityConstant > 1.8) {
-        issues.push(`**Excessive Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Strong central attraction is overpowering orbital centripetal velocities, pulling bodies inward.`);
+        issues.push(
+          `**Excessive Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Strong central attraction is overpowering orbital centripetal velocities, pulling bodies inward.`
+        );
       } else if (gravityConstant < 0.4) {
-        issues.push(`**Weak Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Low gravitational attraction is causing celestial particles to drift apart into deep space.`);
+        issues.push(
+          `**Weak Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Low gravitational attraction is causing celestial particles to drift apart into deep space.`
+        );
       }
 
       if (telemetry.stabilityFactors.velocityDispersion > 2.5) {
-        issues.push(`**High Velocity Dispersion ($\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$)**: Particle kinetic turbulence is high, causing frequent collisions and orbital scattering.`);
+        issues.push(
+          `**High Velocity Dispersion ($\\\\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$)**: Particle kinetic turbulence is high, causing frequent collisions and orbital scattering.`
+        );
       }
 
       if (ecosystem.population < 60 && ecosystem.population > 0) {
-        issues.push(`**Ecological Biomass Depletion**: Organism mortality is elevated due to radiant energy scarcity.`);
+        issues.push(
+          `**Ecological Biomass Depletion**: Organism mortality is elevated due to radiant energy scarcity.`
+        );
       }
 
       if (issues.length === 0) {
         return {
           question: q,
           answer: `The universe is currently operating in a **Stable Equilibrium** with a Stability Score of **${stabilityScore}%** (${stabilityStatus}).`,
-          reasoning: `Gravitational forces and orbital velocities are in centripetal balance, and velocity dispersion is nominal ($\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$).`,
+          reasoning: `Gravitational forces and orbital velocities are in centripetal balance, and velocity dispersion is nominal ($\\\\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$).`,
           metrics: { stabilityScore, stabilityStatus, gravityConstant }
         };
       }
 
       return {
         question: q,
-        answer: `The current **Stability Score is ${stabilityScore}% (${stabilityStatus})**. Key drivers of instability include:\n\n` + issues.map((iss, i) => `${i + 1}. ${iss}`).join('\n\n'),
+        answer:
+          `The current **Stability Score is ${stabilityScore}% (${stabilityStatus})**. Key drivers of instability include:\n\n` +
+          issues.map((iss, i) => `${i + 1}. ${iss}`).join('\n\n'),
         reasoning: `Instability occurs when gravitational force ($F_g = G \\frac{M m}{r^2}$) exceeds centripetal equilibrium ($F_c = \\frac{m v^2}{r}$) or when singularities generate relativistic tidal shear.`,
         metrics: {
           stabilityScore,
@@ -135,24 +179,41 @@ export class AetherGuardian {
           gravityConstant,
           velocityDispersion: telemetry.stabilityFactors.velocityDispersion
         },
-        suggestedAction: entityCounts.blackHoles > 0 ? {
-          label: '🔄 Re-Align Orbits',
-          actionCommand: 'ALIGN_ORBITS'
-        } : {
-          label: '⚡ Reset Gravity (1.0)',
-          actionCommand: 'SET_GRAVITY',
-          payload: { gravityConstant: 1.0 }
-        }
+        suggestedAction:
+          entityCounts.blackHoles > 0
+            ? {
+                label: '🔄 Re-Align Orbits',
+                actionCommand: 'ALIGN_ORBITS'
+              }
+            : {
+                label: '⚡ Reset Gravity (1.0)',
+                actionCommand: 'SET_GRAVITY',
+                payload: { gravityConstant: 1.0 }
+              }
       };
     }
 
     // QUESTION 3: "Which region has the highest energy?"
-    if (q.includes('energy') && (q.includes('highest') || q.includes('region') || q.includes('sector') || q.includes('where') || q.includes('most') || q.includes('hotspot'))) {
-      const { highestEnergyRegion, totalCelestialEnergy, totalParticleEnergy, averageParticleEnergy } = energyStats;
+    if (
+      q.includes('energy') &&
+      (q.includes('highest') ||
+        q.includes('region') ||
+        q.includes('sector') ||
+        q.includes('where') ||
+        q.includes('most') ||
+        q.includes('hotspot'))
+    ) {
+      const {
+        highestEnergyRegion,
+        totalCelestialEnergy,
+        totalParticleEnergy,
+        averageParticleEnergy
+      } = energyStats;
 
       return {
         question: q,
-        answer: `The highest energy region in the cosmos is **${highestEnergyRegion.name}** with an energy density of **${highestEnergyRegion.energyDensity.toFixed(1)} E**.\n\n` +
+        answer:
+          `The highest energy region in the cosmos is **${highestEnergyRegion.name}** with an energy density of **${highestEnergyRegion.energyDensity.toFixed(1)} E**.\n\n` +
           `• **Dominant Source**: ${highestEnergyRegion.dominantSource || 'Solar Plasma Core'}\n` +
           `• **Coordinates**: [x: ${highestEnergyRegion.position.x.toFixed(1)}, y: ${highestEnergyRegion.position.y.toFixed(1)}, z: ${highestEnergyRegion.position.z.toFixed(1)}]\n` +
           `• **Total Particle Radiant Energy**: ${totalParticleEnergy.toLocaleString()} E (Avg: ${averageParticleEnergy.toFixed(2)} E/particle)\n` +
@@ -173,11 +234,19 @@ export class AetherGuardian {
     }
 
     // QUESTION 4: "Why are particles collapsing?"
-    if (q.includes('why') && (q.includes('collaps') || q.includes('fall') || q.includes('sink') || q.includes('inward') || q.includes('shrink'))) {
+    if (
+      q.includes('why') &&
+      (q.includes('collaps') ||
+        q.includes('fall') ||
+        q.includes('sink') ||
+        q.includes('inward') ||
+        q.includes('shrink'))
+    ) {
       const bh = entityCounts.blackHoles > 0;
       return {
         question: q,
-        answer: `Particles are collapsing inward due to **${bh ? 'Singularity Accretion and ' : ''}Gravitational Attraction Coupled with Velocity Damping**.\n\n` +
+        answer:
+          `Particles are collapsing inward due to **${bh ? 'Singularity Accretion and ' : ''}Gravitational Attraction Coupled with Velocity Damping**.\n\n` +
           `1. **Gravitational Pull**: Massive celestial bodies (e.g. central stars or singularities) exert an attractive force $F = G \\frac{M m}{r^2}$ pulling matter toward the barycenter.\n` +
           `2. **Kinetic Damping**: Collision damping ($k_{damp} = 0.985$) gradually saps radial kinetic energy, causing particles to decay from unstable trajectories into central accretion wells.\n` +
           `3. **Tidal Capture**: ${bh ? 'Black holes possess an event horizon where gravitational acceleration exceeds particle escape velocity, resulting in total absorption.' : 'Without sufficient tangential speed ($v = \\sqrt{G M / r}$), particles cannot sustain perpetual orbit.'}`,
@@ -195,11 +264,17 @@ export class AetherGuardian {
     }
 
     // QUESTION 5: "What will happen if I increase gravity?"
-    if (q.includes('what will happen') || q.includes('what happens') || (q.includes('increase') && q.includes('gravity')) || (q.includes('if i') && q.includes('gravity'))) {
+    if (
+      q.includes('what will happen') ||
+      q.includes('what happens') ||
+      (q.includes('increase') && q.includes('gravity')) ||
+      (q.includes('if i') && q.includes('gravity'))
+    ) {
       const newG = (gravityConstant * 1.5).toFixed(2);
       return {
         question: q,
-        answer: `If you increase the gravitational constant from **G = ${gravityConstant.toFixed(2)}** to **G = ${newG}**, the following physical transformations will occur:\n\n` +
+        answer:
+          `If you increase the gravitational constant from **G = ${gravityConstant.toFixed(2)}** to **G = ${newG}**, the following physical transformations will occur:\n\n` +
           `1. **Orbital Contraction**: Planetary orbits will compress inward because the required orbital radius for balance scales inversely with gravity ($r \\propto \\frac{1}{G}$).\n` +
           `2. **Accelerated Particle Collapse**: Cosmic dust and debris will be drawn toward central attractors at $1.5\\times$ higher acceleration.\n` +
           `3. **Orbital Velocity Spikes**: Orbiting planets will need to speed up ($v_{orb} = \\sqrt{G M / r}$) to avoid falling into stars or black holes.\n` +
@@ -219,10 +294,16 @@ export class AetherGuardian {
     }
 
     // GENERAL COSMOS HEALTH / ECOSYSTEM
-    if (q.includes('ecosystem') || q.includes('life') || q.includes('organism') || q.includes('population')) {
+    if (
+      q.includes('ecosystem') ||
+      q.includes('life') ||
+      q.includes('organism') ||
+      q.includes('population')
+    ) {
       return {
         question: q,
-        answer: `The cosmic ecosystem currently sustains **${ecosystem.population} living organisms** alongside **${ecosystem.energyCount} radiant energy particles** and **${ecosystem.matterCount} inert matter substrates**.\n\n` +
+        answer:
+          `The cosmic ecosystem currently sustains **${ecosystem.population} living organisms** alongside **${ecosystem.energyCount} radiant energy particles** and **${ecosystem.matterCount} inert matter substrates**.\n\n` +
           `• **Average Organism Energy**: ${ecosystem.averageEnergy.toFixed(2)} E\n` +
           `• **Average Health**: ${(ecosystem.averageHealth * 100).toFixed(0)}%\n` +
           `• **Growth Rate**: ${ecosystem.growthRate > 0 ? '+' : ''}${ecosystem.growthRate.toFixed(1)}/s\n` +
@@ -240,7 +321,8 @@ export class AetherGuardian {
     // FALLBACK GENERAL DIAGNOSTIC
     return {
       question: q,
-      answer: `I am **AETHER**, the guardian intelligence of this cosmos. The simulation is operating at Epoch **${epochTime}s** under the **${activePreset.replace(/_/g, ' ')}** preset with a Stability Score of **${stabilityScore}%** (${stabilityStatus}).\n\n` +
+      answer:
+        `I am **AETHER**, the guardian intelligence of this cosmos. The simulation is operating at Epoch **${epochTime}s** under the **${activePreset.replace(/_/g, ' ')}** preset with a Stability Score of **${stabilityScore}%** (${stabilityStatus}).\n\n` +
         `• **Celestial Entities**: ${entityCounts.stars} Stars, ${entityCounts.planets} Planets, ${entityCounts.blackHoles} Black Holes\n` +
         `• **Active Anomalies**: ${anomalies.length > 0 ? anomalies.map((a) => a.title).join(', ') : 'None'}\n` +
         `• **Ecosystem**: ${ecosystem.population} living organisms`,

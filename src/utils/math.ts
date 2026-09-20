@@ -20,10 +20,7 @@ export function distance3D(
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-export function distance2D(
-  p1: { x: number; y: number },
-  p2: { x: number; y: number }
-): number {
+export function distance2D(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
   const dx = p1.x - p2.x;
   const dy = p1.y - p2.y;
   return Math.hypot(dx, dy);

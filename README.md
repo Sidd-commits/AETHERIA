@@ -27,16 +27,16 @@
 
 ## 🎮 Controls & Interaction Guide
 
-| Control | Gesture | Keyboard / Mouse | Action |
-| :--- | :--- | :--- | :--- |
-| **Navigate & Pan** | 🖐️ `OPEN_PALM` | Mouse Drag | Pan and tilt the 3D celestial camera. |
-| **Supernova Impulse** | 👌 `PINCH` & release | Click & hold / `Space` | Accumulates gravitational energy; release triggers supernova. |
-| **Scale Universe** | 👐 `TWO_HAND` Expand/Contract | Mouse Scroll Wheel | Dynamically scales the universe radius. |
-| **Vortex Spin** | 🌀 `CIRCULAR_MOTION` | — | Imparts orbital vortex spin into accretion disks and planets. |
-| **Color Palettes** | 🔢 Extended Finger Count (0–5) | Keys `0`–`5` / Palette button | Shifts particle and nebula color palette. |
-| **Time Controls** | — | `Space` / Speed HUD | Pause/Resume and change simulation speed ($0.25\times$ to $5\times$). |
-| **Reset Universe** | — | `R` key / Reset HUD | Resets and re-seeds the active celestial preset. |
-| **Debug Visualizer** | — | `D` key / Debug button | Opens 21-point skeleton projection & live telemetry HUD. |
+| Control               | Gesture                        | Keyboard / Mouse              | Action                                                                |
+| :-------------------- | :----------------------------- | :---------------------------- | :-------------------------------------------------------------------- |
+| **Navigate & Pan**    | 🖐️ `OPEN_PALM`                 | Mouse Drag                    | Pan and tilt the 3D celestial camera.                                 |
+| **Supernova Impulse** | 👌 `PINCH` & release           | Click & hold / `Space`        | Accumulates gravitational energy; release triggers supernova.         |
+| **Scale Universe**    | 👐 `TWO_HAND` Expand/Contract  | Mouse Scroll Wheel            | Dynamically scales the universe radius.                               |
+| **Vortex Spin**       | 🌀 `CIRCULAR_MOTION`           | —                             | Imparts orbital vortex spin into accretion disks and planets.         |
+| **Color Palettes**    | 🔢 Extended Finger Count (0–5) | Keys `0`–`5` / Palette button | Shifts particle and nebula color palette.                             |
+| **Time Controls**     | —                              | `Space` / Speed HUD           | Pause/Resume and change simulation speed ($0.25\times$ to $5\times$). |
+| **Reset Universe**    | —                              | `R` key / Reset HUD           | Resets and re-seeds the active celestial preset.                      |
+| **Debug Visualizer**  | —                              | `D` key / Debug button        | Opens 21-point skeleton projection & live telemetry HUD.              |
 
 ---
 

@@ -1,4 +1,9 @@
-import { AICommandAdapter, AIParseResult, AIStructuredCommand, SimulationContext } from '../../types/ai';
+import {
+  AICommandAdapter,
+  AIParseResult,
+  AIStructuredCommand,
+  SimulationContext
+} from '../../types/ai';
 
 export interface OpenAIAdapterConfig {
   endpoint: string; // e.g. "https://api.openai.com/v1/chat/completions" or "http://localhost:11434/v1/chat/completions"
@@ -57,13 +62,21 @@ export class OpenAICompatibleAdapter implements AICommandAdapter {
     this.config = { ...this.config, ...newConfig };
   }
 
-  public async parseCommand(transcript: string, context: SimulationContext): Promise<AIParseResult> {
+  public async parseCommand(
+    transcript: string,
+    context: SimulationContext
+  ): Promise<AIParseResult> {
     const startTime = performance.now();
 
-    if (!this.config.apiKey && !this.config.endpoint.includes('localhost') && !this.config.endpoint.includes('127.0.0.1')) {
+    if (
+      !this.config.apiKey &&
+      !this.config.endpoint.includes('localhost') &&
+      !this.config.endpoint.includes('127.0.0.1')
+    ) {
       return {
         success: false,
-        errorMessage: 'API Key not configured for Custom LLM provider. Please enter your API key in Voice AI settings.',
+        errorMessage:
+          'API Key not configured for Custom LLM provider. Please enter your API key in Voice AI settings.',
         latencyMs: Math.round(performance.now() - startTime)
       };
     }

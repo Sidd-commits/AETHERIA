@@ -156,17 +156,29 @@ export class UniverseControls {
     const spawnBhBtn = document.getElementById('btn-spawn-bh-quick') as HTMLButtonElement;
     if (spawnBhBtn) {
       spawnBhBtn.addEventListener('click', () => {
-        this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
-          position: { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 2, z: (Math.random() - 0.5) * 4 },
-          mass: 140.0,
-          radius: 1.0,
-          gravitationalInfluenceRadius: 30.0,
-          accretionStrength: 2.2
-        }, 'UI');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '🕳️ Black Hole Spawned!',
-          icon: '🕳️'
-        }, 'UI');
+        this.commandBus.dispatch(
+          'SPAWN_BLACK_HOLE',
+          {
+            position: {
+              x: (Math.random() - 0.5) * 4,
+              y: (Math.random() - 0.5) * 2,
+              z: (Math.random() - 0.5) * 4
+            },
+            mass: 140.0,
+            radius: 1.0,
+            gravitationalInfluenceRadius: 30.0,
+            accretionStrength: 2.2
+          },
+          'UI'
+        );
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '🕳️ Black Hole Spawned!',
+            icon: '🕳️'
+          },
+          'UI'
+        );
       });
     }
 
@@ -200,34 +212,50 @@ export class UniverseControls {
       text.innerText = this.isPaused ? 'Resume' : 'Pause';
     }
 
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: this.isPaused ? '⏸️ Simulation Paused' : '▶️ Simulation Resumed',
-      icon: this.isPaused ? '⏸️' : '▶️'
-    }, 'UI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: this.isPaused ? '⏸️ Simulation Paused' : '▶️ Simulation Resumed',
+        icon: this.isPaused ? '⏸️' : '▶️'
+      },
+      'UI'
+    );
   }
 
   public setTimeScale(scale: number): void {
     this.commandBus.dispatch('SET_TIME_SCALE', { scale }, 'UI');
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: `⚡ Time Scale: ${scale}x`,
-      icon: '⚡'
-    }, 'UI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: `⚡ Time Scale: ${scale}x`,
+        icon: '⚡'
+      },
+      'UI'
+    );
   }
 
   public setPreset(preset: UniversePresetId): void {
     this.currentPreset = preset;
     this.commandBus.dispatch('SET_UNIVERSE_PRESET', { preset }, 'UI');
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: `🌌 Loaded Preset: ${preset.replace(/_/g, ' ')}`,
-      icon: '🌌'
-    }, 'UI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: `🌌 Loaded Preset: ${preset.replace(/_/g, ' ')}`,
+        icon: '🌌'
+      },
+      'UI'
+    );
   }
 
   public reset(): void {
     this.commandBus.dispatch('RESET_UNIVERSE', { preset: this.currentPreset }, 'UI');
-    this.commandBus.dispatch('SHOW_TOAST', {
-      message: '🔄 Universe Simulation Reset',
-      icon: '🔄'
-    }, 'UI');
+    this.commandBus.dispatch(
+      'SHOW_TOAST',
+      {
+        message: '🔄 Universe Simulation Reset',
+        icon: '🔄'
+      },
+      'UI'
+    );
   }
 }

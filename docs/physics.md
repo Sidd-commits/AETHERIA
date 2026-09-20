@@ -15,6 +15,7 @@ The gravitational acceleration $\mathbf{a}_{grav}$ exerted by a black hole of ma
 $$\mathbf{a}_{grav} = \frac{G \cdot M \cdot \gamma_{acc}}{(|\mathbf{r}|^2 + \epsilon^2)^{3/2}} \mathbf{r} \cdot \Phi(r)$$
 
 Where:
+
 - $\mathbf{r} = \mathbf{x}_{BH} - \mathbf{x}$ is the displacement vector.
 - $r = |\mathbf{r}| = \sqrt{dx^2 + dy^2 + dz^2}$ is the Euclidean distance.
 - $G$ is the universal gravitational coupling constant ($G = 1.0$).
@@ -24,11 +25,11 @@ Where:
 
 ### 1.2 Gravitational Influence Radius & Boundary Falloff
 
-Each black hole possesses a finite **Gravitational Influence Radius** $R_{inf}$ (default $R_{inf} = 30.0\,\text{AU}$). Outside this radius ($r \ge R_{inf}$), particles are computationally decoupled from the black hole ($O(1)$ early rejection). 
+Each black hole possesses a finite **Gravitational Influence Radius** $R_{inf}$ (default $R_{inf} = 30.0\,\text{AU}$). Outside this radius ($r \ge R_{inf}$), particles are computationally decoupled from the black hole ($O(1)$ early rejection).
 
 To ensure continuous derivatives and prevent abrupt force jumps at the boundary, a smooth cubic Hermite falloff is applied:
 
-$$\Phi(r) = \begin{cases} 
+$$ \Phi(r) = \begin{cases}
 1 - 3\left(\frac{r}{R_{inf}}\right)^2 + 2\left(\frac{r}{R_{inf}}\right)^3 & \text{for } r < R_{inf} \\
 0 & \text{for } r \ge R_{inf}
 \end{cases}$$
@@ -122,3 +123,4 @@ When $|\Theta_{sweep}| \ge 1.5\pi$ ($270^\circ$) in a consistent rotational dire
 | **Particle Accretion** | $O(N_{BH} \cdot N_{particles})$ | `Float32Array` (6,000 particles) | Influence radius early rejection, vectorized memory layouts |
 | **Particle Absorption** | $O(N_{BH} \cdot N_{particles})$ | Continuous Buffer | In-place zero-allocation particle recycling |
 | **Lensing & Accretion** | $O(1)$ GPU passes | Three.js BufferGeometry + Sprites | Additive blending, instanced draw range |
+$$

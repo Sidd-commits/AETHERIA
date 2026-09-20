@@ -378,13 +378,17 @@ export class PerformanceMonitor {
     this.memoryValEl = this.container.querySelector('#perf-memory-val') as HTMLElement;
     this.qualityBadgeEl = this.container.querySelector('#perf-quality-badge') as HTMLElement;
 
-    this.sparklineCanvas = this.container.querySelector('#perf-sparkline-canvas') as HTMLCanvasElement;
+    this.sparklineCanvas = this.container.querySelector(
+      '#perf-sparkline-canvas'
+    ) as HTMLCanvasElement;
     this.sparklineCtx = this.sparklineCanvas.getContext('2d')!;
 
     this.container.querySelector('#perf-close-btn')?.addEventListener('click', () => this.hide());
 
     // Quality preset buttons
-    this.presetButtons = Array.from(this.container.querySelectorAll('.perf-preset-btn')) as HTMLButtonElement[];
+    this.presetButtons = Array.from(
+      this.container.querySelectorAll('.perf-preset-btn')
+    ) as HTMLButtonElement[];
     this.presetButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const preset = btn.getAttribute('data-preset') as QualityPreset;

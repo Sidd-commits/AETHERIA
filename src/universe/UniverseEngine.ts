@@ -1,5 +1,10 @@
 import { UniverseEntity } from '../types/entity';
-import { UniverseConfig, UniversePresetId, UniverseSnapshot, EcosystemStats } from '../types/universe';
+import {
+  UniverseConfig,
+  UniversePresetId,
+  UniverseSnapshot,
+  EcosystemStats
+} from '../types/universe';
 import { UniverseConfiguration, WorldGenResult } from '../types/worldGen';
 import { GravitySystem } from './systems/GravitySystem';
 import { ParticleSystem } from './systems/ParticleSystem';
@@ -126,7 +131,10 @@ export class UniverseEngine {
     return this.ecosystemSystem.seedOrganisms(this.particleSystem.getBuffer(), count, origin);
   }
 
-  public spawnEnergyBurst(count: number = 200, origin?: { x: number; y: number; z: number }): number {
+  public spawnEnergyBurst(
+    count: number = 200,
+    origin?: { x: number; y: number; z: number }
+  ): number {
     return this.ecosystemSystem.spawnEnergyBurst(this.particleSystem.getBuffer(), count, origin);
   }
 
@@ -140,7 +148,8 @@ export class UniverseEngine {
   }
 
   public spawnEntity(partialEntity: Partial<UniverseEntity>): UniverseEntity {
-    const id = partialEntity.id || `entity_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const id =
+      partialEntity.id || `entity_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const entity: UniverseEntity = {
       id,
       type: partialEntity.type || 'ASTEROID',
@@ -162,20 +171,27 @@ export class UniverseEngine {
     return entity;
   }
 
-  public spawnBlackHole(options: {
-    position?: { x: number; y: number; z: number };
-    mass?: number;
-    radius?: number;
-    gravitationalInfluenceRadius?: number;
-    accretionStrength?: number;
-    eventHorizonRadius?: number;
-  } = {}): UniverseEntity {
+  public spawnBlackHole(
+    options: {
+      position?: { x: number; y: number; z: number };
+      mass?: number;
+      radius?: number;
+      gravitationalInfluenceRadius?: number;
+      accretionStrength?: number;
+      eventHorizonRadius?: number;
+    } = {}
+  ): UniverseEntity {
     const pos = options.position || { x: 0, y: 0, z: 0 };
     const mass = options.mass !== undefined ? options.mass : 120.0;
     const radius = options.radius !== undefined ? options.radius : 1.0;
-    const influenceRadius = options.gravitationalInfluenceRadius !== undefined ? options.gravitationalInfluenceRadius : 30.0;
-    const accretionStrength = options.accretionStrength !== undefined ? options.accretionStrength : 2.0;
-    const eventHorizonRadius = options.eventHorizonRadius !== undefined ? options.eventHorizonRadius : (radius * 1.2);
+    const influenceRadius =
+      options.gravitationalInfluenceRadius !== undefined
+        ? options.gravitationalInfluenceRadius
+        : 30.0;
+    const accretionStrength =
+      options.accretionStrength !== undefined ? options.accretionStrength : 2.0;
+    const eventHorizonRadius =
+      options.eventHorizonRadius !== undefined ? options.eventHorizonRadius : radius * 1.2;
 
     const bh = this.spawnEntity({
       type: 'BLACK_HOLE',
@@ -205,9 +221,11 @@ export class UniverseEngine {
     this.entities.forEach((e) => {
       if (!e.isDead && e.type === 'BLACK_HOLE') {
         if (params.mass !== undefined) e.mass = params.mass;
-        if (params.gravitationalInfluenceRadius !== undefined) e.gravitationalInfluenceRadius = params.gravitationalInfluenceRadius;
+        if (params.gravitationalInfluenceRadius !== undefined)
+          e.gravitationalInfluenceRadius = params.gravitationalInfluenceRadius;
         if (params.accretionStrength !== undefined) e.accretionStrength = params.accretionStrength;
-        if (params.eventHorizonRadius !== undefined) e.eventHorizonRadius = params.eventHorizonRadius;
+        if (params.eventHorizonRadius !== undefined)
+          e.eventHorizonRadius = params.eventHorizonRadius;
       }
     });
   }
@@ -225,23 +243,30 @@ export class UniverseEngine {
   }
 
   public adjustGravity(multiplier: number): void {
-    this.config.gravityConstant = Math.max(0.05, Math.min(8.0, this.config.gravityConstant * multiplier));
+    this.config.gravityConstant = Math.max(
+      0.05,
+      Math.min(8.0, this.config.gravityConstant * multiplier)
+    );
   }
 
-  public createPlanet(params: {
-    name?: string;
-    radius?: number;
-    mass?: number;
-    color?: string;
-    orbitalRadius?: number;
-    position?: { x: number; y: number; z: number };
-  } = {}): UniverseEntity {
+  public createPlanet(
+    params: {
+      name?: string;
+      radius?: number;
+      mass?: number;
+      color?: string;
+      orbitalRadius?: number;
+      position?: { x: number; y: number; z: number };
+    } = {}
+  ): UniverseEntity {
     // Find primary star or center mass
-    const primary = this.entities.find((e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE'));
+    const primary = this.entities.find(
+      (e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE')
+    );
     const centerMass = primary ? primary.mass : 80.0;
     const centerPos = primary ? primary.position : { x: 0, y: 0, z: 0 };
 
-    const r = params.orbitalRadius || (3.5 + Math.random() * 6.5);
+    const r = params.orbitalRadius || 3.5 + Math.random() * 6.5;
     const angle = Math.random() * Math.PI * 2;
     const speed = Math.sqrt((this.config.gravityConstant * centerMass) / r);
 
@@ -272,7 +297,9 @@ export class UniverseEngine {
     });
   }
 
-  public destroyEntity(options: { targetId?: string; targetType?: string; all?: boolean } = {}): number {
+  public destroyEntity(
+    options: { targetId?: string; targetType?: string; all?: boolean } = {}
+  ): number {
     let destroyed = 0;
 
     if (options.all || options.targetType === 'ALL') {
@@ -324,8 +351,13 @@ export class UniverseEngine {
     return destroyed;
   }
 
-  public alignOrbits(center?: { x: number; y: number; z: number }, speedMultiplier: number = 1.0): void {
-    const primary = this.entities.find((e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE'));
+  public alignOrbits(
+    center?: { x: number; y: number; z: number },
+    speedMultiplier: number = 1.0
+  ): void {
+    const primary = this.entities.find(
+      (e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE')
+    );
     const origin = center || (primary ? primary.position : { x: 0, y: 0, z: 0 });
     const centerMass = primary ? primary.mass : 80.0;
 
@@ -337,7 +369,8 @@ export class UniverseEngine {
       const dist = Math.max(1.5, Math.hypot(dx, dz));
 
       const angle = Math.atan2(dz, dx);
-      const orbitalSpeed = Math.sqrt((this.config.gravityConstant * centerMass) / dist) * speedMultiplier;
+      const orbitalSpeed =
+        Math.sqrt((this.config.gravityConstant * centerMass) / dist) * speedMultiplier;
 
       // Lock perpendicular circular velocity
       entity.velocity.x = -Math.sin(angle) * orbitalSpeed;
@@ -423,7 +456,12 @@ export class UniverseEngine {
 
     // 1. Gravity System: Entities pairwise gravity & Particle gravity
     this.gravitySystem.updateEntityGravity(this.entities, this.config, dt);
-    this.gravitySystem.updateParticleGravity(this.particleSystem.getBuffer(), this.tickDominantWells, this.config, dt);
+    this.gravitySystem.updateParticleGravity(
+      this.particleSystem.getBuffer(),
+      this.tickDominantWells,
+      this.config,
+      dt
+    );
 
     // 2. Particle System: Damping, Accretion disk swirl, and bounds
     this.particleSystem.update(this.tickBlackHoles, this.config, dt, this.simulationTime);
@@ -433,7 +471,10 @@ export class UniverseEngine {
 
     // 4. Collision System: Celestial contacts & Horizon absorption
     this.collisionSystem.resolveBodyCollisions(this.entities, this.config);
-    this.collisionSystem.resolveParticleCollisions(this.particleSystem.getBuffer(), this.tickBlackHoles);
+    this.collisionSystem.resolveParticleCollisions(
+      this.particleSystem.getBuffer(),
+      this.tickBlackHoles
+    );
 
     // 5. Energy System: Solar radiation, thermal decay, and harmonic fields
     this.energySystem.update(this.entities, this.config, dt, this.simulationTime);

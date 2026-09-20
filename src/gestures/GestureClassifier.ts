@@ -15,7 +15,8 @@ import { distance3D, clamp } from '../utils/math';
  * and classifies semantic gestures with continuous confidence scoring.
  */
 export class GestureClassifier {
-  private prevCentroids: Map<number, { x: number; y: number; z: number; timestamp: number }> = new Map();
+  private prevCentroids: Map<number, { x: number; y: number; z: number; timestamp: number }> =
+    new Map();
   private prevCurlAverages: Map<number, { curl: number; timestamp: number }> = new Map();
   private prevInterHandDistance: { distance: number; timestamp: number } | null = null;
 
@@ -38,7 +39,13 @@ export class GestureClassifier {
     const palmCentroid = {
       x: (landmarks[0].x + landmarks[5].x + landmarks[9].x + landmarks[13].x + landmarks[17].x) / 5,
       y: (landmarks[0].y + landmarks[5].y + landmarks[9].y + landmarks[13].y + landmarks[17].y) / 5,
-      z: ((landmarks[0].z || 0) + (landmarks[5].z || 0) + (landmarks[9].z || 0) + (landmarks[13].z || 0) + (landmarks[17].z || 0)) / 5
+      z:
+        ((landmarks[0].z || 0) +
+          (landmarks[5].z || 0) +
+          (landmarks[9].z || 0) +
+          (landmarks[13].z || 0) +
+          (landmarks[17].z || 0)) /
+        5
     };
 
     // 3. Palm Normal Vector: (p5 - p17) x (p9 - p0)
@@ -60,7 +67,7 @@ export class GestureClassifier {
 
     // 4. Hand Orientation (Pitch, Yaw, Roll)
     const pitch = (middleMCP.y - wrist.y) * 2.5;
-    const yaw = ((1 - middleMCP.x) - (1 - wrist.x)) * 3.0;
+    const yaw = (1 - middleMCP.x - (1 - wrist.x)) * 3.0;
     const roll = Math.atan2(landmarks[17].y - landmarks[5].y, landmarks[17].x - landmarks[5].x);
     const handOrientation = { pitch, yaw, roll };
 
@@ -78,10 +85,38 @@ export class GestureClassifier {
     this.prevCentroids.set(handIndex, { ...palmCentroid, timestamp: now });
 
     // 6. Finger States & Joint Angles
-    const indexFinger = this.computeFingerState('index', [5, 6, 7, 8], landmarks, palmScale, wrist, palmCentroid);
-    const middleFinger = this.computeFingerState('middle', [9, 10, 11, 12], landmarks, palmScale, wrist, palmCentroid);
-    const ringFinger = this.computeFingerState('ring', [13, 14, 15, 16], landmarks, palmScale, wrist, palmCentroid);
-    const pinkyFinger = this.computeFingerState('pinky', [17, 18, 19, 20], landmarks, palmScale, wrist, palmCentroid);
+    const indexFinger = this.computeFingerState(
+      'index',
+      [5, 6, 7, 8],
+      landmarks,
+      palmScale,
+      wrist,
+      palmCentroid
+    );
+    const middleFinger = this.computeFingerState(
+      'middle',
+      [9, 10, 11, 12],
+      landmarks,
+      palmScale,
+      wrist,
+      palmCentroid
+    );
+    const ringFinger = this.computeFingerState(
+      'ring',
+      [13, 14, 15, 16],
+      landmarks,
+      palmScale,
+      wrist,
+      palmCentroid
+    );
+    const pinkyFinger = this.computeFingerState(
+      'pinky',
+      [17, 18, 19, 20],
+      landmarks,
+      palmScale,
+      wrist,
+      palmCentroid
+    );
     const thumbFinger = this.computeThumbState(landmarks, palmScale, wrist, palmCentroid);
 
     const fingers: Record<FingerName, FingerState> = {
@@ -116,7 +151,8 @@ export class GestureClassifier {
     const pinchConfidence = clamp(1.0 - pinchDistance / pinchThreshold, 0.0, 1.0);
 
     // 9. Circular Trajectory Curvature
-    const { curvature, isCircular, circularConfidence, angularVelocity } = this.computeCircularMotion(trajectory);
+    const { curvature, isCircular, circularConfidence, angularVelocity } =
+      this.computeCircularMotion(trajectory);
     const isFistCircular = isCircular && (extendedCount <= 1 || averageFingerCurl > 0.65);
 
     return {
@@ -174,7 +210,8 @@ export class GestureClassifier {
     const tipDistPalm = distance3D(tip, palmCentroid) / palmScale;
 
     // Extension heuristics
-    const isExtended = tipDistWrist > pipDistWrist * 1.08 && cosAngle > 0.45 && tip.y < pip.y + 0.04;
+    const isExtended =
+      tipDistWrist > pipDistWrist * 1.08 && cosAngle > 0.45 && tip.y < pip.y + 0.04;
     const extensionRatio = clamp((tipDistWrist - pipDistWrist * 0.9) / 0.7, 0.0, 1.0);
 
     return {
@@ -209,7 +246,11 @@ export class GestureClassifier {
     const tipDistWrist = distance3D(tip, wrist) / palmScale;
     const tipDistPalm = distance3D(tip, palmCentroid) / palmScale;
 
-    const u = { x: mcp.x - landmarks[1].x, y: mcp.y - landmarks[1].y, z: (mcp.z || 0) - (landmarks[1].z || 0) };
+    const u = {
+      x: mcp.x - landmarks[1].x,
+      y: mcp.y - landmarks[1].y,
+      z: (mcp.z || 0) - (landmarks[1].z || 0)
+    };
     const v = { x: tip.x - ip.x, y: tip.y - ip.y, z: (tip.z || 0) - (ip.z || 0) };
     const dot = u.x * v.x + u.y * v.y + u.z * v.z;
     const cosAngle = dot / ((Math.hypot(u.x, u.y, u.z) || 1) * (Math.hypot(v.x, v.y, v.z) || 1));
@@ -233,7 +274,12 @@ export class GestureClassifier {
    */
   private computeCircularMotion(
     trajectory: Array<{ position: { x: number; y: number; z: number }; timestamp: number }>
-  ): { curvature: number; isCircular: boolean; circularConfidence: number; angularVelocity: number } {
+  ): {
+    curvature: number;
+    isCircular: boolean;
+    circularConfidence: number;
+    angularVelocity: number;
+  } {
     if (trajectory.length < 12) {
       return { curvature: 0, isCircular: false, circularConfidence: 0, angularVelocity: 0 };
     }
@@ -318,7 +364,10 @@ export class GestureClassifier {
     }
 
     // 3. FIST Gesture (All fingers curled)
-    if (extendedFingerCount === 0 || (averageFingerCurl > 0.78 && !fingers.index.isExtended && !fingers.middle.isExtended)) {
+    if (
+      extendedFingerCount === 0 ||
+      (averageFingerCurl > 0.78 && !fingers.index.isExtended && !fingers.middle.isExtended)
+    ) {
       const fistConfidence = clamp(averageFingerCurl, 0.7, 1.0);
       return {
         type: 'FIST',
@@ -335,7 +384,10 @@ export class GestureClassifier {
       !fingers.pinky.isExtended
     ) {
       const pointConfidence = clamp(
-        (fingers.index.extensionRatio + (1 - fingers.middle.extensionRatio) + (1 - fingers.ring.extensionRatio)) / 3.0,
+        (fingers.index.extensionRatio +
+          (1 - fingers.middle.extensionRatio) +
+          (1 - fingers.ring.extensionRatio)) /
+          3.0,
         0.65,
         1.0
       );
@@ -354,7 +406,10 @@ export class GestureClassifier {
       !fingers.pinky.isExtended
     ) {
       const peaceConfidence = clamp(
-        (fingers.index.extensionRatio + fingers.middle.extensionRatio + (1 - fingers.ring.extensionRatio)) / 3.0,
+        (fingers.index.extensionRatio +
+          fingers.middle.extensionRatio +
+          (1 - fingers.ring.extensionRatio)) /
+          3.0,
         0.7,
         1.0
       );
@@ -373,7 +428,10 @@ export class GestureClassifier {
       !fingers.pinky.isExtended
     ) {
       const threeConfidence = clamp(
-        (fingers.index.extensionRatio + fingers.middle.extensionRatio + fingers.ring.extensionRatio) / 3.0,
+        (fingers.index.extensionRatio +
+          fingers.middle.extensionRatio +
+          fingers.ring.extensionRatio) /
+          3.0,
         0.7,
         1.0
       );

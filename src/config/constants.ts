@@ -27,8 +27,8 @@ export const RENDERING_CONFIG = {
 
 export const ANIMATION_CONFIG = {
   lerpPosition: 0.12,
-  lerpRotation: 0.10,
-  lerpScale: 0.10,
+  lerpRotation: 0.1,
+  lerpScale: 0.1,
   lerpColor: 0.08,
   idleSpinY: 0.003,
   chargeIncrement: 0.035,

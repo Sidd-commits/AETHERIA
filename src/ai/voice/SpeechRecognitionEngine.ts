@@ -30,7 +30,8 @@ export class SpeechRecognitionEngine {
   }
 
   private initRecognition(): void {
-    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognitionClass) {
       this.isSupported = true;
@@ -74,7 +75,8 @@ export class SpeechRecognitionEngine {
         this.recognition.onerror = (event: any) => {
           let msg = 'Speech recognition error.';
           if (event.error === 'not-allowed') {
-            msg = 'Microphone permission denied. Click the lock/settings icon in your browser URL bar to allow microphone access.';
+            msg =
+              'Microphone permission denied. Click the lock/settings icon in your browser URL bar to allow microphone access.';
             this.shouldRestart = false;
           } else if (event.error === 'no-speech') {
             msg = 'Listening for speech...';
@@ -109,7 +111,9 @@ export class SpeechRecognitionEngine {
       }
     } else {
       this.isSupported = false;
-      console.warn('Web Speech API (webkitSpeechRecognition) is not supported in this browser. Use text prompt fallback.');
+      console.warn(
+        'Web Speech API (webkitSpeechRecognition) is not supported in this browser. Use text prompt fallback.'
+      );
     }
   }
 
@@ -130,14 +134,8 @@ export class SpeechRecognitionEngine {
     this.listeners.add(callbacks);
   }
 
-  private notifyAll(fn: (cb: SpeechRecognitionCallbacks) => void): void {
-    this.listeners.forEach((cb) => {
-      try {
-        fn(cb);
-      } catch (err) {
-        console.error('Error in speech callback listener:', err);
-      }
-    });
+  public isVoiceSupported(): boolean {
+    return this.isSupported;
   }
 
   public getIsSupported(): boolean {
@@ -148,27 +146,42 @@ export class SpeechRecognitionEngine {
     return this.isListening;
   }
 
+  public addListener(listener: SpeechRecognitionCallbacks): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notifyAll(fn: (l: SpeechRecognitionCallbacks) => void): void {
+    this.listeners.forEach((l) => {
+      try {
+        fn(l);
+      } catch (err) {
+        console.warn('Error in SpeechRecognition listener:', err);
+      }
+    });
+  }
+
   public async start(): Promise<boolean> {
     if (!this.isSupported || !this.recognition) {
-      this.notifyAll((cb) => cb.onError?.('Speech Recognition is not available in this browser. Please use Chrome, Edge, or the Text Prompt below.'));
+      this.notifyAll((cb) =>
+        cb.onError?.('Speech recognition is not supported in this browser environment.')
+      );
       return false;
     }
 
-    if (this.isListening) {
-      return true;
-    }
+    if (this.isListening) return true;
 
-    this.shouldRestart = true;
     try {
+      this.shouldRestart = true;
       this.recognition.start();
+      this.isListening = true;
+      this.startAudioAnalysis();
+      this.notifyAll((cb) => cb.onStart?.());
       return true;
     } catch (err: any) {
-      if (err.name === 'InvalidStateError') {
-        // Already active
-        this.isListening = true;
-        return true;
-      }
-      console.warn('SpeechRecognition start error:', err);
+      console.warn('Failed to start speech recognition:', err);
+      this.isListening = false;
+      this.notifyAll((cb) => cb.onError?.(err?.message || 'Failed to start microphone input.'));
       return false;
     }
   }
@@ -179,7 +192,7 @@ export class SpeechRecognitionEngine {
     if (this.recognition) {
       try {
         this.recognition.stop();
-      } catch (err) {
+      } catch (_err) {
         // ignore
       }
     }
@@ -203,7 +216,10 @@ export class SpeechRecognitionEngine {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
 
-      this.microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      this.microphoneStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      });
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtxClass) return;
 
@@ -231,8 +247,8 @@ export class SpeechRecognitionEngine {
       };
 
       sampleLoop();
-    } catch (err) {
-      console.debug('Microphone audio level stream unavailable:', err);
+    } catch (_err) {
+      // Microphone stream optional for waveform
     }
   }
 
@@ -248,7 +264,7 @@ export class SpeechRecognitionEngine {
     if (this.audioContext && this.audioContext.state !== 'closed') {
       try {
         this.audioContext.close();
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
       this.audioContext = null;

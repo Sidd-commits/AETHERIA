@@ -35,7 +35,9 @@ export class WorldGenValidator {
         errors.push(`Security violation: Forbidden property "${key}" detected.`);
       }
       if (typeof raw[key] === 'function') {
-        errors.push(`Security violation: Functions or executable code are strictly forbidden in configuration.`);
+        errors.push(
+          `Security violation: Functions or executable code are strictly forbidden in configuration.`
+        );
       }
     }
 
@@ -82,7 +84,9 @@ export class WorldGenValidator {
     if (typeof raw.blackHoles === 'number' && !isNaN(raw.blackHoles)) {
       const clampedBH = Math.max(0, Math.min(5, Math.round(raw.blackHoles)));
       if (clampedBH !== raw.blackHoles) {
-        warnings.push(`Black holes count ${raw.blackHoles} clamped to valid range [0..5]: ${clampedBH}.`);
+        warnings.push(
+          `Black holes count ${raw.blackHoles} clamped to valid range [0..5]: ${clampedBH}.`
+        );
       }
       blackHoles = clampedBH;
     } else if (raw.blackHoles !== undefined) {
@@ -94,12 +98,14 @@ export class WorldGenValidator {
     if (typeof raw.planets === 'number' && !isNaN(raw.planets)) {
       const clampedPlanets = Math.max(0, Math.min(20, Math.round(raw.planets)));
       if (clampedPlanets !== raw.planets) {
-        warnings.push(`Planets count ${raw.planets} clamped to valid range [0..20]: ${clampedPlanets}.`);
+        warnings.push(
+          `Planets count ${raw.planets} clamped to valid range [0..20]: ${clampedPlanets}.`
+        );
       }
       planets = clampedPlanets;
     } else {
       // Inferred automatically based on stars and theme
-      planets = stars > 0 ? (stars * 3) : 0;
+      planets = stars > 0 ? stars * 3 : 0;
     }
 
     // 7. Validate & Sanitize "gravity"
@@ -119,7 +125,9 @@ export class WorldGenValidator {
     if (typeof raw.energyDensity === 'number' && !isNaN(raw.energyDensity)) {
       const clampedE = Math.max(0.1, Math.min(3.0, Number(raw.energyDensity.toFixed(2))));
       if (clampedE !== raw.energyDensity) {
-        warnings.push(`Energy density ${raw.energyDensity} clamped to range [0.1..3.0]: ${clampedE}.`);
+        warnings.push(
+          `Energy density ${raw.energyDensity} clamped to range [0.1..3.0]: ${clampedE}.`
+        );
       }
       energyDensity = clampedE;
     } else if (raw.energyDensity !== undefined) {
@@ -131,7 +139,9 @@ export class WorldGenValidator {
     if (typeof raw.formationRate === 'number' && !isNaN(raw.formationRate)) {
       const clampedF = Math.max(0.0, Math.min(2.0, Number(raw.formationRate.toFixed(2))));
       if (clampedF !== raw.formationRate) {
-        warnings.push(`Formation rate ${raw.formationRate} clamped to range [0.0..2.0]: ${clampedF}.`);
+        warnings.push(
+          `Formation rate ${raw.formationRate} clamped to range [0.0..2.0]: ${clampedF}.`
+        );
       }
       formationRate = clampedF;
     } else if (raw.formationRate !== undefined) {
@@ -145,7 +155,8 @@ export class WorldGenValidator {
     }
 
     // 11. Seed Organisms
-    const seedOrganisms = raw.seedOrganisms ?? (theme === 'peaceful' || theme === 'harmonic' || energyDensity > 0.5);
+    const seedOrganisms =
+      raw.seedOrganisms ?? (theme === 'peaceful' || theme === 'harmonic' || energyDensity > 0.5);
 
     const sanitizedConfig: UniverseConfiguration = {
       theme,
@@ -173,22 +184,66 @@ export class WorldGenValidator {
 
   public static sanitizeTheme(themeRaw: string): string {
     const t = themeRaw.toLowerCase().trim();
-    if (t.includes('peace') || t.includes('seren') || t.includes('calm') || t.includes('tranquil')) return 'peaceful';
-    if (t.includes('chao') || t.includes('turbul') || t.includes('viol') || t.includes('wild')) return 'chaotic';
+    if (t.includes('peace') || t.includes('seren') || t.includes('calm') || t.includes('tranquil'))
+      return 'peaceful';
+    if (t.includes('chao') || t.includes('turbul') || t.includes('viol') || t.includes('wild'))
+      return 'chaotic';
     if (t.includes('harm') || t.includes('balan') || t.includes('zen')) return 'harmonic';
-    if (t.includes('neb') || t.includes('gas') || t.includes('dust') || t.includes('cloud')) return 'nebular';
-    if (t.includes('void') || t.includes('dark') || t.includes('abyss') || t.includes('empty')) return 'void';
+    if (t.includes('neb') || t.includes('gas') || t.includes('dust') || t.includes('cloud'))
+      return 'nebular';
+    if (t.includes('void') || t.includes('dark') || t.includes('abyss') || t.includes('empty'))
+      return 'void';
     return t.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20) || 'peaceful';
   }
 
   public static sanitizeColorPalette(paletteRaw: string): string {
     const p = paletteRaw.toLowerCase().trim();
-    if (p.includes('blue') || p.includes('cyan') || p.includes('azure') || p.includes('aqua') || p.includes('sky')) return 'blue';
-    if (p.includes('green') || p.includes('emerald') || p.includes('lime') || p.includes('nature') || p.includes('bio')) return 'green';
-    if (p.includes('purple') || p.includes('violet') || p.includes('ultraviolet') || p.includes('indigo')) return 'purple';
-    if (p.includes('pink') || p.includes('magenta') || p.includes('rose') || p.includes('sunset') || p.includes('fuchsia')) return 'magenta';
-    if (p.includes('yellow') || p.includes('solar') || p.includes('gold') || p.includes('amber') || p.includes('orange')) return 'amber';
-    if (p.includes('prismatic') || p.includes('spectrum') || p.includes('rainbow') || p.includes('multi')) return 'spectrum';
+    if (
+      p.includes('blue') ||
+      p.includes('cyan') ||
+      p.includes('azure') ||
+      p.includes('aqua') ||
+      p.includes('sky')
+    )
+      return 'blue';
+    if (
+      p.includes('green') ||
+      p.includes('emerald') ||
+      p.includes('lime') ||
+      p.includes('nature') ||
+      p.includes('bio')
+    )
+      return 'green';
+    if (
+      p.includes('purple') ||
+      p.includes('violet') ||
+      p.includes('ultraviolet') ||
+      p.includes('indigo')
+    )
+      return 'purple';
+    if (
+      p.includes('pink') ||
+      p.includes('magenta') ||
+      p.includes('rose') ||
+      p.includes('sunset') ||
+      p.includes('fuchsia')
+    )
+      return 'magenta';
+    if (
+      p.includes('yellow') ||
+      p.includes('solar') ||
+      p.includes('gold') ||
+      p.includes('amber') ||
+      p.includes('orange')
+    )
+      return 'amber';
+    if (
+      p.includes('prismatic') ||
+      p.includes('spectrum') ||
+      p.includes('rainbow') ||
+      p.includes('multi')
+    )
+      return 'spectrum';
     return 'blue';
   }
 

@@ -12,10 +12,7 @@ export class InputManager {
   private worldState: WorldState;
   private isMouseDown: boolean = false;
 
-  constructor(
-    worldState: WorldState,
-    commandBus: CommandBus = CommandBus.getInstance()
-  ) {
+  constructor(worldState: WorldState, commandBus: CommandBus = CommandBus.getInstance()) {
     this.worldState = worldState;
     this.commandBus = commandBus;
 
@@ -39,10 +36,14 @@ export class InputManager {
 
     const state = this.worldState.getState();
     if (!state.handTrackingActive) {
-      this.commandBus.dispatch('SET_TRANSFORM', {
-        position: { x: mouseX, y: mouseY, z: 0 },
-        rotation: { x: mouseY * 0.3, y: mouseX * 0.3, z: 0 }
-      }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SET_TRANSFORM',
+        {
+          position: { x: mouseX, y: mouseY, z: 0 },
+          rotation: { x: mouseY * 0.3, y: mouseX * 0.3, z: 0 }
+        },
+        'MOUSE_KEYBOARD'
+      );
     }
   };
 
@@ -65,10 +66,14 @@ export class InputManager {
       const charge = this.worldState.getState().chargeAmount;
       if (charge > 0.2) {
         this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: charge }, 'MOUSE_KEYBOARD');
-        this.commandBus.dispatch('SHOW_TOAST', {
-          message: '💥 Mouse Supernova Exploded!',
-          icon: '💥'
-        }, 'MOUSE_KEYBOARD');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Mouse Supernova Exploded!',
+            icon: '💥'
+          },
+          'MOUSE_KEYBOARD'
+        );
       }
       this.commandBus.dispatch('SET_CHARGE', { charging: false }, 'MOUSE_KEYBOARD');
     }
@@ -86,24 +91,36 @@ export class InputManager {
     if (e.key >= '0' && e.key <= '5') {
       const idx = parseInt(e.key, 10);
       this.commandBus.dispatch('SET_PALETTE', { index: idx }, 'MOUSE_KEYBOARD');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: `🎨 Palette changed to ${PALETTES[idx].name}`,
-        icon: '🎨'
-      }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `🎨 Palette changed to ${PALETTES[idx].name}`,
+          icon: '🎨'
+        },
+        'MOUSE_KEYBOARD'
+      );
     } else if (e.key === 'c' || e.key === 'C') {
       this.commandBus.dispatch('TOGGLE_WEBCAM_BACKGROUND', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'b' || e.key === 'B') {
-      this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
-        position: { x: this.lastMousePos.x, y: this.lastMousePos.y, z: 0 },
-        mass: 140.0,
-        radius: 1.0,
-        gravitationalInfluenceRadius: 30.0,
-        accretionStrength: 2.2
-      }, 'MOUSE_KEYBOARD');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '🕳️ Black Hole Spawned (Key B)!',
-        icon: '🕳️'
-      }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SPAWN_BLACK_HOLE',
+        {
+          position: { x: this.lastMousePos.x, y: this.lastMousePos.y, z: 0 },
+          mass: 140.0,
+          radius: 1.0,
+          gravitationalInfluenceRadius: 30.0,
+          accretionStrength: 2.2
+        },
+        'MOUSE_KEYBOARD'
+      );
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '🕳️ Black Hole Spawned (Key B)!',
+          icon: '🕳️'
+        },
+        'MOUSE_KEYBOARD'
+      );
     } else if (e.key === 'w' || e.key === 'W') {
       const target = e.target as HTMLElement | null;
       if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
@@ -111,10 +128,14 @@ export class InputManager {
       }
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
-      this.commandBus.dispatch('SHOW_TOAST', {
-        message: '💥 Supernova Triggered!',
-        icon: '💥'
-      }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '💥 Supernova Triggered!',
+          icon: '💥'
+        },
+        'MOUSE_KEYBOARD'
+      );
     }
   };
 

@@ -68,12 +68,12 @@ export class FormationSystem {
       { name: 'Aether-2 (Cyane)', r: 3.6, size: 0.34, color: '#00f2fe', mass: 1.5 },
       { name: 'Aether-3 (Terra)', r: 4.8, size: 0.38, color: '#00f5a0', mass: 2.0 },
       { name: 'Aether-4 (Rubor)', r: 6.2, size: 0.28, color: '#f857a6', mass: 1.2 },
-      { name: 'Aether-5 (Jove)',  r: 8.4, size: 0.65, color: '#f59e0b', mass: 6.0 },
+      { name: 'Aether-5 (Jove)', r: 8.4, size: 0.65, color: '#f59e0b', mass: 6.0 },
       { name: 'Aether-6 (Chronos)', r: 10.6, size: 0.55, color: '#9b51e0', mass: 4.5 }
     ];
 
     planetConfigs.forEach((p, idx) => {
-      const angle = (idx * (Math.PI * 2 / planetConfigs.length)) + Math.random() * 0.4;
+      const angle = idx * ((Math.PI * 2) / planetConfigs.length) + Math.random() * 0.4;
       const speed = Math.sqrt((1.0 * sun.mass) / p.r);
 
       entities.push({
@@ -108,7 +108,11 @@ export class FormationSystem {
         id: generateId('asteroid'),
         type: 'ASTEROID',
         name: `Asteroid-${a + 1}`,
-        position: { x: Math.cos(angle) * r, y: (Math.random() - 0.5) * 0.25, z: Math.sin(angle) * r },
+        position: {
+          x: Math.cos(angle) * r,
+          y: (Math.random() - 0.5) * 0.25,
+          z: Math.sin(angle) * r
+        },
         velocity: { x: -Math.sin(angle) * speed, y: 0, z: Math.cos(angle) * speed },
         acceleration: { x: 0, y: 0, z: 0 },
         mass: 0.05,
@@ -270,7 +274,11 @@ export class FormationSystem {
         id: generateId('planet'),
         type: 'PLANET',
         name: `Relic-${i + 1}`,
-        position: { x: Math.cos(angle) * r, y: (Math.random() - 0.5) * 0.4, z: Math.sin(angle) * r },
+        position: {
+          x: Math.cos(angle) * r,
+          y: (Math.random() - 0.5) * 0.4,
+          z: Math.sin(angle) * r
+        },
         velocity: { x: -Math.sin(angle) * speed, y: 0, z: Math.cos(angle) * speed },
         acceleration: { x: 0, y: 0, z: 0 },
         mass: 0.8,
