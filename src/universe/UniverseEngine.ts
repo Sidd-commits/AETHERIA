@@ -190,6 +190,133 @@ export class UniverseEngine {
     });
   }
 
+  public setGravity(g: number): void {
+    this.config.gravityConstant = Math.max(0.05, Math.min(8.0, g));
+  }
+
+  public adjustGravity(multiplier: number): void {
+    this.config.gravityConstant = Math.max(0.05, Math.min(8.0, this.config.gravityConstant * multiplier));
+  }
+
+  public createPlanet(params: {
+    name?: string;
+    radius?: number;
+    mass?: number;
+    color?: string;
+    orbitalRadius?: number;
+    position?: { x: number; y: number; z: number };
+  } = {}): UniverseEntity {
+    // Find primary star or center mass
+    const primary = this.entities.find((e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE'));
+    const centerMass = primary ? primary.mass : 80.0;
+    const centerPos = primary ? primary.position : { x: 0, y: 0, z: 0 };
+
+    const r = params.orbitalRadius || (3.5 + Math.random() * 6.5);
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.sqrt((this.config.gravityConstant * centerMass) / r);
+
+    const pos = params.position || {
+      x: centerPos.x + Math.cos(angle) * r,
+      y: centerPos.y + (Math.random() - 0.5) * 0.2,
+      z: centerPos.z + Math.sin(angle) * r
+    };
+
+    const vel = {
+      x: -Math.sin(angle) * speed,
+      y: 0,
+      z: Math.cos(angle) * speed
+    };
+
+    return this.spawnEntity({
+      type: 'PLANET',
+      name: params.name || `Planet-${Math.floor(Math.random() * 899 + 100)}`,
+      radius: params.radius || 0.35,
+      mass: params.mass || 1.5,
+      color: params.color || '#00f5a0',
+      position: pos,
+      velocity: vel,
+      orbitalRadius: r,
+      orbitalSpeed: speed,
+      orbitalAngle: angle,
+      parentEntityId: primary?.id
+    });
+  }
+
+  public destroyEntity(options: { targetId?: string; targetType?: string; all?: boolean } = {}): number {
+    let destroyed = 0;
+
+    if (options.all || options.targetType === 'ALL') {
+      this.entities.forEach((e) => {
+        if (!e.isDead && e.type !== 'STAR') {
+          e.isDead = true;
+          destroyed++;
+        }
+      });
+      return destroyed;
+    }
+
+    if (options.targetType === 'ALL_PLANETS') {
+      this.entities.forEach((e) => {
+        if (!e.isDead && e.type === 'PLANET') {
+          e.isDead = true;
+          destroyed++;
+        }
+      });
+      return destroyed;
+    }
+
+    if (options.targetType === 'ALL_BLACK_HOLES' || options.targetType === 'BLACK_HOLE') {
+      this.entities.forEach((e) => {
+        if (!e.isDead && e.type === 'BLACK_HOLE') {
+          e.isDead = true;
+          destroyed++;
+        }
+      });
+      return destroyed;
+    }
+
+    if (options.targetId) {
+      const e = this.entities.find((item) => item.id === options.targetId);
+      if (e && !e.isDead) {
+        e.isDead = true;
+        destroyed++;
+      }
+      return destroyed;
+    }
+
+    // Default: destroy outermost or random planet
+    const planets = this.entities.filter((e) => !e.isDead && e.type === 'PLANET');
+    if (planets.length > 0) {
+      planets[planets.length - 1].isDead = true;
+      destroyed++;
+    }
+
+    return destroyed;
+  }
+
+  public alignOrbits(center?: { x: number; y: number; z: number }, speedMultiplier: number = 1.0): void {
+    const primary = this.entities.find((e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE'));
+    const origin = center || (primary ? primary.position : { x: 0, y: 0, z: 0 });
+    const centerMass = primary ? primary.mass : 80.0;
+
+    this.entities.forEach((entity) => {
+      if (entity.isDead || entity.type === 'STAR' || entity.type === 'BLACK_HOLE') return;
+
+      const dx = entity.position.x - origin.x;
+      const dz = entity.position.z - origin.z;
+      const dist = Math.max(1.5, Math.hypot(dx, dz));
+
+      const angle = Math.atan2(dz, dx);
+      const orbitalSpeed = Math.sqrt((this.config.gravityConstant * centerMass) / dist) * speedMultiplier;
+
+      // Lock perpendicular circular velocity
+      entity.velocity.x = -Math.sin(angle) * orbitalSpeed;
+      entity.velocity.y = 0;
+      entity.velocity.z = Math.cos(angle) * orbitalSpeed;
+      entity.position.y = origin.y;
+    });
+  }
+
   public triggerSupernova(power: number = 1.0, origin?: { x: number; y: number; z: number }): void {
     let explosionOrigin = origin;
 

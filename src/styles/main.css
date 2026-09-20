@@ -414,6 +414,13 @@ html, body {
     padding: 12px !important;
     font-size: 11px !important;
   }
+  .voice-ai-panel {
+    top: 70px !important;
+    left: 12px !important;
+    width: 260px !important;
+    padding: 12px !important;
+    font-size: 11px !important;
+  }
   .universe-controls-panel {
     bottom: 12px !important;
     padding: 6px 10px !important;

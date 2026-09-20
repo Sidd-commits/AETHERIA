@@ -8,13 +8,14 @@ import { RenderLoop } from './rendering/RenderLoop';
 import { HandTracker } from './tracking/HandTracker';
 import { GestureRecognizer } from './gestures/GestureRecognizer';
 import { InputManager } from './input/InputManager';
+import { AIManager } from './ai/AIManager';
 import { UIManager } from './ui/UIManager';
 import { getRequiredElement } from './utils/dom';
 
 /**
  * AETHERIA Application Bootstrap Entry Point
  * Orchestrates UniverseEngine, decoupled Three.js visualizer,
- * gesture recognition engine, and procedural simulation controls.
+ * gesture recognition engine, voice AI interface, and procedural simulation controls.
  */
 export class AetheriaApp {
   public readonly commandBus: CommandBus;
@@ -26,6 +27,7 @@ export class AetheriaApp {
   public readonly handTracker: HandTracker;
   public readonly gestureRecognizer: GestureRecognizer;
   public readonly inputManager: InputManager;
+  public readonly aiManager: AIManager;
   public readonly uiManager: UIManager;
 
   constructor() {
@@ -46,10 +48,14 @@ export class AetheriaApp {
     this.gestureRecognizer = new GestureRecognizer(this.worldState, this.commandBus);
     this.inputManager = new InputManager(this.worldState, this.commandBus);
 
-    // 5. User Interface Subsystem (with real-time Debug visualizer & Universe Controls)
+    // 5. Voice AI Interface Subsystem (Decoupled NLP/LLM controller)
+    this.aiManager = new AIManager(this.worldState, this.commandBus);
+
+    // 6. User Interface Subsystem (with real-time Debug visualizer, Universe Controls & Voice AI HUD)
     this.uiManager = new UIManager(
       this.worldState,
       this.gestureRecognizer.getDetector(),
+      this.aiManager,
       this.commandBus
     );
 
@@ -144,6 +150,27 @@ export class AetheriaApp {
 
     this.commandBus.on('TOGGLE_POPULATION_MONITOR', () => {
       this.uiManager.getPopulationMonitor().toggle();
+    });
+
+    // Voice AI Driven Simulation Commands
+    this.commandBus.on('SET_GRAVITY', (cmd) => {
+      if (cmd.payload?.gravityConstant !== undefined) {
+        this.universeEngine.setGravity(cmd.payload.gravityConstant);
+      } else if (cmd.payload?.multiplier !== undefined) {
+        this.universeEngine.adjustGravity(cmd.payload.multiplier);
+      }
+    });
+
+    this.commandBus.on('DESTROY_ENTITY', (cmd) => {
+      this.universeEngine.destroyEntity(cmd.payload || {});
+    });
+
+    this.commandBus.on('ALIGN_ORBITS', (cmd) => {
+      this.universeEngine.alignOrbits(cmd.payload?.center, cmd.payload?.speedMultiplier);
+    });
+
+    this.commandBus.on('TOGGLE_VOICE_AI', () => {
+      this.uiManager.getVoiceAIHUD().toggle();
     });
   }
 

@@ -28,7 +28,11 @@ export type CommandType =
   | 'SPAWN_ENERGY_BURST'
   | 'RESET_ECOSYSTEM'
   | 'TOGGLE_POPULATION_MONITOR'
-  | 'TRIGGER_SUPERNOVA';
+  | 'TRIGGER_SUPERNOVA'
+  | 'SET_GRAVITY'
+  | 'DESTROY_ENTITY'
+  | 'ALIGN_ORBITS'
+  | 'TOGGLE_VOICE_AI';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -120,6 +124,26 @@ export interface TriggerSupernovaPayload {
   entityId?: string;
 }
 
+export interface SetGravityPayload {
+  gravityConstant?: number;
+  multiplier?: number;
+}
+
+export interface DestroyEntityPayload {
+  targetId?: string;
+  targetType?: string;
+  all?: boolean;
+}
+
+export interface AlignOrbitsPayload {
+  center?: { x: number; y: number; z: number };
+  speedMultiplier?: number;
+}
+
+export interface ToggleVoiceAIPayload {
+  enabled?: boolean;
+}
+
 export interface CommandPayloadMap {
   SET_PALETTE: SetPalettePayload;
   CYCLE_PALETTE: void;
@@ -143,6 +167,10 @@ export interface CommandPayloadMap {
   RESET_ECOSYSTEM: void;
   TOGGLE_POPULATION_MONITOR: void;
   TRIGGER_SUPERNOVA: TriggerSupernovaPayload;
+  SET_GRAVITY: SetGravityPayload;
+  DESTROY_ENTITY: DestroyEntityPayload | void;
+  ALIGN_ORBITS: AlignOrbitsPayload | void;
+  TOGGLE_VOICE_AI: ToggleVoiceAIPayload | void;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

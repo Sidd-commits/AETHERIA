@@ -7,13 +7,15 @@ import { ToastController } from './ToastController';
 import { DebugOverlay } from './DebugOverlay';
 import { UniverseControls } from './UniverseControls';
 import { PopulationMonitor } from './PopulationMonitor';
+import { VoiceAIHUD } from './VoiceAIHUD';
+import { AIManager } from '../ai/AIManager';
 import { UniverseState } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
 
 /**
  * UI Manager
  * Orchestrates all UI overlays, controllers, HUD elements, user button inputs,
- * debug visualizer, ecosystem population monitor, and procedural universe simulation controls.
+ * debug visualizer, ecosystem population monitor, voice AI interface, and procedural universe simulation controls.
  */
 export class UIManager {
   private commandBus: CommandBus;
@@ -24,6 +26,7 @@ export class UIManager {
   private debugOverlay: DebugOverlay;
   private universeControls: UniverseControls;
   private populationMonitor: PopulationMonitor;
+  private voiceAIHUD: VoiceAIHUD;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
@@ -31,10 +34,12 @@ export class UIManager {
   private explodeDemoBtn: HTMLButtonElement;
   private toggleDebugBtn: HTMLButtonElement | null = null;
   private toggleEcoBtn: HTMLButtonElement | null = null;
+  private toggleVoiceBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
     gestureDetector: GestureDetector,
+    aiManager: AIManager,
     commandBus: CommandBus = CommandBus.getInstance()
   ) {
     this.worldState = worldState;
@@ -46,6 +51,7 @@ export class UIManager {
     this.debugOverlay = new DebugOverlay(gestureDetector, this.commandBus);
     this.universeControls = new UniverseControls(this.commandBus);
     this.populationMonitor = new PopulationMonitor(this.commandBus);
+    this.voiceAIHUD = new VoiceAIHUD(aiManager, this.commandBus);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
@@ -53,6 +59,7 @@ export class UIManager {
     this.explodeDemoBtn = getRequiredElement<HTMLButtonElement>('btn-explode-demo');
     this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
     this.toggleEcoBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-eco');
+    this.toggleVoiceBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-voice');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -91,6 +98,16 @@ export class UIManager {
         this.commandBus.dispatch('SHOW_TOAST', {
           message: isVisible ? '🌿 Population Monitor Open (Press E)' : '🌿 Population Monitor Hidden',
           icon: '🌿'
+        }, 'UI');
+      });
+    }
+
+    if (this.toggleVoiceBtn) {
+      this.toggleVoiceBtn.addEventListener('click', () => {
+        const isVisible = this.voiceAIHUD.toggle();
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: isVisible ? '🎙️ Voice AI HUD Open (Press V)' : '🎙️ Voice AI HUD Hidden',
+          icon: '🎙️'
         }, 'UI');
       });
     }
@@ -133,5 +150,9 @@ export class UIManager {
 
   public getPopulationMonitor(): PopulationMonitor {
     return this.populationMonitor;
+  }
+
+  public getVoiceAIHUD(): VoiceAIHUD {
+    return this.voiceAIHUD;
   }
 }
