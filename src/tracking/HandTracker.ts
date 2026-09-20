@@ -103,7 +103,9 @@ export class HandTracker {
 
       // 1. Direct getUserMedia for immediate webcam video feed
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Webcam API (navigator.mediaDevices.getUserMedia) is not supported in this browser.');
+        throw new Error(
+          'Webcam API (navigator.mediaDevices.getUserMedia) is not supported in this browser.'
+        );
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -162,7 +164,9 @@ export class HandTracker {
           'SYSTEM'
         );
       } else {
-        console.warn('MediaPipe Hands library could not be loaded. Operating in camera preview + mouse mode.');
+        console.warn(
+          'MediaPipe Hands library could not be loaded. Operating in camera preview + mouse mode.'
+        );
       }
 
       // 3. Start high-performance frame processing loop
