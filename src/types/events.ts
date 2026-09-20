@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { UniversePresetId } from './universe';
 import { UniverseEntity } from './entity';
+import { UniverseConfiguration } from './worldGen';
 
 /**
  * Command and Event types for centralized command bus
@@ -32,7 +33,9 @@ export type CommandType =
   | 'SET_GRAVITY'
   | 'DESTROY_ENTITY'
   | 'ALIGN_ORBITS'
-  | 'TOGGLE_VOICE_AI';
+  | 'TOGGLE_VOICE_AI'
+  | 'GENERATE_PROCEDURAL_UNIVERSE'
+  | 'TOGGLE_WORLD_GEN';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -171,6 +174,8 @@ export interface CommandPayloadMap {
   DESTROY_ENTITY: DestroyEntityPayload | void;
   ALIGN_ORBITS: AlignOrbitsPayload | void;
   TOGGLE_VOICE_AI: ToggleVoiceAIPayload | void;
+  GENERATE_PROCEDURAL_UNIVERSE: { config: UniverseConfiguration };
+  TOGGLE_WORLD_GEN: void;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

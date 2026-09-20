@@ -10,6 +10,7 @@ import { GestureRecognizer } from './gestures/GestureRecognizer';
 import { InputManager } from './input/InputManager';
 import { AIManager } from './ai/AIManager';
 import { UIManager } from './ui/UIManager';
+import { WorldGenValidator } from './universe/generator/WorldGenValidator';
 import { getRequiredElement } from './utils/dom';
 
 /**
@@ -171,6 +172,16 @@ export class AetheriaApp {
 
     this.commandBus.on('TOGGLE_VOICE_AI', () => {
       this.uiManager.getVoiceAIHUD().toggle();
+    });
+
+    this.commandBus.on('GENERATE_PROCEDURAL_UNIVERSE', (cmd) => {
+      const result = this.universeEngine.generateFromConfig(cmd.payload.config);
+      const paletteIdx = WorldGenValidator.getPaletteIndex(cmd.payload.config.colorPalette);
+      this.commandBus.dispatch('SET_PALETTE', { index: paletteIdx }, 'SYSTEM');
+      this.commandBus.dispatch('SHOW_TOAST', {
+        message: `🌌 Generated Universe: ${cmd.payload.config.theme.toUpperCase()} (${result.entitiesGenerated.stars}★, ${result.entitiesGenerated.planets}♁, ${result.entitiesGenerated.blackHoles}🕳️)`,
+        icon: '🪐'
+      }, 'SYSTEM');
     });
   }
 

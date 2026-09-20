@@ -1,5 +1,6 @@
 import { UniverseEntity } from '../types/entity';
 import { UniverseConfig, UniversePresetId, UniverseSnapshot, EcosystemStats } from '../types/universe';
+import { UniverseConfiguration, WorldGenResult } from '../types/worldGen';
 import { GravitySystem } from './systems/GravitySystem';
 import { ParticleSystem } from './systems/ParticleSystem';
 import { CollisionSystem } from './systems/CollisionSystem';
@@ -7,6 +8,7 @@ import { EnergySystem } from './systems/EnergySystem';
 import { FormationSystem } from './systems/FormationSystem';
 import { DestructionSystem } from './systems/DestructionSystem';
 import { EcosystemSystem } from './systems/EcosystemSystem';
+import { ProceduralUniverseGenerator } from './generator/ProceduralUniverseGenerator';
 
 export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
   gravityConstant: 1.0,
@@ -81,15 +83,43 @@ export class UniverseEngine {
     return this.config.isPaused;
   }
 
+  private activeCustomConfig: UniverseConfiguration | null = null;
+
   public loadPreset(presetId: UniversePresetId): void {
+    this.activeCustomConfig = null;
     this.activePreset = presetId;
     this.entities = this.formationSystem.generatePreset(presetId, this.particleSystem);
     this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), 650, 2400);
   }
 
+  public generateFromConfig(customConfig: UniverseConfiguration): WorldGenResult {
+    this.activeCustomConfig = customConfig;
+    // Apply physical config constants
+    this.config.gravityConstant = customConfig.gravity;
+    this.config.collisionDamping = customConfig.theme === 'chaotic' ? 0.95 : 0.985;
+    this.config.energyTransferRate = customConfig.energyDensity;
+
+    const { entities, result } = ProceduralUniverseGenerator.generate(
+      customConfig,
+      this.particleSystem,
+      this.ecosystemSystem
+    );
+
+    this.entities = entities;
+    return result;
+  }
+
+  public getActiveCustomConfig(): UniverseConfiguration | null {
+    return this.activeCustomConfig;
+  }
+
   public reset(): void {
     this.ecosystemSystem.reset();
-    this.loadPreset(this.activePreset);
+    if (this.activeCustomConfig) {
+      this.generateFromConfig(this.activeCustomConfig);
+    } else {
+      this.loadPreset(this.activePreset);
+    }
   }
 
   public seedOrganisms(count: number = 50, origin?: { x: number; y: number; z: number }): number {

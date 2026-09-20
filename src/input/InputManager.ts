@@ -104,6 +104,11 @@ export class InputManager {
         message: '🕳️ Black Hole Spawned (Key B)!',
         icon: '🕳️'
       }, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'w' || e.key === 'W') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('TOGGLE_WORLD_GEN', undefined, 'MOUSE_KEYBOARD');
+      }
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
       this.commandBus.dispatch('SHOW_TOAST', {
