@@ -100,7 +100,7 @@ export class VoiceAIHUD {
         <!-- Status & Waveform -->
         <div style="flex: 1; overflow: hidden;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <span id="voice-status-badge" style="font-size: 11px; font-weight: 600; color: #00f2fe; letter-spacing: 0.04em;">READY TO LISTEN</span>
+            <span id="voice-status-badge" style="font-size: 11px; font-weight: 600; color: #00f2fe; letter-spacing: 0.04em;">CLICK MIC TO SPEAK</span>
             <span style="font-size: 10px; color: #8a99ad;">Press [V]</span>
           </div>
           <!-- Waveform Visualizer Bars -->
@@ -120,7 +120,18 @@ export class VoiceAIHUD {
 
       <!-- Live Transcript Display -->
       <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 8px 10px; min-height: 38px; display: flex; align-items: center;">
-        <span id="voice-transcript-text" style="font-size: 12px; color: #8a99ad; font-style: italic;">"Speak a command (e.g. 'Create a planet', 'Make the universe blue')..."</span>
+        <span id="voice-transcript-text" style="font-size: 12px; color: #8a99ad; font-style: italic;">"Speak a command or click an example below..."</span>
+      </div>
+
+      <!-- Quick Command Suggestion Chips -->
+      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+        <button class="voice-chip" data-query="Create a planet.">🪐 + Planet</button>
+        <button class="voice-chip" data-query="Make the universe blue.">🎨 Blue Theme</button>
+        <button class="voice-chip" data-query="Increase gravity.">⚡ Gravity +</button>
+        <button class="voice-chip" data-query="Create a black hole.">🕳️ Black Hole</button>
+        <button class="voice-chip" data-query="Make all planets orbit the center.">🔄 Align Orbits</button>
+        <button class="voice-chip" data-query="Seed life.">🌱 Seed Life</button>
+        <button class="voice-chip" data-query="Create a supernova.">💥 Supernova</button>
       </div>
 
       <!-- Structured JSON Command Inspector (Collapsible) -->
@@ -147,7 +158,7 @@ export class VoiceAIHUD {
 
       <!-- Natural-Language Text Input Fallback -->
       <div style="display: flex; gap: 6px;">
-        <input id="input-voice-text" type="text" placeholder="Or type a prompt & press Enter..." style="
+        <input id="input-voice-text" type="text" placeholder="Type prompt & press Enter..." style="
           flex: 1;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.12);
@@ -179,7 +190,7 @@ export class VoiceAIHUD {
 
     document.body.appendChild(this.container);
 
-    // Add Waveform Styles
+    // Add Waveform & Chip Styles
     const style = document.createElement('style');
     style.innerHTML = `
       .wave-bar {
@@ -187,6 +198,23 @@ export class VoiceAIHUD {
         background: #00f2fe;
         border-radius: 2px;
         transition: height 0.08s ease, background 0.2s ease;
+      }
+      .voice-chip {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #c4d7f2;
+        border-radius: 12px;
+        padding: 3px 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .voice-chip:hover {
+        background: rgba(0, 242, 254, 0.18);
+        border-color: rgba(0, 242, 254, 0.4);
+        color: #00f2fe;
+        transform: translateY(-1px);
       }
       @keyframes pulseRed {
         0%, 100% { box-shadow: 0 0 10px rgba(255, 8, 68, 0.2); }
@@ -207,8 +235,8 @@ export class VoiceAIHUD {
     this.historyListEl = this.container.querySelector('#voice-history-list') as HTMLElement;
     this.textInputEl = this.container.querySelector('#input-voice-text') as HTMLInputElement;
 
-    // Hook audio waveform updates
-    this.aiManager.getSpeechEngine().setCallbacks({
+    // Hook audio waveform updates via addCallbacks
+    this.aiManager.getSpeechEngine().addCallbacks({
       onAudioLevel: (level) => {
         this.updateWaveform(level);
       }
@@ -243,6 +271,17 @@ export class VoiceAIHUD {
         if (this.isHistoryOpen) this.renderHistory();
       });
     }
+
+    // Voice Suggestion Chips
+    const chips = this.container.querySelectorAll('.voice-chip');
+    chips.forEach((chip) => {
+      chip.addEventListener('click', (e) => {
+        const query = (e.currentTarget as HTMLElement).dataset.query;
+        if (query) {
+          this.aiManager.processNaturalLanguageInput(query);
+        }
+      });
+    });
 
     // Text Input Submit
     const submitBtn = this.container.querySelector('#btn-submit-voice-text');
