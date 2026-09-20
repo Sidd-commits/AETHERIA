@@ -29,9 +29,9 @@ export class UniverseRenderer {
     this.sphereGeo = new THREE.SphereGeometry(1, 24, 24);
     this.starCoronaTexture = this.createGlowTexture();
 
-    // Setup cosmic particle points buffer
+    // Setup cosmic particle points buffer (supports up to 16,000 particles)
     this.particleGeometry = new THREE.BufferGeometry();
-    const maxParticles = 6000;
+    const maxParticles = 16000;
     const initialPositions = new Float32Array(maxParticles * 3);
     const initialColors = new Float32Array(maxParticles * 3);
 
@@ -109,15 +109,24 @@ export class UniverseRenderer {
     return texture;
   }
 
+  // Pre-allocated collection to eliminate per-frame Set/Array allocations
+  private activeEntityIds: Set<string> = new Set();
+  private deadEntityIds: string[] = [];
+
   /**
    * Render pass: Synchronize visual 3D scene with snapshot data from UniverseEngine
    */
   public renderSnapshot(snapshot: UniverseSnapshot): void {
-    const activeEntityIds = new Set<string>();
+    this.activeEntityIds.clear();
+    this.deadEntityIds.length = 0;
+
+    const entities = snapshot.entities;
+    const numEntities = entities.length;
 
     // 1. Update Celestial Entities
-    snapshot.entities.forEach((entity) => {
-      activeEntityIds.add(entity.id);
+    for (let i = 0; i < numEntities; i++) {
+      const entity = entities[i];
+      this.activeEntityIds.add(entity.id);
       let mesh = this.entityMeshes.get(entity.id);
 
       if (!mesh) {
@@ -160,33 +169,36 @@ export class UniverseRenderer {
       } else if (entity.type === 'PLANET' || entity.type === 'ASTEROID') {
         mesh.rotation.y += 0.01;
       }
-    });
+    }
 
-    // 2. Prune Dead Entity Meshes
+    // 2. Prune Dead Entity Meshes (Zero GC)
     this.entityMeshes.forEach((mesh, id) => {
-      if (!activeEntityIds.has(id)) {
+      if (!this.activeEntityIds.has(id)) {
+        this.deadEntityIds.push(id);
         this.group.remove(mesh);
         const light = this.entityLights.get(id);
         if (light) {
           this.group.remove(light);
           this.entityLights.delete(id);
         }
-        this.entityMeshes.delete(id);
       }
     });
 
-    // 3. Update Cosmic Particle Buffer
+    for (let d = 0; d < this.deadEntityIds.length; d++) {
+      this.entityMeshes.delete(this.deadEntityIds[d]);
+    }
+
+    // 3. Update Cosmic Particle Buffer via fast native TypedArray copy
     const { count, positions, colors } = snapshot.particles;
     this.particleGeometry.setDrawRange(0, count);
 
-    // Direct copy to Three.js BufferAttributes
     const posArray = this.particlePosAttr.array as Float32Array;
     const colArray = this.particleColAttr.array as Float32Array;
+    const totalFloats = count * 3;
 
-    for (let i = 0; i < count * 3; i++) {
-      posArray[i] = positions[i];
-      colArray[i] = colors[i];
-    }
+    // Fast contiguous memory copy
+    posArray.set(positions.subarray(0, totalFloats));
+    colArray.set(colors.subarray(0, totalFloats));
 
     this.particlePosAttr.needsUpdate = true;
     this.particleColAttr.needsUpdate = true;

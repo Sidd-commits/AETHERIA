@@ -23,6 +23,9 @@ export class HandTracker {
   private handsInstance: any = null;
   private cameraInstance: any = null;
   private isTracking: boolean = false;
+  private isProcessingFrame: boolean = false;
+  private lastInferenceTime: number = 0;
+  private visionProcessingTimeMs: number = 0;
 
   constructor(
     videoElement: HTMLVideoElement,
@@ -37,6 +40,10 @@ export class HandTracker {
     }
     this.pipCtx = ctx;
     this.commandBus = commandBus;
+  }
+
+  public getVisionProcessingTimeMs(): number {
+    return this.visionProcessingTimeMs;
   }
 
   public setOnResults(callback: HandResultsCallback): void {
@@ -85,8 +92,24 @@ export class HandTracker {
 
       this.cameraInstance = new window.Camera(this.videoElement, {
         onFrame: async () => {
-          if (this.handsInstance) {
+          if (!this.handsInstance) return;
+
+          const now = performance.now();
+          // Throttle to 30 FPS inference (~33ms) and skip frame if inference is already in-flight
+          if (this.isProcessingFrame || now - this.lastInferenceTime < 33.0) {
+            return;
+          }
+
+          this.isProcessingFrame = true;
+          this.lastInferenceTime = now;
+          const t0 = performance.now();
+          try {
             await this.handsInstance.send({ image: this.videoElement });
+          } catch {
+            // ignore frame skip
+          } finally {
+            this.visionProcessingTimeMs = performance.now() - t0;
+            this.isProcessingFrame = false;
           }
         },
         width: 640,

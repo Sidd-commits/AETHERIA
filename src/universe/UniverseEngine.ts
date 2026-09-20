@@ -382,31 +382,58 @@ export class UniverseEngine {
     }
   }
 
+  // Pre-allocated collections to eliminate GC in physics ticks
+  private tickDominantWells: UniverseEntity[] = [];
+  private tickBlackHoles: UniverseEntity[] = [];
+  private snapshotEntityPool: UniverseEntity[] = [];
+  private cachedSnapshot: UniverseSnapshot = {
+    entities: [],
+    particles: null as any,
+    ecosystemStats: null as any,
+    time: 0,
+    tickCount: 0,
+    isPaused: false,
+    timeScale: 1.0,
+    activePreset: 'SOLAR_SYSTEM',
+    dominantBodiesCount: 0,
+    totalMass: 0,
+    totalEnergy: 0
+  };
+
   /**
-   * Single deterministic tick
+   * Single deterministic tick (Zero GC)
    */
   private fixedTick(dt: number): void {
     this.simulationTime += dt;
     this.tickCount++;
 
-    const dominantWells = this.entities.filter(
-      (e) => !e.isDead && (e.type === 'STAR' || e.type === 'BLACK_HOLE' || e.type === 'PLANET')
-    );
-    const blackHoles = this.entities.filter((e) => !e.isDead && e.type === 'BLACK_HOLE');
+    this.tickDominantWells.length = 0;
+    this.tickBlackHoles.length = 0;
+
+    for (let i = 0; i < this.entities.length; i++) {
+      const e = this.entities[i];
+      if (e.isDead) continue;
+      if (e.type === 'STAR' || e.type === 'BLACK_HOLE' || e.type === 'PLANET') {
+        this.tickDominantWells.push(e);
+      }
+      if (e.type === 'BLACK_HOLE') {
+        this.tickBlackHoles.push(e);
+      }
+    }
 
     // 1. Gravity System: Entities pairwise gravity & Particle gravity
     this.gravitySystem.updateEntityGravity(this.entities, this.config, dt);
-    this.gravitySystem.updateParticleGravity(this.particleSystem.getBuffer(), dominantWells, this.config, dt);
+    this.gravitySystem.updateParticleGravity(this.particleSystem.getBuffer(), this.tickDominantWells, this.config, dt);
 
     // 2. Particle System: Damping, Accretion disk swirl, and bounds
-    this.particleSystem.update(blackHoles, this.config, dt, this.simulationTime);
+    this.particleSystem.update(this.tickBlackHoles, this.config, dt, this.simulationTime);
 
     // 3. Ecosystem System: Emergent local rules for Organisms, Energy seeking, Reproduction & Mortality
     this.ecosystemSystem.update(this.particleSystem.getBuffer(), this.entities, this.config, dt);
 
     // 4. Collision System: Celestial contacts & Horizon absorption
     this.collisionSystem.resolveBodyCollisions(this.entities, this.config);
-    this.collisionSystem.resolveParticleCollisions(this.particleSystem.getBuffer(), blackHoles);
+    this.collisionSystem.resolveParticleCollisions(this.particleSystem.getBuffer(), this.tickBlackHoles);
 
     // 5. Energy System: Solar radiation, thermal decay, and harmonic fields
     this.energySystem.update(this.entities, this.config, dt, this.simulationTime);
@@ -416,37 +443,53 @@ export class UniverseEngine {
   }
 
   /**
-   * Produce an immutable snapshot for the renderer
+   * Produce a high-performance snapshot for the renderer with zero heap allocations
    */
   public getSnapshot(): UniverseSnapshot {
     let totalMass = 0;
     let totalEnergy = 0;
     let dominantCount = 0;
 
-    for (let i = 0; i < this.entities.length; i++) {
-      const e = this.entities[i];
-      if (!e.isDead) {
-        totalMass += e.mass;
-        totalEnergy += e.energy;
-        if (e.type === 'STAR' || e.type === 'BLACK_HOLE' || e.type === 'PLANET') {
+    const numEntities = this.entities.length;
+    while (this.snapshotEntityPool.length < numEntities) {
+      this.snapshotEntityPool.push({} as UniverseEntity);
+    }
+    this.snapshotEntityPool.length = numEntities;
+
+    for (let i = 0; i < numEntities; i++) {
+      const src = this.entities[i];
+      if (!src.isDead) {
+        totalMass += src.mass;
+        totalEnergy += src.energy;
+        if (src.type === 'STAR' || src.type === 'BLACK_HOLE' || src.type === 'PLANET') {
           dominantCount++;
         }
       }
+      // Reusable shallow copy
+      Object.assign(this.snapshotEntityPool[i], src);
     }
 
-    return {
-      entities: this.entities.map((e) => ({ ...e })),
-      particles: this.particleSystem.getBuffer(),
-      ecosystemStats: this.ecosystemSystem.getStats(),
-      time: this.simulationTime,
-      tickCount: this.tickCount,
-      isPaused: this.config.isPaused,
-      timeScale: this.config.timeScale,
-      activePreset: this.activePreset,
-      dominantBodiesCount: dominantCount,
-      totalMass: Math.round(totalMass * 10) / 10,
-      totalEnergy: Math.round(totalEnergy * 10) / 10
-    };
+    this.cachedSnapshot.entities = this.snapshotEntityPool;
+    this.cachedSnapshot.particles = this.particleSystem.getBuffer();
+    this.cachedSnapshot.ecosystemStats = this.ecosystemSystem.getStats();
+    this.cachedSnapshot.time = this.simulationTime;
+    this.cachedSnapshot.tickCount = this.tickCount;
+    this.cachedSnapshot.isPaused = this.config.isPaused;
+    this.cachedSnapshot.timeScale = this.config.timeScale;
+    this.cachedSnapshot.activePreset = this.activePreset;
+    this.cachedSnapshot.dominantBodiesCount = dominantCount;
+    this.cachedSnapshot.totalMass = Math.round(totalMass * 10) / 10;
+    this.cachedSnapshot.totalEnergy = Math.round(totalEnergy * 10) / 10;
+
+    return this.cachedSnapshot;
+  }
+
+  public getParticleSystem(): ParticleSystem {
+    return this.particleSystem;
+  }
+
+  public setActiveParticleCount(count: number): void {
+    this.particleSystem.setActiveCount(count);
   }
 
   public getEntities(): ReadonlyArray<UniverseEntity> {

@@ -52,27 +52,29 @@ export class AetheriaApp {
     // 5. Voice AI Interface Subsystem (Decoupled NLP/LLM controller)
     this.aiManager = new AIManager(this.worldState, this.commandBus);
 
-    // 6. User Interface Subsystem (with real-time Debug visualizer, Universe Controls & Voice AI HUD)
+    // 6. Hand Tracking Vision Subsystem
+    const videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
+    const pipCanvas = getRequiredElement<HTMLCanvasElement>('pip-canvas');
+    this.handTracker = new HandTracker(videoElement, pipCanvas, this.commandBus);
+
+    // 7. User Interface Subsystem (with real-time Debug visualizer, Universe Controls, Voice AI & Performance HUD)
     this.uiManager = new UIManager(
       this.worldState,
       this.gestureRecognizer.getDetector(),
       this.aiManager,
+      this.universeEngine,
       this.commandBus
     );
 
-    // 6. Render Animation Loop (Synchronizes UniverseEngine with UniverseRenderer)
+    // 8. Render Animation Loop (Synchronizes UniverseEngine with UniverseRenderer and Performance Monitor)
     this.renderLoop = new RenderLoop(
       this.sceneManager,
       this.universeEngine,
       this.universeRenderer,
       this.worldState,
-      this.uiManager
+      this.uiManager,
+      () => this.handTracker.getVisionProcessingTimeMs()
     );
-
-    // 7. Hand Tracking Vision Subsystem
-    const videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
-    const pipCanvas = getRequiredElement<HTMLCanvasElement>('pip-canvas');
-    this.handTracker = new HandTracker(videoElement, pipCanvas, this.commandBus);
 
     this.wireEvents();
   }

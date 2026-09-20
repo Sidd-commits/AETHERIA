@@ -10,6 +10,9 @@ import { PopulationMonitor } from './PopulationMonitor';
 import { VoiceAIHUD } from './VoiceAIHUD';
 import { AIObservationPanel } from './AIObservationPanel';
 import { WorldGenStudio } from './WorldGenStudio';
+import { PerformanceMonitor } from './PerformanceMonitor';
+import { QualityScaler } from '../core/QualityScaler';
+import { UniverseEngine } from '../universe/UniverseEngine';
 import { AIManager } from '../ai/AIManager';
 import { UniverseState } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
@@ -32,6 +35,8 @@ export class UIManager {
   private voiceAIHUD: VoiceAIHUD;
   private observationPanel: AIObservationPanel;
   private worldGenStudio: WorldGenStudio;
+  private qualityScaler: QualityScaler;
+  private perfMonitor: PerformanceMonitor;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
@@ -42,15 +47,20 @@ export class UIManager {
   private toggleVoiceBtn: HTMLButtonElement | null = null;
   private toggleAetherBtn: HTMLButtonElement | null = null;
   private toggleWorldGenBtn: HTMLButtonElement | null = null;
+  private togglePerfBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
     gestureDetector: GestureDetector,
     aiManager: AIManager,
+    universeEngine: UniverseEngine,
     commandBus: CommandBus = CommandBus.getInstance()
   ) {
     this.worldState = worldState;
     this.commandBus = commandBus;
+
+    this.qualityScaler = new QualityScaler(universeEngine, this.commandBus);
+    this.perfMonitor = new PerformanceMonitor(this.qualityScaler);
 
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
@@ -71,6 +81,7 @@ export class UIManager {
     this.toggleVoiceBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-voice');
     this.toggleAetherBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-aether');
     this.toggleWorldGenBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-worldgen');
+    this.togglePerfBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-perf');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -142,6 +153,16 @@ export class UIManager {
         }, 'UI');
       });
     }
+
+    if (this.togglePerfBtn) {
+      this.togglePerfBtn.addEventListener('click', () => {
+        const isVisible = this.perfMonitor.toggle();
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: isVisible ? '⚡ Performance HUD Active (Press P)' : '⚡ Performance HUD Hidden',
+          icon: '⚡'
+        }, 'UI');
+      });
+    }
   }
 
   private bindStateUpdates(): void {
@@ -193,5 +214,13 @@ export class UIManager {
 
   public getWorldGenStudio(): WorldGenStudio {
     return this.worldGenStudio;
+  }
+
+  public getQualityScaler(): QualityScaler {
+    return this.qualityScaler;
+  }
+
+  public getPerformanceMonitor(): PerformanceMonitor {
+    return this.perfMonitor;
   }
 }

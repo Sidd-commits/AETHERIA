@@ -1,10 +1,16 @@
 import { CosmicParticleBuffer, UniverseEntity, ECO_TYPE_MATTER, ECO_TYPE_ENERGY, ECO_TYPE_ORGANISM } from '../../types/entity';
 import { EcosystemStats, UniverseConfig } from '../../types/universe';
+import { SpatialHashGrid } from '../spatial/SpatialHashGrid';
 
 /**
  * Emergent Particle Ecosystem System
  * Implements deterministic local rules for living ORGANISMS, harvestable ENERGY,
  * and solid MATTER without machine learning.
+ *
+ * OPTIMIZATIONS:
+ * - O(1) SpatialHashGrid neighborhood lookups for energy foraging
+ * - Zero GC allocations per frame using pre-allocated pools
+ * - Fast cursor slot recycling for mitosis
  */
 export class EcosystemSystem {
   // Statistics and Telemetry
@@ -13,6 +19,16 @@ export class EcosystemSystem {
   private prevPopulation: number = 0;
   private populationGrowthRate: number = 0;
   private growthSampleTimer: number = 0;
+  private lastAvailableSlotCursor: number = 0;
+
+  // Spatial Partitioning Grid for O(1) neighbor lookups
+  private spatialGrid: SpatialHashGrid = new SpatialHashGrid(4.5, 4096, 20000);
+
+  // Pre-allocated arrays for celestial entities to avoid per-frame .filter() allocations
+  private activeStars: UniverseEntity[] = [];
+  private activeBlackHoles: UniverseEntity[] = [];
+  private activeNebulae: UniverseEntity[] = [];
+  private activeEnergySources: UniverseEntity[] = [];
 
   // Cached Ecosystem Stats
   private stats: EcosystemStats = {
@@ -127,15 +143,38 @@ export class EcosystemSystem {
     let energyParticlesCount = 0;
     let matterParticlesCount = 0;
 
-    // Filter celestial environmental entities
-    const stars = celestialEntities.filter((e) => !e.isDead && e.type === 'STAR');
-    const blackHoles = celestialEntities.filter((e) => !e.isDead && e.type === 'BLACK_HOLE');
-    const nebulae = celestialEntities.filter((e) => !e.isDead && (e.type === 'NEBULA' || e.type === 'ENERGY_FIELD'));
+    // Filter celestial environmental entities using pre-allocated arrays (Zero GC)
+    this.activeStars.length = 0;
+    this.activeBlackHoles.length = 0;
+    this.activeNebulae.length = 0;
+    this.activeEnergySources.length = 0;
+
+    for (let e = 0; e < celestialEntities.length; e++) {
+      const entity = celestialEntities[e];
+      if (entity.isDead) continue;
+      if (entity.type === 'STAR') {
+        this.activeStars.push(entity);
+        this.activeEnergySources.push(entity);
+      } else if (entity.type === 'BLACK_HOLE') {
+        this.activeBlackHoles.push(entity);
+      } else if (entity.type === 'NEBULA' || entity.type === 'ENERGY_FIELD') {
+        this.activeNebulae.push(entity);
+        this.activeEnergySources.push(entity);
+      }
+    }
 
     const sensoryRadius = 4.8;
-    const sensoryRadiusSq = sensoryRadius * sensoryRadius;
 
-    // 1. Process All Particles
+    // 1. Build Spatial Hash Grid of harvestable ENERGY particles in O(N)
+    this.spatialGrid.clear();
+    for (let j = 0; j < count; j++) {
+      if (types[j] === ECO_TYPE_ENERGY) {
+        const j3 = j * 3;
+        this.spatialGrid.insert(j, positions[j3], positions[j3 + 1], positions[j3 + 2]);
+      }
+    }
+
+    // 2. Process All Particles with O(1) Spatial Hash lookups
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const type = types[i];
@@ -159,26 +198,17 @@ export class EcosystemSystem {
           healths[i] -= 0.08 * dt;
         }
 
-        // B. Sensory Energy Seeking & Local Foraging
-        let nearestEnergyDistSq = sensoryRadiusSq;
-        let targetEnergyIdx = -1;
+        // B. Sensory Energy Seeking & Local Foraging via O(1) Spatial Hash Grid
+        const closestEnergy = this.spatialGrid.findClosestOfType(
+          px, py, pz,
+          sensoryRadius,
+          positions,
+          types,
+          ECO_TYPE_ENERGY
+        );
 
-        // Sample nearby neighbors for energy (stride sample for fast O(N) performance)
-        const sampleStep = 3;
-        for (let j = (i + 1) % sampleStep; j < count; j += sampleStep) {
-          if (types[j] === ECO_TYPE_ENERGY) {
-            const j3 = j * 3;
-            const edx = positions[j3] - px;
-            const edy = positions[j3 + 1] - py;
-            const edz = positions[j3 + 2] - pz;
-            const dSq = edx * edx + edy * edy + edz * edz;
-
-            if (dSq < nearestEnergyDistSq) {
-              nearestEnergyDistSq = dSq;
-              targetEnergyIdx = j;
-            }
-          }
-        }
+        const targetEnergyIdx = closestEnergy.index;
+        const nearestEnergyDistSq = closestEnergy.distSq;
 
         // Steer towards target energy
         if (targetEnergyIdx !== -1) {
@@ -215,10 +245,8 @@ export class EcosystemSystem {
         }
 
         // C. Environmental Danger Avoidance (Black Holes)
-        for (let b = 0; b < blackHoles.length; b++) {
-          const bh = blackHoles[b];
-          if (bh.isDead) continue;
-
+        for (let b = 0; b < this.activeBlackHoles.length; b++) {
+          const bh = this.activeBlackHoles[b];
           const dx = px - bh.position.x;
           const dy = py - bh.position.y;
           const dz = pz - bh.position.z;
@@ -246,11 +274,8 @@ export class EcosystemSystem {
         }
 
         // D. Star & Nebula High-Energy Biome Affinity
-        const highEnergySources = [...stars, ...nebulae];
-        for (let s = 0; s < highEnergySources.length; s++) {
-          const source = highEnergySources[s];
-          if (source.isDead) continue;
-
+        for (let s = 0; s < this.activeEnergySources.length; s++) {
+          const source = this.activeEnergySources[s];
           const dx = source.position.x - px;
           const dy = source.position.y - py;
           const dz = source.position.z - pz;
@@ -318,10 +343,8 @@ export class EcosystemSystem {
         matterParticlesCount++;
 
         // Matter converted to Energy in high-radiation solar/nebular zones
-        const highEnergySources = [...stars, ...nebulae];
-        for (let s = 0; s < highEnergySources.length; s++) {
-          const source = highEnergySources[s];
-          if (source.isDead) continue;
+        for (let s = 0; s < this.activeEnergySources.length; s++) {
+          const source = this.activeEnergySources[s];
           const dx = source.position.x - px;
           const dy = source.position.y - py;
           const dz = source.position.z - pz;
@@ -365,12 +388,17 @@ export class EcosystemSystem {
 
   /**
    * Find available slot for organism mitosis (recycled matter or dead particle)
+   * Circular cursor scan for O(1) amortized search.
    */
   private findAvailableSlot(buffer: CosmicParticleBuffer): number {
     const { count, types } = buffer;
+    if (count === 0) return -1;
+
     for (let i = 0; i < count; i++) {
-      if (types[i] === ECO_TYPE_MATTER) {
-        return i;
+      const idx = (this.lastAvailableSlotCursor + i) % count;
+      if (types[idx] === ECO_TYPE_MATTER) {
+        this.lastAvailableSlotCursor = (idx + 1) % count;
+        return idx;
       }
     }
     return -1;

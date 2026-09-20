@@ -22,19 +22,29 @@ export class HUDController {
   public update(state: Readonly<UniverseState>): void {
     // Tracking Status Dot & Label
     if (state.handTrackingActive) {
-      this.statusDot.classList.add('active');
+      if (!this.statusDot.classList.contains('active')) this.statusDot.classList.add('active');
     } else {
-      this.statusDot.classList.remove('active');
+      if (this.statusDot.classList.contains('active')) this.statusDot.classList.remove('active');
     }
-    this.statusText.innerText = state.statusMessage.toUpperCase();
+
+    const newStatus = state.statusMessage.toUpperCase();
+    if (this.statusText.textContent !== newStatus) {
+      this.statusText.textContent = newStatus;
+    }
 
     // Mode Label
-    this.modeLabel.innerText = state.activeModeLabel.toUpperCase();
+    const newMode = state.activeModeLabel.toUpperCase();
+    if (this.modeLabel.textContent !== newMode) {
+      this.modeLabel.textContent = newMode;
+    }
 
     // Theme Label
     const palette = PALETTES[state.activePaletteIndex];
     if (palette) {
-      this.themeLabel.innerText = `${palette.name.toUpperCase()} (${palette.count})`;
+      const newTheme = `${palette.name.toUpperCase()} (${palette.count})`;
+      if (this.themeLabel.textContent !== newTheme) {
+        this.themeLabel.textContent = newTheme;
+      }
     }
   }
 }

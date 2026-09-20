@@ -9,7 +9,7 @@ import { UniverseConfig } from '../../types/universe';
 export class ParticleSystem {
   private buffer: CosmicParticleBuffer;
 
-  constructor(maxParticles: number = 6000) {
+  constructor(maxParticles: number = 16000) {
     this.buffer = {
       types: new Uint8Array(maxParticles),
       positions: new Float32Array(maxParticles * 3),
@@ -31,6 +31,18 @@ export class ParticleSystem {
 
   public getBuffer(): CosmicParticleBuffer {
     return this.buffer;
+  }
+
+  public getParticleCount(): number {
+    return this.buffer.count;
+  }
+
+  public getMaxCapacity(): number {
+    return this.buffer.maxCount;
+  }
+
+  public setActiveCount(count: number): void {
+    this.buffer.count = Math.max(100, Math.min(this.buffer.maxCount, Math.round(count)));
   }
 
   /**
@@ -120,6 +132,7 @@ export class ParticleSystem {
 
   /**
    * Update particle dynamics: velocity damping, vortex swirling around black holes, and boundary bounds
+   * Highly optimized for 10,000 - 20,000+ particles with minimal branching.
    */
   public update(
     blackHoles: UniverseEntity[],
@@ -130,6 +143,21 @@ export class ParticleSystem {
     const { count, positions, velocities, energies } = this.buffer;
     const damping = Math.pow(config.collisionDamping, dt * 60);
     const bounds = config.universeBounds;
+    const negBounds = -bounds;
+
+    const numBH = blackHoles.length;
+    // Cache black hole coordinates
+    const bhX: number[] = [];
+    const bhZ: number[] = [];
+    for (let b = 0; b < numBH; b++) {
+      if (!blackHoles[b].isDead) {
+        bhX.push(blackHoles[b].position.x);
+        bhZ.push(blackHoles[b].position.z);
+      }
+    }
+    const activeBHCount = bhX.length;
+
+    const waveTime = elapsedTime * 1.5;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -139,31 +167,33 @@ export class ParticleSystem {
       velocities[i3 + 1] *= damping;
       velocities[i3 + 2] *= damping;
 
+      const px = positions[i3];
+      const pz = positions[i3 + 2];
+
       // Swirling torque near black holes
-      for (let b = 0; b < blackHoles.length; b++) {
-        const bh = blackHoles[b];
-        if (bh.isDead) continue;
+      if (activeBHCount > 0) {
+        for (let b = 0; b < activeBHCount; b++) {
+          const dx = px - bhX[b];
+          const dz = pz - bhZ[b];
+          const dist2DSq = dx * dx + dz * dz;
 
-        const dx = positions[i3] - bh.position.x;
-        const dz = positions[i3 + 2] - bh.position.z;
-        const dist2D = Math.hypot(dx, dz);
-
-        if (dist2D < 8.0 && dist2D > 0.3) {
-          const swirlSpeed = (1.8 / dist2D) * dt;
-          // Tangential swirl force (-z, x)
-          velocities[i3] += (-dz / dist2D) * swirlSpeed;
-          velocities[i3 + 2] += (dx / dist2D) * swirlSpeed;
+          if (dist2DSq < 64.0 && dist2DSq > 0.09) {
+            const dist2D = Math.sqrt(dist2DSq);
+            const swirlSpeed = (1.8 / dist2D) * dt;
+            // Tangential swirl force (-z, x)
+            velocities[i3] += (-dz / dist2D) * swirlSpeed;
+            velocities[i3 + 2] += (dx / dist2D) * swirlSpeed;
+          }
         }
       }
 
       // Cosmic dust undulation wave
-      const wave = Math.sin(elapsedTime * 1.5 + i * 0.08) * 0.002;
-      positions[i3 + 1] += wave;
+      positions[i3 + 1] += Math.sin(waveTime + i * 0.08) * 0.002;
 
       // Boundary soft reflection
-      if (Math.abs(positions[i3]) > bounds) velocities[i3] *= -0.8;
-      if (Math.abs(positions[i3 + 1]) > bounds) velocities[i3 + 1] *= -0.8;
-      if (Math.abs(positions[i3 + 2]) > bounds) velocities[i3 + 2] *= -0.8;
+      if (px > bounds || px < negBounds) velocities[i3] *= -0.8;
+      if (positions[i3 + 1] > bounds || positions[i3 + 1] < negBounds) velocities[i3 + 1] *= -0.8;
+      if (pz > bounds || pz < negBounds) velocities[i3 + 2] *= -0.8;
 
       // Energy recovery
       if (energies[i] < 1.0) {

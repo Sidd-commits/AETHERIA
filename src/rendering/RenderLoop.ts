@@ -17,22 +17,33 @@ export class RenderLoop {
   private universeRenderer: UniverseRenderer;
   private worldState: WorldState;
   private uiManager: UIManager | null = null;
+  private getVisionTimeFn: (() => number) | null = null;
   private clock: THREE.Clock;
   private isRunning: boolean = false;
   private animationFrameId: number | null = null;
+
+  // Real-time FPS & Timing metrics
+  private lastFrameTimestamp: number = performance.now();
+  private frameTimes: number[] = [];
+  private rollingFps: number = 60.0;
+  private currentFrameTimeMs: number = 16.6;
+  private physicsTimeMs: number = 0;
+  private renderTimeMs: number = 0;
 
   constructor(
     sceneManager: SceneManager,
     universeEngine: UniverseEngine,
     universeRenderer: UniverseRenderer,
     worldState: WorldState,
-    uiManager?: UIManager
+    uiManager?: UIManager,
+    getVisionTimeFn?: () => number
   ) {
     this.sceneManager = sceneManager;
     this.universeEngine = universeEngine;
     this.universeRenderer = universeRenderer;
     this.worldState = worldState;
     this.uiManager = uiManager || null;
+    this.getVisionTimeFn = getVisionTimeFn || null;
     this.clock = new THREE.Clock();
   }
 
@@ -40,9 +51,14 @@ export class RenderLoop {
     this.uiManager = uiManager;
   }
 
+  public setVisionTimeGetter(fn: () => number): void {
+    this.getVisionTimeFn = fn;
+  }
+
   public start(): void {
     if (this.isRunning) return;
     this.isRunning = true;
+    this.lastFrameTimestamp = performance.now();
     this.clock.start();
     this.loop();
   }
@@ -59,6 +75,17 @@ export class RenderLoop {
     if (!this.isRunning) return;
     this.animationFrameId = requestAnimationFrame(this.loop);
 
+    const now = performance.now();
+    const frameDeltaMs = now - this.lastFrameTimestamp;
+    this.lastFrameTimestamp = now;
+    this.currentFrameTimeMs = frameDeltaMs;
+
+    // Rolling FPS calculation
+    this.frameTimes.push(frameDeltaMs);
+    if (this.frameTimes.length > 30) this.frameTimes.shift();
+    const avgFrameMs = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
+    this.rollingFps = avgFrameMs > 0 ? 1000 / avgFrameMs : 60.0;
+
     const delta = Math.min(0.1, this.clock.getDelta());
     const state = this.worldState.getState();
 
@@ -70,10 +97,13 @@ export class RenderLoop {
       this.uiManager.updateChargeHud(state);
     }
 
-    // 3. Deterministic Universe Simulation Tick
+    // 3. Deterministic Universe Simulation Tick (Timed)
+    const tPhysicsStart = performance.now();
     this.universeEngine.step(delta);
+    this.physicsTimeMs = performance.now() - tPhysicsStart;
 
-    // 4. Synchronize Decoupled Three.js Visualizer
+    // 4. Synchronize Decoupled Three.js Visualizer (Timed)
+    const tRenderStart = performance.now();
     const snapshot = this.universeEngine.getSnapshot();
     this.universeRenderer.renderSnapshot(snapshot);
 
@@ -86,6 +116,28 @@ export class RenderLoop {
       // Generate compact aggregated telemetry (Zero raw particle array overhead)
       const telemetry = UniverseStateSummarizer.summarize(snapshot, this.universeEngine.getConfig());
       this.uiManager.getAIObservationPanel().update(telemetry);
+
+      // Feed FPS into QualityScaler
+      this.uiManager.getQualityScaler().updateFPS(this.rollingFps);
+
+      // Query Memory where available
+      let memoryMb: number | null = null;
+      if (typeof window !== 'undefined' && (performance as any).memory) {
+        memoryMb = (performance as any).memory.usedJSHeapSize / (1024 * 1024);
+      }
+
+      // Update Performance Monitor HUD
+      const visionMs = this.getVisionTimeFn ? this.getVisionTimeFn() : 0;
+      this.uiManager.getPerformanceMonitor().update({
+        fps: this.rollingFps,
+        frameTimeMs: this.currentFrameTimeMs,
+        physicsTimeMs: this.physicsTimeMs,
+        visionTimeMs: visionMs,
+        renderTimeMs: this.renderTimeMs,
+        activeParticles: snapshot.particles.count,
+        maxParticles: snapshot.particles.maxCount,
+        memoryUsageMb: memoryMb
+      });
     }
 
     // 6. Update scene group transforms (lerping position, rotation, scale)
@@ -97,5 +149,6 @@ export class RenderLoop {
 
     // 7. Render Three.js frame
     this.sceneManager.render();
+    this.renderTimeMs = performance.now() - tRenderStart;
   };
 }
