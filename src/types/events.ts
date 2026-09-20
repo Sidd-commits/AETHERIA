@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { UniversePresetId } from './universe';
+import { UniverseEntity } from './entity';
 
 /**
  * Command and Event types for centralized command bus
@@ -13,7 +15,13 @@ export type CommandType =
   | 'TOGGLE_WEBCAM_BACKGROUND'
   | 'SET_TRACKING_STATUS'
   | 'SET_MODE_LABEL'
-  | 'SHOW_TOAST';
+  | 'SHOW_TOAST'
+  | 'SET_UNIVERSE_PRESET'
+  | 'SET_TIME_SCALE'
+  | 'TOGGLE_PAUSE'
+  | 'RESET_UNIVERSE'
+  | 'SPAWN_ENTITY'
+  | 'TRIGGER_SUPERNOVA';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -54,6 +62,31 @@ export interface ShowToastPayload {
   icon?: string;
 }
 
+export interface SetUniversePresetPayload {
+  preset: UniversePresetId;
+}
+
+export interface SetTimeScalePayload {
+  scale: number;
+}
+
+export interface TogglePausePayload {
+  paused?: boolean;
+}
+
+export interface ResetUniversePayload {
+  preset?: UniversePresetId;
+}
+
+export interface SpawnEntityPayload {
+  entity: Partial<UniverseEntity>;
+}
+
+export interface TriggerSupernovaPayload {
+  power?: number;
+  entityId?: string;
+}
+
 export interface CommandPayloadMap {
   SET_PALETTE: SetPalettePayload;
   CYCLE_PALETTE: void;
@@ -64,6 +97,12 @@ export interface CommandPayloadMap {
   SET_TRACKING_STATUS: SetTrackingStatusPayload;
   SET_MODE_LABEL: SetModeLabelPayload;
   SHOW_TOAST: ShowToastPayload;
+  SET_UNIVERSE_PRESET: SetUniversePresetPayload;
+  SET_TIME_SCALE: SetTimeScalePayload;
+  TOGGLE_PAUSE: TogglePausePayload | void;
+  RESET_UNIVERSE: ResetUniversePayload | void;
+  SPAWN_ENTITY: SpawnEntityPayload;
+  TRIGGER_SUPERNOVA: TriggerSupernovaPayload;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

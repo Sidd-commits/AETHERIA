@@ -1,28 +1,27 @@
 import './styles/main.css';
 import { CommandBus } from './core/CommandBus';
 import { WorldState } from './core/WorldState';
-import { PhysicsEngine } from './physics/PhysicsEngine';
-import { ParticleSimulator } from './simulation/ParticleSimulator';
+import { UniverseEngine } from './universe/UniverseEngine';
 import { SceneManager } from './rendering/SceneManager';
-import { ParticleRenderer } from './rendering/ParticleRenderer';
+import { UniverseRenderer } from './rendering/UniverseRenderer';
 import { RenderLoop } from './rendering/RenderLoop';
 import { HandTracker } from './tracking/HandTracker';
 import { GestureRecognizer } from './gestures/GestureRecognizer';
 import { InputManager } from './input/InputManager';
 import { UIManager } from './ui/UIManager';
 import { getRequiredElement } from './utils/dom';
-import { DEFAULT_PHYSICS_CONFIG } from './config/constants';
 
 /**
  * AETHERIA Application Bootstrap Entry Point
+ * Orchestrates UniverseEngine, decoupled Three.js visualizer,
+ * gesture recognition engine, and procedural simulation controls.
  */
 export class AetheriaApp {
   public readonly commandBus: CommandBus;
   public readonly worldState: WorldState;
-  public readonly physicsEngine: PhysicsEngine;
-  public readonly particleSimulator: ParticleSimulator;
+  public readonly universeEngine: UniverseEngine;
   public readonly sceneManager: SceneManager;
-  public readonly particleRenderer: ParticleRenderer;
+  public readonly universeRenderer: UniverseRenderer;
   public readonly renderLoop: RenderLoop;
   public readonly handTracker: HandTracker;
   public readonly gestureRecognizer: GestureRecognizer;
@@ -34,32 +33,31 @@ export class AetheriaApp {
     this.commandBus = CommandBus.getInstance();
     this.worldState = new WorldState(this.commandBus);
 
-    // 2. Physics & Particle Simulation Subsystems
-    this.physicsEngine = new PhysicsEngine(DEFAULT_PHYSICS_CONFIG);
-    this.particleSimulator = new ParticleSimulator(this.physicsEngine);
+    // 2. Procedural Universe Simulation Engine (Decoupled pure simulation)
+    this.universeEngine = new UniverseEngine();
 
-    // 3. Rendering Subsystem
+    // 3. Rendering Subsystem & Decoupled Three.js Visualizer
     const webglContainer = getRequiredElement<HTMLElement>('webgl-container');
     this.sceneManager = new SceneManager(webglContainer);
-    this.particleRenderer = new ParticleRenderer(this.particleSimulator.getBuffer());
-    this.sceneManager.getParticleGroup().add(this.particleRenderer.getMesh());
+    this.universeRenderer = new UniverseRenderer();
+    this.sceneManager.getParticleGroup().add(this.universeRenderer.getRootGroup());
 
     // 4. Gesture Recognition & Fallback Input Subsystems
     this.gestureRecognizer = new GestureRecognizer(this.worldState, this.commandBus);
     this.inputManager = new InputManager(this.worldState, this.commandBus);
 
-    // 5. User Interface Subsystem (with real-time Debug visualizer)
+    // 5. User Interface Subsystem (with real-time Debug visualizer & Universe Controls)
     this.uiManager = new UIManager(
       this.worldState,
       this.gestureRecognizer.getDetector(),
       this.commandBus
     );
 
-    // 6. Render Animation Loop (linked with UI frame updates)
+    // 6. Render Animation Loop (Synchronizes UniverseEngine with UniverseRenderer)
     this.renderLoop = new RenderLoop(
       this.sceneManager,
-      this.particleSimulator,
-      this.particleRenderer,
+      this.universeEngine,
+      this.universeRenderer,
       this.worldState,
       this.uiManager
     );
@@ -78,13 +76,41 @@ export class AetheriaApp {
       this.gestureRecognizer.processHands(hands);
     });
 
-    // Wire simulation updates directly to command bus
-    this.commandBus.on('SET_PALETTE', (cmd) => {
-      this.particleSimulator.setPalette(cmd.payload.index);
+    // Wire simulation controls directly to command bus
+    this.commandBus.on('SET_UNIVERSE_PRESET', (cmd) => {
+      this.universeEngine.loadPreset(cmd.payload.preset);
+    });
+
+    this.commandBus.on('SET_TIME_SCALE', (cmd) => {
+      this.universeEngine.setTimeScale(cmd.payload.scale);
+    });
+
+    this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
+      if (cmd.payload && cmd.payload.paused !== undefined) {
+        this.universeEngine.setPaused(cmd.payload.paused);
+      } else {
+        this.universeEngine.togglePause();
+      }
+    });
+
+    this.commandBus.on('RESET_UNIVERSE', (cmd) => {
+      if (cmd.payload && cmd.payload.preset) {
+        this.universeEngine.loadPreset(cmd.payload.preset);
+      } else {
+        this.universeEngine.reset();
+      }
+    });
+
+    this.commandBus.on('TRIGGER_SUPERNOVA', (cmd) => {
+      this.universeEngine.triggerSupernova(cmd.payload.power ?? 1.0);
     });
 
     this.commandBus.on('TRIGGER_EXPLOSION', (cmd) => {
-      this.particleSimulator.explode(cmd.payload.power ?? 1.0);
+      this.universeEngine.triggerSupernova(cmd.payload.power ?? 1.0);
+    });
+
+    this.commandBus.on('SPAWN_ENTITY', (cmd) => {
+      this.universeEngine.spawnEntity(cmd.payload.entity);
     });
   }
 

@@ -1,18 +1,19 @@
 import * as THREE from 'three';
 import { SceneManager } from './SceneManager';
-import { ParticleSimulator } from '../simulation/ParticleSimulator';
-import { ParticleRenderer } from './ParticleRenderer';
+import { UniverseEngine } from '../universe/UniverseEngine';
+import { UniverseRenderer } from './UniverseRenderer';
 import { WorldState } from '../core/WorldState';
 import { UIManager } from '../ui/UIManager';
 
 /**
  * Main Render and Animation Loop
- * Ticks physics simulation, interpolates world state transforms, and executes render passes
+ * Ticks deterministic procedural universe simulation,
+ * synchronizes decoupled Three.js visualizer, and executes render passes.
  */
 export class RenderLoop {
   private sceneManager: SceneManager;
-  private simulator: ParticleSimulator;
-  private particleRenderer: ParticleRenderer;
+  private universeEngine: UniverseEngine;
+  private universeRenderer: UniverseRenderer;
   private worldState: WorldState;
   private uiManager: UIManager | null = null;
   private clock: THREE.Clock;
@@ -21,14 +22,14 @@ export class RenderLoop {
 
   constructor(
     sceneManager: SceneManager,
-    simulator: ParticleSimulator,
-    particleRenderer: ParticleRenderer,
+    universeEngine: UniverseEngine,
+    universeRenderer: UniverseRenderer,
     worldState: WorldState,
     uiManager?: UIManager
   ) {
     this.sceneManager = sceneManager;
-    this.simulator = simulator;
-    this.particleRenderer = particleRenderer;
+    this.universeEngine = universeEngine;
+    this.universeRenderer = universeRenderer;
     this.worldState = worldState;
     this.uiManager = uiManager || null;
     this.clock = new THREE.Clock();
@@ -57,22 +58,23 @@ export class RenderLoop {
     if (!this.isRunning) return;
     this.animationFrameId = requestAnimationFrame(this.loop);
 
-    const elapsedTime = this.clock.getElapsedTime();
+    const delta = Math.min(0.1, this.clock.getDelta());
     const state = this.worldState.getState();
 
     // 1. Advance charge timer
-    const currentCharge = this.worldState.updateChargeTick();
+    this.worldState.updateChargeTick();
 
     // 2. Update Charge HUD ring
     if (this.uiManager) {
       this.uiManager.updateChargeHud(state);
     }
 
-    // 3. Advance particle simulation step
-    this.simulator.update(elapsedTime, state.isCharging, currentCharge);
+    // 3. Deterministic Universe Simulation Tick
+    this.universeEngine.step(delta);
 
-    // 4. Mark GPU buffers dirty for upload
-    this.particleRenderer.updateBuffers();
+    // 4. Synchronize Decoupled Three.js Visualizer
+    const snapshot = this.universeEngine.getSnapshot();
+    this.universeRenderer.renderSnapshot(snapshot);
 
     // 5. Update scene group transforms (lerping position, rotation, scale)
     this.sceneManager.updateTransforms(

@@ -32,7 +32,10 @@ export class WorldState {
       isWebcamBackground: false,
       handTrackingActive: false,
       statusMessage: 'INITIALIZING...',
-      activeModeLabel: 'SEARCHING HANDS'
+      activeModeLabel: 'SEARCHING HANDS',
+      activePreset: 'SOLAR_SYSTEM',
+      isPaused: false,
+      timeScale: 1.0
     };
 
     this.registerCommandHandlers();
@@ -110,6 +113,21 @@ export class WorldState {
 
     this.commandBus.on('SET_MODE_LABEL', (cmd) => {
       this.state.activeModeLabel = cmd.payload.label;
+      this.notify();
+    });
+
+    this.commandBus.on('SET_UNIVERSE_PRESET', (cmd) => {
+      this.state.activePreset = cmd.payload.preset;
+      this.notify();
+    });
+
+    this.commandBus.on('SET_TIME_SCALE', (cmd) => {
+      this.state.timeScale = cmd.payload.scale;
+      this.notify();
+    });
+
+    this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
+      this.state.isPaused = cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.state.isPaused;
       this.notify();
     });
   }

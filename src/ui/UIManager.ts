@@ -5,12 +5,14 @@ import { HUDController } from './HUDController';
 import { ChargeRingController } from './ChargeRingController';
 import { ToastController } from './ToastController';
 import { DebugOverlay } from './DebugOverlay';
+import { UniverseControls } from './UniverseControls';
 import { UniverseState } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
 
 /**
  * UI Manager
- * Orchestrates all UI overlays, controllers, HUD elements, user button inputs, and debug visualizer
+ * Orchestrates all UI overlays, controllers, HUD elements, user button inputs,
+ * debug visualizer, and procedural universe simulation controls.
  */
 export class UIManager {
   private commandBus: CommandBus;
@@ -19,6 +21,7 @@ export class UIManager {
   private chargeRingController: ChargeRingController;
   private toastController: ToastController;
   private debugOverlay: DebugOverlay;
+  private universeControls: UniverseControls;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
@@ -38,6 +41,7 @@ export class UIManager {
     this.chargeRingController = new ChargeRingController();
     this.toastController = new ToastController(this.commandBus);
     this.debugOverlay = new DebugOverlay(gestureDetector);
+    this.universeControls = new UniverseControls(this.commandBus);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
@@ -59,9 +63,9 @@ export class UIManager {
     });
 
     this.explodeDemoBtn.addEventListener('click', () => {
-      this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'UI');
+      this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.0 }, 'UI');
       this.commandBus.dispatch('SHOW_TOAST', {
-        message: '💥 Demo Supernova Triggered!',
+        message: '💥 Supernova Explosion Triggered!',
         icon: '💥'
       }, 'UI');
     });
@@ -106,5 +110,9 @@ export class UIManager {
 
   public getDebugOverlay(): DebugOverlay {
     return this.debugOverlay;
+  }
+
+  public getUniverseControls(): UniverseControls {
+    return this.universeControls;
   }
 }
