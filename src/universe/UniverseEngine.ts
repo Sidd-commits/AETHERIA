@@ -110,6 +110,64 @@ export class UniverseEngine {
     return entity;
   }
 
+  public spawnBlackHole(options: {
+    position?: { x: number; y: number; z: number };
+    mass?: number;
+    radius?: number;
+    gravitationalInfluenceRadius?: number;
+    accretionStrength?: number;
+    eventHorizonRadius?: number;
+  } = {}): UniverseEntity {
+    const pos = options.position || { x: 0, y: 0, z: 0 };
+    const mass = options.mass !== undefined ? options.mass : 120.0;
+    const radius = options.radius !== undefined ? options.radius : 1.0;
+    const influenceRadius = options.gravitationalInfluenceRadius !== undefined ? options.gravitationalInfluenceRadius : 30.0;
+    const accretionStrength = options.accretionStrength !== undefined ? options.accretionStrength : 2.0;
+    const eventHorizonRadius = options.eventHorizonRadius !== undefined ? options.eventHorizonRadius : (radius * 1.2);
+
+    const bh = this.spawnEntity({
+      type: 'BLACK_HOLE',
+      name: `Black Hole (Singularity-${Math.floor(Math.random() * 900 + 100)})`,
+      position: { ...pos },
+      velocity: { x: 0, y: 0, z: 0 },
+      mass,
+      radius,
+      energy: 250.0,
+      eventHorizonRadius,
+      accretionRadius: radius * 4.5,
+      gravitationalInfluenceRadius: influenceRadius,
+      accretionStrength,
+      color: '#000000',
+      lifetime: Infinity
+    });
+
+    return bh;
+  }
+
+  public updateBlackHoleParams(params: {
+    mass?: number;
+    gravitationalInfluenceRadius?: number;
+    accretionStrength?: number;
+    eventHorizonRadius?: number;
+  }): void {
+    this.entities.forEach((e) => {
+      if (!e.isDead && e.type === 'BLACK_HOLE') {
+        if (params.mass !== undefined) e.mass = params.mass;
+        if (params.gravitationalInfluenceRadius !== undefined) e.gravitationalInfluenceRadius = params.gravitationalInfluenceRadius;
+        if (params.accretionStrength !== undefined) e.accretionStrength = params.accretionStrength;
+        if (params.eventHorizonRadius !== undefined) e.eventHorizonRadius = params.eventHorizonRadius;
+      }
+    });
+  }
+
+  public clearBlackHoles(): void {
+    this.entities.forEach((e) => {
+      if (e.type === 'BLACK_HOLE') {
+        e.isDead = true;
+      }
+    });
+  }
+
   public triggerSupernova(power: number = 1.0, origin?: { x: number; y: number; z: number }): void {
     let explosionOrigin = origin;
 

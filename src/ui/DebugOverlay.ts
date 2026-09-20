@@ -1,22 +1,36 @@
 import { GestureDetector } from '../gestures/GestureDetector';
+import { CommandBus } from '../core/CommandBus';
 import { getOptionalElement } from '../utils/dom';
 
 /**
  * Real-Time Debug Overlay
  * Renders hand landmarks, skeletal connections, trajectory trails,
- * confidence meters, FPS, inference latency, and tracking telemetry.
+ * confidence meters, FPS, inference latency, and Black Hole parameter controls.
  */
 export class DebugOverlay {
   private detector: GestureDetector;
+  private commandBus: CommandBus;
   private isVisible: boolean = false;
   private container: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private hudPanel: HTMLElement | null = null;
+  private telemetryContainer: HTMLElement | null = null;
+  private controlsContainer: HTMLElement | null = null;
   private animFrameId: number | null = null;
 
-  constructor(detector: GestureDetector) {
+  // Black Hole Param States
+  private bhMass: number = 140;
+  private bhInfluenceRadius: number = 30;
+  private bhAccretionStrength: number = 2.2;
+  private bhEventHorizonRadius: number = 1.2;
+
+  constructor(
+    detector: GestureDetector,
+    commandBus: CommandBus = CommandBus.getInstance()
+  ) {
     this.detector = detector;
+    this.commandBus = commandBus;
     this.createElements();
     this.bindKeyboardToggle();
   }
@@ -51,15 +65,17 @@ export class DebugOverlay {
     this.ctx = this.canvas.getContext('2d');
     this.container.appendChild(this.canvas);
 
-    // 3. Telemetry HUD Panel
+    // 3. Telemetry & Parameter HUD Panel
     this.hudPanel = document.createElement('div');
     this.hudPanel.id = 'debug-telemetry-hud';
     this.hudPanel.style.cssText = `
       position: absolute;
       top: 90px;
       right: 32px;
-      width: 320px;
-      background: rgba(10, 14, 22, 0.85);
+      width: 340px;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+      background: rgba(10, 14, 22, 0.9);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(0, 242, 254, 0.3);
@@ -70,6 +86,16 @@ export class DebugOverlay {
       pointer-events: auto;
       font-size: 12px;
     `;
+
+    this.telemetryContainer = document.createElement('div');
+    this.telemetryContainer.id = 'debug-telemetry-section';
+
+    this.controlsContainer = document.createElement('div');
+    this.controlsContainer.id = 'debug-controls-section';
+    this.renderControlsSection();
+
+    this.hudPanel.appendChild(this.telemetryContainer);
+    this.hudPanel.appendChild(this.controlsContainer);
     this.container.appendChild(this.hudPanel);
 
     document.body.appendChild(this.container);
@@ -208,8 +234,180 @@ export class DebugOverlay {
     });
   }
 
+  private renderControlsSection(): void {
+    if (!this.controlsContainer) return;
+
+    this.controlsContainer.style.cssText = `
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    `;
+
+    this.controlsContainer.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-weight: 700; color: #00f2fe; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em;">
+          🕳️ Black Hole Parameters
+        </span>
+      </div>
+
+      <!-- Mass Slider -->
+      <div style="margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+          <span style="color: #8a99ad;">Mass:</span>
+          <span id="bh-val-mass" style="color: #fee140; font-weight: 600;">${this.bhMass}</span>
+        </div>
+        <input id="bh-input-mass" type="range" min="30" max="400" step="5" value="${this.bhMass}" style="width: 100%; accent-color: #00f2fe; cursor: pointer;" />
+      </div>
+
+      <!-- Influence Radius Slider -->
+      <div style="margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+          <span style="color: #8a99ad;">Influence Radius:</span>
+          <span id="bh-val-radius" style="color: #00f5a0; font-weight: 600;">${this.bhInfluenceRadius}</span>
+        </div>
+        <input id="bh-input-radius" type="range" min="10" max="60" step="1" value="${this.bhInfluenceRadius}" style="width: 100%; accent-color: #00f5a0; cursor: pointer;" />
+      </div>
+
+      <!-- Accretion Strength Slider -->
+      <div style="margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+          <span style="color: #8a99ad;">Accretion Strength:</span>
+          <span id="bh-val-accretion" style="color: #00f2fe; font-weight: 600;">${this.bhAccretionStrength}x</span>
+        </div>
+        <input id="bh-input-accretion" type="range" min="0.5" max="5.0" step="0.1" value="${this.bhAccretionStrength}" style="width: 100%; accent-color: #00f2fe; cursor: pointer;" />
+      </div>
+
+      <!-- Event Horizon Radius Slider -->
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+          <span style="color: #8a99ad;">Horizon Radius ($r_s$):</span>
+          <span id="bh-val-horizon" style="color: #ff0844; font-weight: 600;">${this.bhEventHorizonRadius}</span>
+        </div>
+        <input id="bh-input-horizon" type="range" min="0.4" max="3.0" step="0.1" value="${this.bhEventHorizonRadius}" style="width: 100%; accent-color: #ff0844; cursor: pointer;" />
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 8px;">
+        <button id="btn-spawn-bh-debug" style="
+          flex: 1;
+          background: rgba(0, 242, 254, 0.2);
+          border: 1px solid rgba(0, 242, 254, 0.4);
+          color: #00f2fe;
+          border-radius: 8px;
+          padding: 6px 10px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">+ Spawn Hole</button>
+        <button id="btn-clear-bh-debug" style="
+          flex: 1;
+          background: rgba(255, 8, 68, 0.15);
+          border: 1px solid rgba(255, 8, 68, 0.35);
+          color: #ff5858;
+          border-radius: 8px;
+          padding: 6px 10px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">Clear Holes</button>
+      </div>
+
+      <div style="margin-top: 10px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.4);">
+        Tip: <b>FIST + Circular Motion</b> or key <b>'B'</b> to spawn
+      </div>
+    `;
+
+    this.bindControlEvents();
+  }
+
+  private bindControlEvents(): void {
+    if (!this.controlsContainer) return;
+
+    const inputMass = this.controlsContainer.querySelector('#bh-input-mass') as HTMLInputElement;
+    const inputRadius = this.controlsContainer.querySelector('#bh-input-radius') as HTMLInputElement;
+    const inputAccretion = this.controlsContainer.querySelector('#bh-input-accretion') as HTMLInputElement;
+    const inputHorizon = this.controlsContainer.querySelector('#bh-input-horizon') as HTMLInputElement;
+
+    const valMass = this.controlsContainer.querySelector('#bh-val-mass') as HTMLElement;
+    const valRadius = this.controlsContainer.querySelector('#bh-val-radius') as HTMLElement;
+    const valAccretion = this.controlsContainer.querySelector('#bh-val-accretion') as HTMLElement;
+    const valHorizon = this.controlsContainer.querySelector('#bh-val-horizon') as HTMLElement;
+
+    const syncParams = () => {
+      this.commandBus.dispatch('UPDATE_BLACK_HOLE_PARAMS', {
+        mass: this.bhMass,
+        gravitationalInfluenceRadius: this.bhInfluenceRadius,
+        accretionStrength: this.bhAccretionStrength,
+        eventHorizonRadius: this.bhEventHorizonRadius
+      }, 'UI');
+    };
+
+    if (inputMass) {
+      inputMass.addEventListener('input', () => {
+        this.bhMass = parseFloat(inputMass.value);
+        if (valMass) valMass.innerText = `${this.bhMass}`;
+        syncParams();
+      });
+    }
+
+    if (inputRadius) {
+      inputRadius.addEventListener('input', () => {
+        this.bhInfluenceRadius = parseFloat(inputRadius.value);
+        if (valRadius) valRadius.innerText = `${this.bhInfluenceRadius}`;
+        syncParams();
+      });
+    }
+
+    if (inputAccretion) {
+      inputAccretion.addEventListener('input', () => {
+        this.bhAccretionStrength = parseFloat(inputAccretion.value);
+        if (valAccretion) valAccretion.innerText = `${this.bhAccretionStrength}x`;
+        syncParams();
+      });
+    }
+
+    if (inputHorizon) {
+      inputHorizon.addEventListener('input', () => {
+        this.bhEventHorizonRadius = parseFloat(inputHorizon.value);
+        if (valHorizon) valHorizon.innerText = `${this.bhEventHorizonRadius}`;
+        syncParams();
+      });
+    }
+
+    const spawnBtn = this.controlsContainer.querySelector('#btn-spawn-bh-debug');
+    if (spawnBtn) {
+      spawnBtn.addEventListener('click', () => {
+        this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
+          position: { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 2, z: (Math.random() - 0.5) * 4 },
+          mass: this.bhMass,
+          radius: 1.0,
+          gravitationalInfluenceRadius: this.bhInfluenceRadius,
+          accretionStrength: this.bhAccretionStrength,
+          eventHorizonRadius: this.bhEventHorizonRadius
+        }, 'UI');
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: '🕳️ Black Hole Spawned from Debug Panel!',
+          icon: '🕳️'
+        }, 'UI');
+      });
+    }
+
+    const clearBtn = this.controlsContainer.querySelector('#btn-clear-bh-debug');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        this.commandBus.dispatch('CLEAR_BLACK_HOLES', undefined, 'UI');
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: '🗑️ Cleared All Black Holes',
+          icon: '🗑️'
+        }, 'UI');
+      });
+    }
+  }
+
   private updateHUD(telemetry: import('../types/gesture').DebugTelemetry): void {
-    if (!this.hudPanel) return;
+    if (!this.telemetryContainer) return;
 
     const stateColor = telemetry.trackingState === 'TRACKING' ? '#00f5a0' : '#ffaa00';
     let handsHtml = '';
@@ -219,22 +417,29 @@ export class DebugOverlay {
     } else {
       handsHtml = telemetry.singleHandGestures.map((h) => {
         const pct = Math.round(h.confidence * 100);
+        const fistVortexBadge = h.features?.isFistCircular
+          ? `<span style="background: rgba(254, 225, 64, 0.25); color: #fee140; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;">🌀 VORTEX</span>`
+          : '';
+
         return `
-          <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="margin-top: 8px; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-weight: 600; color: #00f2fe;">HAND #${h.handIndex + 1}</span>
-              <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
-                ${h.gesture}
-              </span>
+              <div style="display: flex; align-items: center;">
+                <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
+                  ${h.gesture}
+                </span>
+                ${fistVortexBadge}
+              </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px;">
               <span>Confidence:</span>
-              <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+              <div style="flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
                 <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #00f2fe, #00f5a0);"></div>
               </div>
               <span style="font-weight: 600;">${pct}%</span>
             </div>
-            <div style="font-size: 11px; color: #8a99ad; display: flex; justify-content: space-between;">
+            <div style="font-size: 10px; color: #8a99ad; display: flex; justify-content: space-between;">
               <span>Fingers: <b>${h.extendedCount}/5</b></span>
               <span>Pinch: <b>${Math.round(h.pinchDist * 100) / 100}</b></span>
               <span>Curl: <b>${Math.round(h.features.averageFingerCurl * 100)}%</b></span>
@@ -248,12 +453,12 @@ export class DebugOverlay {
     if (telemetry.twoHandGesture) {
       const dualPct = Math.round(telemetry.twoHandGesture.confidence * 100);
       dualHtml = `
-        <div style="margin-top: 10px; padding: 10px; background: rgba(254, 225, 64, 0.08); border-radius: 10px; border: 1px solid rgba(254, 225, 64, 0.3);">
+        <div style="margin-top: 8px; padding: 8px 10px; background: rgba(254, 225, 64, 0.08); border-radius: 10px; border: 1px solid rgba(254, 225, 64, 0.3);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 600; color: #fee140;">DUAL HAND</span>
             <span style="color: #fee140; font-weight: 600;">${telemetry.twoHandGesture.gesture}</span>
           </div>
-          <div style="font-size: 11px; color: #8a99ad; margin-top: 4px; display: flex; justify-content: space-between;">
+          <div style="font-size: 10px; color: #8a99ad; margin-top: 4px; display: flex; justify-content: space-between;">
             <span>Span: <b>${Math.round(telemetry.twoHandGesture.distance * 100) / 100}</b></span>
             <span>Radial V: <b>${Math.round(telemetry.twoHandGesture.radialVelocity * 100) / 100}</b></span>
             <span>Conf: <b>${dualPct}%</b></span>
@@ -262,8 +467,8 @@ export class DebugOverlay {
       `;
     }
 
-    this.hudPanel.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+    this.telemetryContainer.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
         <span style="font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #ffffff;">Telemetry HUD</span>
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="width: 7px; height: 7px; border-radius: 50%; background: ${stateColor}; box-shadow: 0 0 6px ${stateColor};"></span>
@@ -271,7 +476,7 @@ export class DebugOverlay {
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #8a99ad;">
+      <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #8a99ad;">
         <span>FPS: <b style="color: #ffffff;">${telemetry.fps}</b></span>
         <span>Latency: <b style="color: #ffffff;">${telemetry.latencyMs} ms</b></span>
         <span>Hands: <b style="color: #ffffff;">${telemetry.handCount}</b></span>
@@ -279,10 +484,6 @@ export class DebugOverlay {
 
       ${handsHtml}
       ${dualHtml}
-
-      <div style="margin-top: 10px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.4);">
-        Press <b>'D'</b> or click <b>Debug</b> button to toggle
-      </div>
     `;
   }
 

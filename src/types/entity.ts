@@ -43,6 +43,8 @@ export interface UniverseEntity {
   luminosity?: number; // Solar luminosity units
   eventHorizonRadius?: number; // for Black Holes
   accretionRadius?: number; // for Black Holes
+  gravitationalInfluenceRadius?: number; // for Black Holes
+  accretionStrength?: number; // for Black Holes
   fieldHarmonics?: number; // for Energy Fields
   metadata?: Record<string, any>;
 }

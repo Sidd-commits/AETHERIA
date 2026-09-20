@@ -14,6 +14,7 @@ export class GestureAdapter {
   private worldState: WorldState;
   private isPinching: boolean = false;
   private lastTriggeredPalette: number = -1;
+  private lastBlackHoleSpawnTime: number = 0;
 
   constructor(
     worldState: WorldState,
@@ -45,10 +46,20 @@ export class GestureAdapter {
       }
     });
 
-    // 2. FIST: Void Ultraviolet Theme (0)
-    this.gestureBus.onTrigger('FIST', () => {
-      this.commandBus.dispatch('SET_MODE_LABEL', { label: '✊ FIST (ULTRAVIOLET)' }, 'GESTURE');
-      this.setPaletteSafely(0);
+    // 2. FIST: Void Ultraviolet Theme (0) & FIST + CIRCULAR_MOTION Black Hole Spawning
+    this.gestureBus.onUpdate('FIST', (e) => {
+      if (e.features?.isFistCircular) {
+        this.trySpawnBlackHoleFromGesture(e);
+      }
+    });
+
+    this.gestureBus.onTrigger('FIST', (e) => {
+      if (e.features?.isFistCircular) {
+        this.trySpawnBlackHoleFromGesture(e);
+      } else {
+        this.commandBus.dispatch('SET_MODE_LABEL', { label: '✊ FIST (ULTRAVIOLET)' }, 'GESTURE');
+        this.setPaletteSafely(0);
+      }
     });
 
     // 3. POINT: Cyber Cyan Theme (1) & Precise steering
@@ -129,8 +140,13 @@ export class GestureAdapter {
       this.commandBus.dispatch('SET_MODE_LABEL', { label: '✊ GRAB (ANCHOR)' }, 'GESTURE');
     });
 
-    // 9. CIRCULAR_MOTION: Orbital vortex spin
+    // 9. CIRCULAR_MOTION: Orbital vortex spin & Fist-Vortex Black Hole Spawning
     this.gestureBus.onUpdate('CIRCULAR_MOTION', (e) => {
+      if (e.features?.isFistCircular) {
+        this.trySpawnBlackHoleFromGesture(e);
+        return;
+      }
+
       this.commandBus.dispatch('SET_MODE_LABEL', { label: '🌀 CIRCULAR VORTEX' }, 'GESTURE');
       if (e.features) {
         const spinImpulse = {
@@ -179,6 +195,26 @@ export class GestureAdapter {
           icon: '🎨'
         }, 'GESTURE');
       }
+    }
+  }
+
+  private trySpawnBlackHoleFromGesture(e: any): void {
+    const now = performance.now();
+    if (now - this.lastBlackHoleSpawnTime > 1800) {
+      this.lastBlackHoleSpawnTime = now;
+      const pos = e.continuousParams?.scenePosition || { x: 0, y: 0, z: 0 };
+      this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
+        position: pos,
+        mass: 140.0,
+        radius: 1.0,
+        gravitationalInfluenceRadius: 30.0,
+        accretionStrength: 2.2
+      }, 'GESTURE');
+      this.commandBus.dispatch('SET_MODE_LABEL', { label: '🕳️ BLACK HOLE CREATED' }, 'GESTURE');
+      this.commandBus.dispatch('SHOW_TOAST', {
+        message: '🕳️ Black Hole Spawned via Fist Vortex!',
+        icon: '🕳️'
+      }, 'GESTURE');
     }
   }
 

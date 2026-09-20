@@ -21,6 +21,9 @@ export type CommandType =
   | 'TOGGLE_PAUSE'
   | 'RESET_UNIVERSE'
   | 'SPAWN_ENTITY'
+  | 'SPAWN_BLACK_HOLE'
+  | 'UPDATE_BLACK_HOLE_PARAMS'
+  | 'CLEAR_BLACK_HOLES'
   | 'TRIGGER_SUPERNOVA';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
@@ -82,6 +85,22 @@ export interface SpawnEntityPayload {
   entity: Partial<UniverseEntity>;
 }
 
+export interface SpawnBlackHolePayload {
+  position?: { x: number; y: number; z: number };
+  mass?: number;
+  radius?: number;
+  gravitationalInfluenceRadius?: number;
+  accretionStrength?: number;
+  eventHorizonRadius?: number;
+}
+
+export interface UpdateBlackHoleParamsPayload {
+  mass?: number;
+  gravitationalInfluenceRadius?: number;
+  accretionStrength?: number;
+  eventHorizonRadius?: number;
+}
+
 export interface TriggerSupernovaPayload {
   power?: number;
   entityId?: string;
@@ -102,6 +121,9 @@ export interface CommandPayloadMap {
   TOGGLE_PAUSE: TogglePausePayload | void;
   RESET_UNIVERSE: ResetUniversePayload | void;
   SPAWN_ENTITY: SpawnEntityPayload;
+  SPAWN_BLACK_HOLE: SpawnBlackHolePayload | void;
+  UPDATE_BLACK_HOLE_PARAMS: UpdateBlackHoleParamsPayload;
+  CLEAR_BLACK_HOLES: void;
   TRIGGER_SUPERNOVA: TriggerSupernovaPayload;
 }
 

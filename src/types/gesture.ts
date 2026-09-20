@@ -64,6 +64,7 @@ export interface HandFeatures {
   trajectoryCurvature: number; // angular sweep in radians over sliding window
   isCircularMotion: boolean;
   circularConfidence: number;
+  isFistCircular?: boolean;
 }
 
 /**

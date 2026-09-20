@@ -112,6 +112,18 @@ export class AetheriaApp {
     this.commandBus.on('SPAWN_ENTITY', (cmd) => {
       this.universeEngine.spawnEntity(cmd.payload.entity);
     });
+
+    this.commandBus.on('SPAWN_BLACK_HOLE', (cmd) => {
+      this.universeEngine.spawnBlackHole(cmd.payload || {});
+    });
+
+    this.commandBus.on('UPDATE_BLACK_HOLE_PARAMS', (cmd) => {
+      this.universeEngine.updateBlackHoleParams(cmd.payload);
+    });
+
+    this.commandBus.on('CLEAR_BLACK_HOLES', () => {
+      this.universeEngine.clearBlackHoles();
+    });
   }
 
   public async start(): Promise<void> {

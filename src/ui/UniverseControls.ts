@@ -81,6 +81,12 @@ export class UniverseControls {
         </select>
       </div>
 
+      <!-- Quick Spawn Black Hole Button -->
+      <button id="btn-spawn-bh-quick" class="action-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(0, 242, 254, 0.15); border: 1px solid rgba(0, 242, 254, 0.35);" title="Spawn Black Hole (B key / Fist Vortex)">
+        <span>🕳️</span>
+        <span>+ Black Hole</span>
+      </button>
+
       <!-- Reset Button -->
       <button id="btn-uni-reset" class="action-btn" style="padding: 6px 12px; border-radius: 20px;" title="Reset Universe (R key)">
         <span>🔄</span>
@@ -146,7 +152,25 @@ export class UniverseControls {
       this.setPreset(preset);
     });
 
-    // 4. Reset Button
+    // 4. Quick Spawn Black Hole Button
+    const spawnBhBtn = document.getElementById('btn-spawn-bh-quick') as HTMLButtonElement;
+    if (spawnBhBtn) {
+      spawnBhBtn.addEventListener('click', () => {
+        this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
+          position: { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 2, z: (Math.random() - 0.5) * 4 },
+          mass: 140.0,
+          radius: 1.0,
+          gravitationalInfluenceRadius: 30.0,
+          accretionStrength: 2.2
+        }, 'UI');
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: '🕳️ Black Hole Spawned!',
+          icon: '🕳️'
+        }, 'UI');
+      });
+    }
+
+    // 5. Reset Button
     const resetBtn = document.getElementById('btn-uni-reset') as HTMLButtonElement;
     resetBtn.addEventListener('click', () => {
       this.reset();

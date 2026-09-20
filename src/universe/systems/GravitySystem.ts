@@ -105,22 +105,44 @@ export class GravitySystem {
         const distSq = dx * dx + dy * dy + dz * dz + this.softeningSquared;
         const dist = Math.sqrt(distSq);
 
+        const influenceRadius = well.gravitationalInfluenceRadius || (well.type === 'BLACK_HOLE' ? 28.0 : 45.0);
+        if (dist > influenceRadius) continue;
+
+        // Smooth cubic boundary falloff
+        const normDist = dist / influenceRadius;
+        const falloff = 1.0 - normDist * normDist * (3.0 - 2.0 * normDist);
+
         let pullMult = 1.0;
+        let accretionStrength = well.accretionStrength || 1.0;
+
         if (well.type === 'BLACK_HOLE') {
-          pullMult = config.blackHolePullForce;
+          pullMult = config.blackHolePullForce * accretionStrength;
         }
 
-        const force = (G * well.mass * pullMult) / (distSq * dist);
+        // Radial Gravitational Force
+        const force = ((G * well.mass * pullMult) / (distSq * dist)) * falloff;
         ax += force * dx;
         ay += force * dy;
         az += force * dz;
+
+        // Tangential orbital velocity swirl for black holes (orbital trajectories in accretion disk)
+        if (well.type === 'BLACK_HOLE') {
+          const accretionRadius = well.accretionRadius || (well.radius * 3.8);
+          if (dist < accretionRadius * 2.2) {
+            const dist2D = Math.hypot(dx, dz) || 0.001;
+            const orbitSpeed = Math.sqrt((G * well.mass) / Math.max(0.4, dist)) * 0.45 * accretionStrength * falloff;
+            // Tangential unit vector in XZ plane: (-dz/dist2D, 0, dx/dist2D)
+            ax += (-dz / dist2D) * orbitSpeed;
+            az += (dx / dist2D) * orbitSpeed;
+          }
+        }
       }
 
       velocities[p3] += ax * dt;
       velocities[p3 + 1] += ay * dt;
       velocities[p3 + 2] += az * dt;
 
-      // Integration
+      // Integration (Semi-implicit Euler)
       positions[p3] += velocities[p3] * dt;
       positions[p3 + 1] += velocities[p3 + 1] * dt;
       positions[p3 + 2] += velocities[p3 + 2] * dt;

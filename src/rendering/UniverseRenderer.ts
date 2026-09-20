@@ -83,6 +83,33 @@ export class UniverseRenderer {
   }
 
   /**
+   * Procedural Gravitational Lensing / Einstein Ring distortion texture generator
+   */
+  private createLensingTexture(): THREE.CanvasTexture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
+
+    // Black Hole Event Horizon Shadow with Bright Lensing Halo Rim
+    const gradient = ctx.createRadialGradient(128, 128, 48, 128, 128, 128);
+    gradient.addColorStop(0.0, 'rgba(0, 0, 0, 0.0)');
+    gradient.addColorStop(0.38, 'rgba(0, 0, 0, 0.0)');
+    gradient.addColorStop(0.44, 'rgba(255, 255, 255, 0.95)');
+    gradient.addColorStop(0.52, 'rgba(0, 242, 254, 0.85)');
+    gradient.addColorStop(0.68, 'rgba(254, 225, 64, 0.4)');
+    gradient.addColorStop(0.85, 'rgba(255, 8, 68, 0.12)');
+    gradient.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 256, 256);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  /**
    * Render pass: Synchronize visual 3D scene with snapshot data from UniverseEngine
    */
   public renderSnapshot(snapshot: UniverseSnapshot): void {
@@ -111,7 +138,18 @@ export class UniverseRenderer {
           light.position.set(entity.position.x, entity.position.y, entity.position.z);
         }
       } else if (entity.type === 'BLACK_HOLE') {
-        mesh.rotation.y += 0.02;
+        // Animate differential accretion disk spin & warp ring rotation
+        const primaryRing = mesh.getObjectByName('accretion_ring_primary');
+        if (primaryRing) primaryRing.rotation.z += 0.025;
+
+        const innerRing = mesh.getObjectByName('accretion_ring_inner');
+        if (innerRing) innerRing.rotation.z += 0.045;
+
+        const warpRing = mesh.getObjectByName('accretion_ring_warp');
+        if (warpRing) {
+          warpRing.rotation.x += 0.012;
+          warpRing.rotation.z += 0.015;
+        }
       } else if (entity.type === 'ENERGY_FIELD') {
         mesh.rotation.x += 0.01;
         mesh.rotation.y += 0.01;
@@ -192,23 +230,71 @@ export class UniverseRenderer {
 
       case 'BLACK_HOLE': {
         const bhGroup = new THREE.Group();
-        // Pitch Black Event Horizon
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        bhGroup.name = `bh_group_${entity.id}`;
+
+        // 1. Pitch Black Event Horizon Core Sphere
+        const coreMat = new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          depthWrite: true
+        });
         const coreMesh = new THREE.Mesh(this.sphereGeo, coreMat);
+        coreMesh.scale.set(0.9, 0.9, 0.9);
         bhGroup.add(coreMesh);
 
-        // Relativistic Accretion Ring
-        const ringGeo = new THREE.RingGeometry(1.2, 3.8, 32);
+        // 2. Gravitational Lensing Halo / Einstein Ring (Distortion Effect)
+        const lensingTexture = this.createLensingTexture();
+        const lensingMat = new THREE.SpriteMaterial({
+          map: lensingTexture,
+          color: 0x00f2fe,
+          transparent: true,
+          opacity: 0.75,
+          blending: THREE.AdditiveBlending
+        });
+        const lensingSprite = new THREE.Sprite(lensingMat);
+        lensingSprite.scale.set(3.2, 3.2, 1.0);
+        bhGroup.add(lensingSprite);
+
+        // 3. Primary Relativistic Accretion Disk (Equatorial Ring)
+        const ringGeo = new THREE.RingGeometry(1.15, 3.6, 48);
         const ringMat = new THREE.MeshBasicMaterial({
-          color: 0xfee140,
+          color: 0xffaa00,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.9,
           blending: THREE.AdditiveBlending
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.rotation.x = Math.PI / 2;
+        ringMesh.name = 'accretion_ring_primary';
         bhGroup.add(ringMesh);
+
+        // 4. Secondary Relativistic Doppler Inner Glow Ring
+        const innerRingGeo = new THREE.RingGeometry(0.98, 1.8, 48);
+        const innerRingMat = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.95,
+          blending: THREE.AdditiveBlending
+        });
+        const innerRingMesh = new THREE.Mesh(innerRingGeo, innerRingMat);
+        innerRingMesh.rotation.x = Math.PI / 2;
+        innerRingMesh.name = 'accretion_ring_inner';
+        bhGroup.add(innerRingMesh);
+
+        // 5. Vertical Doppler Warped Lensing Ring (Simulating photons bent over top/bottom)
+        const warpRingGeo = new THREE.RingGeometry(1.05, 2.8, 36);
+        const warpRingMat = new THREE.MeshBasicMaterial({
+          color: 0xff5858,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.35,
+          blending: THREE.AdditiveBlending
+        });
+        const warpRingMesh = new THREE.Mesh(warpRingGeo, warpRingMat);
+        warpRingMesh.rotation.y = Math.PI / 4;
+        warpRingMesh.name = 'accretion_ring_warp';
+        bhGroup.add(warpRingMesh);
 
         return bhGroup;
       }

@@ -117,6 +117,7 @@ export class GestureClassifier {
 
     // 9. Circular Trajectory Curvature
     const { curvature, isCircular, circularConfidence, angularVelocity } = this.computeCircularMotion(trajectory);
+    const isFistCircular = isCircular && (extendedCount <= 1 || averageFingerCurl > 0.65);
 
     return {
       handIndex,
@@ -134,7 +135,8 @@ export class GestureClassifier {
       curlRateOfChange,
       trajectoryCurvature: curvature,
       isCircularMotion: isCircular,
-      circularConfidence
+      circularConfidence,
+      isFistCircular
     };
   }
 

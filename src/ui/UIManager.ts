@@ -40,7 +40,7 @@ export class UIManager {
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
     this.toastController = new ToastController(this.commandBus);
-    this.debugOverlay = new DebugOverlay(gestureDetector);
+    this.debugOverlay = new DebugOverlay(gestureDetector, this.commandBus);
     this.universeControls = new UniverseControls(this.commandBus);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');

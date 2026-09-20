@@ -30,12 +30,15 @@ export class InputManager {
     window.addEventListener('keydown', this.onKeyDown);
   }
 
+  private lastMousePos = { x: 0, y: 0 };
+
   private onMouseMove = (e: MouseEvent): void => {
+    const mouseX = (e.clientX / window.innerWidth - 0.5) * 10;
+    const mouseY = -(e.clientY / window.innerHeight - 0.5) * 6;
+    this.lastMousePos = { x: mouseX, y: mouseY };
+
     const state = this.worldState.getState();
     if (!state.handTrackingActive) {
-      const mouseX = (e.clientX / window.innerWidth - 0.5) * 10;
-      const mouseY = -(e.clientY / window.innerHeight - 0.5) * 6;
-
       this.commandBus.dispatch('SET_TRANSFORM', {
         position: { x: mouseX, y: mouseY, z: 0 },
         rotation: { x: mouseY * 0.3, y: mouseX * 0.3, z: 0 }
@@ -89,6 +92,18 @@ export class InputManager {
       }, 'MOUSE_KEYBOARD');
     } else if (e.key === 'c' || e.key === 'C') {
       this.commandBus.dispatch('TOGGLE_WEBCAM_BACKGROUND', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'b' || e.key === 'B') {
+      this.commandBus.dispatch('SPAWN_BLACK_HOLE', {
+        position: { x: this.lastMousePos.x, y: this.lastMousePos.y, z: 0 },
+        mass: 140.0,
+        radius: 1.0,
+        gravitationalInfluenceRadius: 30.0,
+        accretionStrength: 2.2
+      }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch('SHOW_TOAST', {
+        message: '🕳️ Black Hole Spawned (Key B)!',
+        icon: '🕳️'
+      }, 'MOUSE_KEYBOARD');
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
       this.commandBus.dispatch('SHOW_TOAST', {

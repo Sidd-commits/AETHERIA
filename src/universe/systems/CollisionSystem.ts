@@ -134,7 +134,8 @@ export class CollisionSystem {
     for (let b = 0; b < blackHoles.length; b++) {
       const bh = blackHoles[b];
       if (bh.isDead) continue;
-      const horizon = bh.eventHorizonRadius || bh.radius * 0.8;
+      const horizon = bh.eventHorizonRadius || bh.radius * 0.75;
+      const accretionR = bh.accretionRadius || (bh.radius * 3.8);
 
       for (let p = 0; p < buffer.count; p++) {
         const p3 = p * 3;
@@ -144,20 +145,28 @@ export class CollisionSystem {
         const dist = Math.hypot(dx, dy, dz);
 
         if (dist < horizon) {
-          // Recycle absorbed particle to outer accretion boundary
+          // Recycle absorbed particle to outer accretion boundary with relativistic orbital velocity
           const angle = Math.random() * Math.PI * 2;
-          const outerR = (bh.accretionRadius || 5.0) + Math.random() * 2.0;
+          const outerR = accretionR * (0.85 + Math.random() * 0.45);
           buffer.positions[p3] = bh.position.x + Math.cos(angle) * outerR;
-          buffer.positions[p3 + 1] = bh.position.y + (Math.random() - 0.5) * 0.2;
+          buffer.positions[p3 + 1] = bh.position.y + (Math.random() - 0.5) * 0.15 * (outerR / accretionR);
           buffer.positions[p3 + 2] = bh.position.z + Math.sin(angle) * outerR;
 
-          const speed = Math.sqrt(1.2 / outerR);
+          // Relativistic Keplerian orbital speed
+          const speed = Math.sqrt((bh.mass * 1.0) / outerR) * (bh.accretionStrength || 1.0);
           buffer.velocities[p3] = -Math.sin(angle) * speed;
           buffer.velocities[p3 + 1] = 0;
           buffer.velocities[p3 + 2] = Math.cos(angle) * speed;
 
+          // Relativistic accretion thermal glow color (Gold / Cyan / White)
+          const isIonized = Math.random() > 0.5;
+          buffer.colors[p3] = isIonized ? 1.0 : 0.2;
+          buffer.colors[p3 + 1] = isIonized ? 0.88 : 0.95;
+          buffer.colors[p3 + 2] = isIonized ? 0.35 : 1.0;
+
           buffer.energies[p] = 1.0;
           bh.energy += 0.05;
+          bh.mass = Math.min(500, bh.mass + 0.002);
         }
       }
     }
