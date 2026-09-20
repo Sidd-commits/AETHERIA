@@ -87,6 +87,12 @@ export class UniverseControls {
         <span>+ Black Hole</span>
       </button>
 
+      <!-- Supernova Explosion Button -->
+      <button id="btn-explode-demo" class="action-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(255, 8, 68, 0.15); border: 1px solid rgba(255, 8, 68, 0.35);" title="Trigger Supernova Explosion (X key)">
+        <span>💥</span>
+        <span>Supernova</span>
+      </button>
+
       <!-- Reset Button -->
       <button id="btn-uni-reset" class="action-btn" style="padding: 6px 12px; border-radius: 20px;" title="Reset Universe (R key)">
         <span>🔄</span>

@@ -97,7 +97,7 @@ export class SpeechRecognitionEngine {
             try {
               this.recognition.start();
               return;
-            } catch (e) {
+            } catch {
               // ignore
             }
           }
@@ -192,7 +192,7 @@ export class SpeechRecognitionEngine {
     if (this.recognition) {
       try {
         this.recognition.stop();
-      } catch (_err) {
+      } catch {
         // ignore
       }
     }
@@ -247,7 +247,7 @@ export class SpeechRecognitionEngine {
       };
 
       sampleLoop();
-    } catch (_err) {
+    } catch {
       // Microphone stream optional for waveform
     }
   }
@@ -264,7 +264,7 @@ export class SpeechRecognitionEngine {
     if (this.audioContext && this.audioContext.state !== 'closed') {
       try {
         this.audioContext.close();
-      } catch (_e) {
+      } catch {
         // ignore
       }
       this.audioContext = null;

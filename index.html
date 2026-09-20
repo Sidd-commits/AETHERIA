@@ -2,60 +2,51 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>AETHERIA — 3D Real-Time Particle Sphere</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AETHERIA 🌌 — Procedural Universe & Spatial Gesture Simulation</title>
 
-    <!-- Google Fonts: Serif Title & Modern Sans UI -->
+    <!-- Google Fonts: Cinzel & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-
-    <!-- MediaPipe Hands & Camera Utils CDN -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
-      crossorigin="anonymous"
-    ></script>
   </head>
   <body>
-    <!-- Fullscreen WebGL Canvas Container -->
+    <!-- Three.js WebGL Canvas Container -->
     <div id="webgl-container"></div>
 
-    <!-- Ambient Backdrop -->
+    <!-- Hidden / Background Mirror Video Element for MediaPipe Camera Feed -->
+    <video id="webcam-video" playsinline muted autoplay></video>
+
+    <!-- Ambient Cosmic Radial Glow Backdrop -->
     <div class="ambient-backdrop"></div>
 
-    <!-- Raw Webcam Video Feed (can be toggled fullscreen backdrop) -->
-    <video id="webcam-video" playsinline autoplay muted></video>
-
-    <!-- PiP Hand Skeleton / Camera Monitor -->
-    <div id="pip-container" class="interactive" title="Webcam hand tracking view">
+    <!-- Mini PiP Webcam Feedback Display with Landmark Skeleton overlay -->
+    <div id="pip-container">
       <canvas id="pip-canvas"></canvas>
       <div class="pip-label">CAM VIEW</div>
     </div>
 
-    <!-- Floating Charge Ring -->
+    <!-- Central Interactive Charge HUD Ring -->
     <div id="charge-hud">
       <svg class="charge-svg" viewBox="0 0 140 140">
         <defs>
           <linearGradient id="charge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#00f2fe" />
-            <stop offset="50%" stop-color="#ff0844" />
-            <stop offset="100%" stop-color="#fee140" />
+            <stop offset="50%" stop-color="#4facfe" />
+            <stop offset="100%" stop-color="#ff0844" />
           </linearGradient>
         </defs>
-        <circle class="charge-meter-bg" cx="70" cy="70" r="60"></circle>
-        <circle id="charge-meter-bar" class="charge-meter-val" cx="70" cy="70" r="60"></circle>
+        <circle class="charge-meter-bg" cx="70" cy="70" r="60" />
+        <circle id="charge-circle" class="charge-meter-val" cx="70" cy="70" r="60" />
       </svg>
       <div id="charge-label" class="charge-text">CHARGING</div>
     </div>
 
-    <!-- Dynamic Notification Toast -->
+    <!-- Toast Notification Overlay -->
     <div id="toast-msg">
       <span id="toast-icon">✨</span>
       <span id="toast-text">Hand tracking initialized</span>
@@ -63,8 +54,9 @@
 
     <!-- Clean UI Layer -->
     <div class="ui-layer">
-      <!-- Top Header -->
-      <div class="header-panel">
+      <!-- Top Navigation Header -->
+      <header class="header-panel">
+        <!-- Left: Brand Title & Tracking Status -->
         <div class="brand-block">
           <h1 class="brand-title">Aetheria</h1>
           <div class="brand-subtitle">
@@ -73,122 +65,88 @@
           </div>
         </div>
 
-        <!-- Top Right Status Indicators -->
-        <div class="hud-pills">
-          <div class="glass-pill" id="pill-gesture">
-            <span>MODE:</span>
+        <!-- Center: Quick Feature Launchers Bar -->
+        <nav class="header-nav-bar interactive">
+          <button
+            id="btn-toggle-worldgen"
+            class="nav-btn"
+            title="Natural-Language World Generation Studio (W key)"
+          >
+            <span class="btn-icon">🌌</span>
+            <span>World Gen</span>
+          </button>
+
+          <button
+            id="btn-toggle-aether"
+            class="nav-btn"
+            title="AETHER AI Cosmos Observatory (A key)"
+          >
+            <span class="btn-icon">👁️</span>
+            <span>AETHER</span>
+          </button>
+
+          <button
+            id="btn-toggle-voice"
+            class="nav-btn"
+            title="Voice AI Command HUD (V key)"
+          >
+            <span class="btn-icon">🎙️</span>
+            <span>Voice AI</span>
+          </button>
+
+          <button
+            id="btn-toggle-eco"
+            class="nav-btn"
+            title="Emergent Ecosystem & Population Monitor (E key)"
+          >
+            <span class="btn-icon">🌿</span>
+            <span>Ecosystem</span>
+          </button>
+
+          <button
+            id="btn-toggle-perf"
+            class="nav-btn"
+            title="Performance & Quality Telemetry HUD (P key)"
+          >
+            <span class="btn-icon">⚡</span>
+            <span>Perf HUD</span>
+          </button>
+
+          <button
+            id="btn-toggle-debug"
+            class="nav-btn"
+            title="Gesture Debug Visualizer (D key)"
+          >
+            <span class="btn-icon">🛠️</span>
+            <span>Debug HUD</span>
+          </button>
+
+          <button
+            id="btn-toggle-cam"
+            class="nav-btn"
+            title="Toggle Webcam Background Feed"
+          >
+            <span class="btn-icon">📹</span>
+            <span id="cam-btn-text">Webcam</span>
+          </button>
+        </nav>
+
+        <!-- Right: Status Indicators & Palette Switcher -->
+        <div class="hud-pills interactive">
+          <div class="glass-pill" id="pill-gesture" title="Active Hand Tracking Gesture Mode">
+            <span class="pill-label">MODE:</span>
             <span class="pill-accent" id="active-mode-label">SEARCHING HANDS</span>
           </div>
-          <div class="glass-pill" id="pill-fingers">
-            <span>THEME:</span>
+          <button
+            class="glass-pill pill-button"
+            id="btn-theme-cycle"
+            title="Click to Cycle Cosmic Palette (or press 0-5)"
+          >
+            <span class="pill-label">THEME:</span>
             <span class="pill-accent" id="active-theme-label">SPECTRUM (5)</span>
-          </div>
+          </button>
         </div>
-      </div>
-
-      <!-- Gesture Guide Legend -->
-      <div class="gesture-bar">
-        <div class="gesture-item">
-          <div class="gesture-icon">🖐️</div>
-          <div class="gesture-desc"><b>Open Palm:</b> Move & Rotate Sphere (Theme 5)</div>
-        </div>
-        <div class="gesture-item">
-          <div class="gesture-icon">👌</div>
-          <div class="gesture-desc"><b>Pinch & Hold:</b> Charge Ring → Release to Explode</div>
-        </div>
-        <div class="gesture-item">
-          <div class="gesture-icon">👐</div>
-          <div class="gesture-desc"><b>Two Hands:</b> Spread / Contract to Scale</div>
-        </div>
-        <div class="gesture-item">
-          <div class="gesture-icon">☝️</div>
-          <div class="gesture-desc"><b>Point / Peace / 3:</b> Dynamic Themes (1-3)</div>
-        </div>
-        <div class="gesture-item">
-          <div class="gesture-icon">✊</div>
-          <div class="gesture-desc"><b>Fist / Grab:</b> Ultraviolet (Theme 0) / Anchor</div>
-        </div>
-        <div class="gesture-item">
-          <div class="gesture-icon">🌀</div>
-          <div class="gesture-desc"><b>Circular Motion:</b> Orbital Vortex Spin</div>
-        </div>
-      </div>
-
-      <!-- Footer Controls -->
-      <div class="footer-panel interactive">
-        <button
-          id="btn-toggle-worldgen"
-          class="action-btn"
-          title="Natural-Language Procedural World Generation (or press 'W')"
-        >
-          <span class="btn-icon">🌌</span>
-          <span>World Gen</span>
-        </button>
-
-        <button
-          id="btn-toggle-aether"
-          class="action-btn"
-          title="Toggle AETHER AI Observatory & Cosmos Diagnostics (or press 'A')"
-        >
-          <span class="btn-icon">👁️</span>
-          <span>AETHER</span>
-        </button>
-
-        <button
-          id="btn-toggle-voice"
-          class="action-btn"
-          title="Toggle Voice AI Interface & Natural-Language Control (or press 'V')"
-        >
-          <span class="btn-icon">🎙️</span>
-          <span>Voice AI</span>
-        </button>
-
-        <button
-          id="btn-toggle-eco"
-          class="action-btn"
-          title="Toggle Emergent Ecosystem & Population Monitor (or press 'E')"
-        >
-          <span class="btn-icon">🌿</span>
-          <span>Ecosystem</span>
-        </button>
-
-        <button
-          id="btn-toggle-perf"
-          class="action-btn"
-          title="Toggle Real-Time Performance & Quality HUD (or press 'P')"
-        >
-          <span class="btn-icon">⚡</span>
-          <span>Perf HUD</span>
-        </button>
-
-        <button
-          id="btn-toggle-debug"
-          class="action-btn"
-          title="Toggle Real-Time Gesture Debug Visualizer (or press 'D')"
-        >
-          <span class="btn-icon">🛠️</span>
-          <span>Debug HUD</span>
-        </button>
-
-        <button
-          id="btn-toggle-cam"
-          class="action-btn"
-          title="Toggle webcam video as immersive fullscreen background"
-        >
-          <span class="btn-icon">📹</span>
-          <span id="cam-btn-text">Webcam Background</span>
-        </button>
-
-        <button id="btn-theme-cycle" class="action-btn" title="Cycle color theme manually">
-          <span class="btn-icon">🎨</span>
-          <span>Palette</span>
-        </button>
-
-        <button id="btn-explode-demo" class="action-btn" title="Trigger explosion burst">
-          <span class="btn-icon">💥</span>
-          <span>Trigger Burst</span>
-        </button>
-      </div>
+      </header>
     </div>
 
     <!-- Vite Module Entry -->
