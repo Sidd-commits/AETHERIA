@@ -4,6 +4,7 @@ import { UniverseEngine } from '../universe/UniverseEngine';
 import { UniverseRenderer } from './UniverseRenderer';
 import { WorldState } from '../core/WorldState';
 import { UIManager } from '../ui/UIManager';
+import { UniverseStateSummarizer } from '../ai/guardian/UniverseStateSummarizer';
 
 /**
  * Main Render and Animation Loop
@@ -76,9 +77,15 @@ export class RenderLoop {
     const snapshot = this.universeEngine.getSnapshot();
     this.universeRenderer.renderSnapshot(snapshot);
 
-    // 5. Update Ecosystem Population Monitor
-    if (this.uiManager && snapshot.ecosystemStats) {
-      this.uiManager.getPopulationMonitor().update(snapshot.ecosystemStats);
+    // 5. Update Ecosystem Population Monitor & AETHER Observation Panel
+    if (this.uiManager) {
+      if (snapshot.ecosystemStats) {
+        this.uiManager.getPopulationMonitor().update(snapshot.ecosystemStats);
+      }
+
+      // Generate compact aggregated telemetry (Zero raw particle array overhead)
+      const telemetry = UniverseStateSummarizer.summarize(snapshot, this.universeEngine.getConfig());
+      this.uiManager.getAIObservationPanel().update(telemetry);
     }
 
     // 6. Update scene group transforms (lerping position, rotation, scale)

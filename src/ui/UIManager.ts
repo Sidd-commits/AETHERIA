@@ -8,6 +8,7 @@ import { DebugOverlay } from './DebugOverlay';
 import { UniverseControls } from './UniverseControls';
 import { PopulationMonitor } from './PopulationMonitor';
 import { VoiceAIHUD } from './VoiceAIHUD';
+import { AIObservationPanel } from './AIObservationPanel';
 import { AIManager } from '../ai/AIManager';
 import { UniverseState } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
@@ -15,7 +16,8 @@ import { GestureDetector } from '../gestures/GestureDetector';
 /**
  * UI Manager
  * Orchestrates all UI overlays, controllers, HUD elements, user button inputs,
- * debug visualizer, ecosystem population monitor, voice AI interface, and procedural universe simulation controls.
+ * debug visualizer, ecosystem population monitor, voice AI interface, AETHER observation panel,
+ * and procedural universe simulation controls.
  */
 export class UIManager {
   private commandBus: CommandBus;
@@ -27,6 +29,7 @@ export class UIManager {
   private universeControls: UniverseControls;
   private populationMonitor: PopulationMonitor;
   private voiceAIHUD: VoiceAIHUD;
+  private observationPanel: AIObservationPanel;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
@@ -35,6 +38,7 @@ export class UIManager {
   private toggleDebugBtn: HTMLButtonElement | null = null;
   private toggleEcoBtn: HTMLButtonElement | null = null;
   private toggleVoiceBtn: HTMLButtonElement | null = null;
+  private toggleAetherBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
@@ -52,6 +56,7 @@ export class UIManager {
     this.universeControls = new UniverseControls(this.commandBus);
     this.populationMonitor = new PopulationMonitor(this.commandBus);
     this.voiceAIHUD = new VoiceAIHUD(aiManager, this.commandBus);
+    this.observationPanel = new AIObservationPanel(aiManager, this.commandBus);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
@@ -60,6 +65,7 @@ export class UIManager {
     this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
     this.toggleEcoBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-eco');
     this.toggleVoiceBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-voice');
+    this.toggleAetherBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-aether');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -111,6 +117,16 @@ export class UIManager {
         }, 'UI');
       });
     }
+
+    if (this.toggleAetherBtn) {
+      this.toggleAetherBtn.addEventListener('click', () => {
+        const isVisible = this.observationPanel.toggle();
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: isVisible ? '👁️ AETHER Observatory Open (Press A)' : '👁️ AETHER Observatory Hidden',
+          icon: '👁️'
+        }, 'UI');
+      });
+    }
   }
 
   private bindStateUpdates(): void {
@@ -154,5 +170,9 @@ export class UIManager {
 
   public getVoiceAIHUD(): VoiceAIHUD {
     return this.voiceAIHUD;
+  }
+
+  public getAIObservationPanel(): AIObservationPanel {
+    return this.observationPanel;
   }
 }
