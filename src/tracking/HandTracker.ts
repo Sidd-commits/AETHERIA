@@ -21,7 +21,6 @@ export class HandTracker {
   private commandBus: CommandBus;
   private onResultsCallback: HandResultsCallback | null = null;
   private handsInstance: any = null;
-  private cameraInstance: any = null;
   private isTracking: boolean = false;
   private isProcessingFrame: boolean = false;
   private lastInferenceTime: number = 0;
@@ -50,18 +49,45 @@ export class HandTracker {
     this.onResultsCallback = callback;
   }
 
+  private loadScript(src: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.crossOrigin = 'anonymous';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
   /**
-   * Poll for window.Hands and window.Camera to be available from CDN scripts
+   * Poll for window.Hands to be available
    */
-  private async waitForMediaPipe(timeoutMs: number = 8000): Promise<boolean> {
+  private async waitForMediaPipe(timeoutMs: number = 6000): Promise<boolean> {
+    if (typeof window.Hands !== 'undefined') return true;
+
+    try {
+      await Promise.all([
+        this.loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js'),
+        this.loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js')
+      ]);
+    } catch {
+      // Dynamic load failed, fall back to polling
+    }
+
     const startTime = Date.now();
     while (Date.now() - startTime < timeoutMs) {
-      if (typeof window.Hands !== 'undefined' && typeof window.Camera !== 'undefined') {
+      if (typeof window.Hands !== 'undefined') {
         return true;
       }
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    return typeof window.Hands !== 'undefined' && typeof window.Camera !== 'undefined';
+    return typeof window.Hands !== 'undefined';
   }
 
   public async initialize(): Promise<void> {
@@ -75,52 +101,22 @@ export class HandTracker {
         'SYSTEM'
       );
 
-      // Wait for CDN scripts if needed
-      const ready = await this.waitForMediaPipe();
-      if (!ready) {
-        throw new Error('MediaPipe Hands or Camera scripts not loaded within timeout.');
+      // 1. Direct getUserMedia for immediate webcam video feed
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Webcam API (navigator.mediaDevices.getUserMedia) is not supported in this browser.');
       }
 
-      this.handsInstance = new window.Hands({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-      });
-
-      this.handsInstance.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6
-      });
-
-      this.handsInstance.onResults(this.handleResults);
-
-      this.cameraInstance = new window.Camera(this.videoElement, {
-        onFrame: async () => {
-          if (!this.handsInstance) return;
-
-          const now = performance.now();
-          // Throttle to 30 FPS inference (~33ms) and skip frame if inference is already in-flight
-          if (this.isProcessingFrame || now - this.lastInferenceTime < 33.0) {
-            return;
-          }
-
-          this.isProcessingFrame = true;
-          this.lastInferenceTime = now;
-          const t0 = performance.now();
-          try {
-            await this.handsInstance.send({ image: this.videoElement });
-          } catch {
-            // ignore frame skip
-          } finally {
-            this.visionProcessingTimeMs = performance.now() - t0;
-            this.isProcessingFrame = false;
-          }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
         },
-        width: 640,
-        height: 480
+        audio: false
       });
 
-      await this.cameraInstance.start();
+      this.videoElement.srcObject = stream;
+      await this.videoElement.play();
       this.isTracking = true;
 
       this.commandBus.dispatch(
@@ -135,13 +131,47 @@ export class HandTracker {
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
-          message: '📷 Webcam & MediaPipe Hands Ready!',
+          message: '📷 Camera connected. Initializing Hand AI...',
           icon: '📷'
         },
         'SYSTEM'
       );
-    } catch (err) {
+
+      // 2. Initialize MediaPipe Hands
+      const handsReady = await this.waitForMediaPipe();
+      if (handsReady && window.Hands) {
+        this.handsInstance = new window.Hands({
+          locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        this.handsInstance.setOptions({
+          maxNumHands: 2,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.6,
+          minTrackingConfidence: 0.6
+        });
+
+        this.handsInstance.onResults(this.handleResults);
+
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '✨ Hand Tracking Vision AI Active!',
+            icon: '✨'
+          },
+          'SYSTEM'
+        );
+      } else {
+        console.warn('MediaPipe Hands library could not be loaded. Operating in camera preview + mouse mode.');
+      }
+
+      // 3. Start high-performance frame processing loop
+      this.startFrameLoop();
+    } catch (err: any) {
       console.warn('HandTracker initialization note (fallback to mouse):', err);
+      const isPermissionDenied =
+        err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError';
+
       this.commandBus.dispatch(
         'SET_TRACKING_STATUS',
         {
@@ -154,12 +184,47 @@ export class HandTracker {
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
-          message: '⚠️ Webcam unavailable. Mouse fallback active.',
+          message: isPermissionDenied
+            ? '⚠️ Camera permission denied. Mouse controls active.'
+            : '⚠️ Webcam unavailable. Mouse controls active.',
           icon: '⚠️'
         },
         'SYSTEM'
       );
     }
+  }
+
+  private startFrameLoop(): void {
+    const processFrame = async () => {
+      if (!this.isTracking) return;
+
+      if (this.videoElement.readyState >= 2) {
+        // Continuous PiP video feed rendering
+        this.pipCanvas.width = this.videoElement.videoWidth || 320;
+        this.pipCanvas.height = this.videoElement.videoHeight || 240;
+        this.pipCtx.drawImage(this.videoElement, 0, 0, this.pipCanvas.width, this.pipCanvas.height);
+
+        // Send frame to MediaPipe Hands if available (~30 FPS inference throttle)
+        const now = performance.now();
+        if (this.handsInstance && !this.isProcessingFrame && now - this.lastInferenceTime >= 33.0) {
+          this.isProcessingFrame = true;
+          this.lastInferenceTime = now;
+          const t0 = performance.now();
+          try {
+            await this.handsInstance.send({ image: this.videoElement });
+          } catch {
+            // Frame skip
+          } finally {
+            this.visionProcessingTimeMs = performance.now() - t0;
+            this.isProcessingFrame = false;
+          }
+        }
+      }
+
+      requestAnimationFrame(processFrame);
+    };
+
+    requestAnimationFrame(processFrame);
   }
 
   private handleResults = (results: any): void => {
