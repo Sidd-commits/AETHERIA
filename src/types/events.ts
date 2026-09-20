@@ -24,6 +24,10 @@ export type CommandType =
   | 'SPAWN_BLACK_HOLE'
   | 'UPDATE_BLACK_HOLE_PARAMS'
   | 'CLEAR_BLACK_HOLES'
+  | 'SEED_ORGANISMS'
+  | 'SPAWN_ENERGY_BURST'
+  | 'RESET_ECOSYSTEM'
+  | 'TOGGLE_POPULATION_MONITOR'
   | 'TRIGGER_SUPERNOVA';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
@@ -101,6 +105,16 @@ export interface UpdateBlackHoleParamsPayload {
   eventHorizonRadius?: number;
 }
 
+export interface SeedOrganismsPayload {
+  count?: number;
+  origin?: { x: number; y: number; z: number };
+}
+
+export interface SpawnEnergyBurstPayload {
+  count?: number;
+  origin?: { x: number; y: number; z: number };
+}
+
 export interface TriggerSupernovaPayload {
   power?: number;
   entityId?: string;
@@ -124,6 +138,10 @@ export interface CommandPayloadMap {
   SPAWN_BLACK_HOLE: SpawnBlackHolePayload | void;
   UPDATE_BLACK_HOLE_PARAMS: UpdateBlackHoleParamsPayload;
   CLEAR_BLACK_HOLES: void;
+  SEED_ORGANISMS: SeedOrganismsPayload | void;
+  SPAWN_ENERGY_BURST: SpawnEnergyBurstPayload | void;
+  RESET_ECOSYSTEM: void;
+  TOGGLE_POPULATION_MONITOR: void;
   TRIGGER_SUPERNOVA: TriggerSupernovaPayload;
 }
 

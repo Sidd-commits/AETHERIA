@@ -1,11 +1,12 @@
 import { UniverseEntity } from '../types/entity';
-import { UniverseConfig, UniversePresetId, UniverseSnapshot } from '../types/universe';
+import { UniverseConfig, UniversePresetId, UniverseSnapshot, EcosystemStats } from '../types/universe';
 import { GravitySystem } from './systems/GravitySystem';
 import { ParticleSystem } from './systems/ParticleSystem';
 import { CollisionSystem } from './systems/CollisionSystem';
 import { EnergySystem } from './systems/EnergySystem';
 import { FormationSystem } from './systems/FormationSystem';
 import { DestructionSystem } from './systems/DestructionSystem';
+import { EcosystemSystem } from './systems/EcosystemSystem';
 
 export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
   gravityConstant: 1.0,
@@ -24,7 +25,7 @@ export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
 /**
  * Master Universe Engine
  * Pure simulation kernel completely decoupled from rendering frameworks.
- * Coordinates 6 simulation systems via a deterministic fixed-timestep simulation loop.
+ * Coordinates 7 simulation systems via a deterministic fixed-timestep simulation loop.
  */
 export class UniverseEngine {
   private config: UniverseConfig;
@@ -38,6 +39,7 @@ export class UniverseEngine {
   private energySystem: EnergySystem;
   private formationSystem: FormationSystem;
   private destructionSystem: DestructionSystem;
+  private ecosystemSystem: EcosystemSystem;
 
   // Simulation Timekeeping
   private simulationTime: number = 0;
@@ -53,6 +55,7 @@ export class UniverseEngine {
     this.energySystem = new EnergySystem();
     this.formationSystem = new FormationSystem();
     this.destructionSystem = new DestructionSystem();
+    this.ecosystemSystem = new EcosystemSystem();
 
     this.loadPreset('SOLAR_SYSTEM');
   }
@@ -81,10 +84,29 @@ export class UniverseEngine {
   public loadPreset(presetId: UniversePresetId): void {
     this.activePreset = presetId;
     this.entities = this.formationSystem.generatePreset(presetId, this.particleSystem);
+    this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), 650, 2400);
   }
 
   public reset(): void {
+    this.ecosystemSystem.reset();
     this.loadPreset(this.activePreset);
+  }
+
+  public seedOrganisms(count: number = 50, origin?: { x: number; y: number; z: number }): number {
+    return this.ecosystemSystem.seedOrganisms(this.particleSystem.getBuffer(), count, origin);
+  }
+
+  public spawnEnergyBurst(count: number = 200, origin?: { x: number; y: number; z: number }): number {
+    return this.ecosystemSystem.spawnEnergyBurst(this.particleSystem.getBuffer(), count, origin);
+  }
+
+  public resetEcosystem(): void {
+    this.ecosystemSystem.reset();
+    this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), 650, 2400);
+  }
+
+  public getEcosystemStats(): Readonly<EcosystemStats> {
+    return this.ecosystemSystem.getStats();
   }
 
   public spawnEntity(partialEntity: Partial<UniverseEntity>): UniverseEntity {
@@ -222,14 +244,17 @@ export class UniverseEngine {
     // 2. Particle System: Damping, Accretion disk swirl, and bounds
     this.particleSystem.update(blackHoles, this.config, dt, this.simulationTime);
 
-    // 3. Collision System: Celestial contacts & Horizon absorption
+    // 3. Ecosystem System: Emergent local rules for Organisms, Energy seeking, Reproduction & Mortality
+    this.ecosystemSystem.update(this.particleSystem.getBuffer(), this.entities, this.config, dt);
+
+    // 4. Collision System: Celestial contacts & Horizon absorption
     this.collisionSystem.resolveBodyCollisions(this.entities, this.config);
     this.collisionSystem.resolveParticleCollisions(this.particleSystem.getBuffer(), blackHoles);
 
-    // 4. Energy System: Solar radiation, thermal decay, and harmonic fields
+    // 5. Energy System: Solar radiation, thermal decay, and harmonic fields
     this.energySystem.update(this.entities, this.config, dt, this.simulationTime);
 
-    // 5. Destruction System: Entity lifecycle aging and cleanup
+    // 6. Destruction System: Entity lifecycle aging and cleanup
     this.entities = this.destructionSystem.updateLifecycles(this.entities, dt);
   }
 
@@ -255,6 +280,7 @@ export class UniverseEngine {
     return {
       entities: this.entities.map((e) => ({ ...e })),
       particles: this.particleSystem.getBuffer(),
+      ecosystemStats: this.ecosystemSystem.getStats(),
       time: this.simulationTime,
       tickCount: this.tickCount,
       isPaused: this.config.isPaused,

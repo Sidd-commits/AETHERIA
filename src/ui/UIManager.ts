@@ -6,13 +6,14 @@ import { ChargeRingController } from './ChargeRingController';
 import { ToastController } from './ToastController';
 import { DebugOverlay } from './DebugOverlay';
 import { UniverseControls } from './UniverseControls';
+import { PopulationMonitor } from './PopulationMonitor';
 import { UniverseState } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
 
 /**
  * UI Manager
  * Orchestrates all UI overlays, controllers, HUD elements, user button inputs,
- * debug visualizer, and procedural universe simulation controls.
+ * debug visualizer, ecosystem population monitor, and procedural universe simulation controls.
  */
 export class UIManager {
   private commandBus: CommandBus;
@@ -22,12 +23,14 @@ export class UIManager {
   private toastController: ToastController;
   private debugOverlay: DebugOverlay;
   private universeControls: UniverseControls;
+  private populationMonitor: PopulationMonitor;
 
   private videoElement: HTMLVideoElement;
   private toggleCamBtn: HTMLButtonElement;
   private themeCycleBtn: HTMLButtonElement;
   private explodeDemoBtn: HTMLButtonElement;
   private toggleDebugBtn: HTMLButtonElement | null = null;
+  private toggleEcoBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
@@ -42,12 +45,14 @@ export class UIManager {
     this.toastController = new ToastController(this.commandBus);
     this.debugOverlay = new DebugOverlay(gestureDetector, this.commandBus);
     this.universeControls = new UniverseControls(this.commandBus);
+    this.populationMonitor = new PopulationMonitor(this.commandBus);
 
     this.videoElement = getRequiredElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getRequiredElement<HTMLButtonElement>('btn-toggle-cam');
     this.themeCycleBtn = getRequiredElement<HTMLButtonElement>('btn-theme-cycle');
     this.explodeDemoBtn = getRequiredElement<HTMLButtonElement>('btn-explode-demo');
     this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
+    this.toggleEcoBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-eco');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -76,6 +81,16 @@ export class UIManager {
         this.commandBus.dispatch('SHOW_TOAST', {
           message: isDebug ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
           icon: '🛠️'
+        }, 'UI');
+      });
+    }
+
+    if (this.toggleEcoBtn) {
+      this.toggleEcoBtn.addEventListener('click', () => {
+        const isVisible = this.populationMonitor.toggle();
+        this.commandBus.dispatch('SHOW_TOAST', {
+          message: isVisible ? '🌿 Population Monitor Open (Press E)' : '🌿 Population Monitor Hidden',
+          icon: '🌿'
         }, 'UI');
       });
     }
@@ -114,5 +129,9 @@ export class UIManager {
 
   public getUniverseControls(): UniverseControls {
     return this.universeControls;
+  }
+
+  public getPopulationMonitor(): PopulationMonitor {
+    return this.populationMonitor;
   }
 }

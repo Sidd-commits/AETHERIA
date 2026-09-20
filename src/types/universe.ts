@@ -26,11 +26,27 @@ export interface UniverseConfig {
 }
 
 /**
+ * Real-time Population & Ecosystem Telemetry Stats
+ */
+export interface EcosystemStats {
+  population: number; // Active organism count
+  energyCount: number; // Active energy particle count
+  matterCount: number; // Active matter particle count
+  births: number; // Total organism births
+  deaths: number; // Total organism deaths
+  averageEnergy: number; // Average energy of living organisms (0 - 2.0)
+  averageAge: number; // Average age of living organisms in seconds
+  averageHealth: number; // Average health of living organisms (0 - 1.0)
+  populationGrowth: number; // Current net population growth rate
+}
+
+/**
  * Immutable Universe State Snapshot for visualizer rendering
  */
 export interface UniverseSnapshot {
   entities: UniverseEntity[];
   particles: CosmicParticleBuffer;
+  ecosystemStats: EcosystemStats;
   time: number;
   tickCount: number;
   isPaused: boolean;

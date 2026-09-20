@@ -124,6 +124,27 @@ export class AetheriaApp {
     this.commandBus.on('CLEAR_BLACK_HOLES', () => {
       this.universeEngine.clearBlackHoles();
     });
+
+    // Emergent Particle Ecosystem Commands
+    this.commandBus.on('SEED_ORGANISMS', (cmd) => {
+      const count = cmd.payload?.count ?? 150;
+      const origin = cmd.payload?.origin;
+      this.universeEngine.seedOrganisms(count, origin);
+    });
+
+    this.commandBus.on('SPAWN_ENERGY_BURST', (cmd) => {
+      const count = cmd.payload?.count ?? 250;
+      const origin = cmd.payload?.origin;
+      this.universeEngine.spawnEnergyBurst(count, origin);
+    });
+
+    this.commandBus.on('RESET_ECOSYSTEM', () => {
+      this.universeEngine.resetEcosystem();
+    });
+
+    this.commandBus.on('TOGGLE_POPULATION_MONITOR', () => {
+      this.uiManager.getPopulationMonitor().toggle();
+    });
   }
 
   public async start(): Promise<void> {

@@ -11,14 +11,19 @@ export class ParticleSystem {
 
   constructor(maxParticles: number = 6000) {
     this.buffer = {
+      types: new Uint8Array(maxParticles),
       positions: new Float32Array(maxParticles * 3),
       velocities: new Float32Array(maxParticles * 3),
       colors: new Float32Array(maxParticles * 3),
       targetColors: new Float32Array(maxParticles * 3),
       sizes: new Float32Array(maxParticles),
       energies: new Float32Array(maxParticles),
+      healths: new Float32Array(maxParticles),
       lifetimes: new Float32Array(maxParticles),
       ages: new Float32Array(maxParticles),
+      reproductionThresholds: new Float32Array(maxParticles),
+      energyConsumptionRates: new Float32Array(maxParticles),
+      attractionPreferences: new Float32Array(maxParticles),
       count: 0,
       maxCount: maxParticles
     };

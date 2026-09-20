@@ -54,7 +54,15 @@ export class DestructionSystem {
         velocities[i3 + 1] += (dirY + (Math.random() - 0.5) * jitter) * factor;
         velocities[i3 + 2] += (dirZ + (Math.random() - 0.5) * jitter) * factor;
 
-        energies[i] = 1.0;
+        // Supernova converts particles into dense, energized resource fields
+        if (buffer.types) {
+          buffer.types[i] = 1; // ECO_TYPE_ENERGY
+        }
+        energies[i] = 1.8 + Math.random() * 0.5;
+        buffer.colors[i3] = 1.0;
+        buffer.colors[i3 + 1] = 0.9;
+        buffer.colors[i3 + 2] = 0.3;
+        buffer.sizes[i] = 0.28;
       }
     }
 

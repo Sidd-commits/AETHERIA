@@ -76,14 +76,19 @@ export class RenderLoop {
     const snapshot = this.universeEngine.getSnapshot();
     this.universeRenderer.renderSnapshot(snapshot);
 
-    // 5. Update scene group transforms (lerping position, rotation, scale)
+    // 5. Update Ecosystem Population Monitor
+    if (this.uiManager && snapshot.ecosystemStats) {
+      this.uiManager.getPopulationMonitor().update(snapshot.ecosystemStats);
+    }
+
+    // 6. Update scene group transforms (lerping position, rotation, scale)
     this.sceneManager.updateTransforms(
       state.targetPosition,
       state.targetRotation,
       state.targetScale
     );
 
-    // 6. Render Three.js frame
+    // 7. Render Three.js frame
     this.sceneManager.render();
   };
 }
