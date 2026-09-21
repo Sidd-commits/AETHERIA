@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌌 AETHERIA
+# 🌌  AETHERIA
 
 ### Deterministic Procedural Universe Simulation & Spatial Hand-Tracking Engine
 
