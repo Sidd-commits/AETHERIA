@@ -38,7 +38,15 @@ export class CommandValidator {
       };
     }
 
-    const sanitizedParams: Record<string, any> = { ...(command.parameters || {}) };
+    const rawParams = command.parameters || {};
+    const sanitizedParams: Record<string, any> = Object.create(null);
+    for (const key of Object.keys(rawParams)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        warnings.push(`Filtered prohibited prototype pollution key: "${key}"`);
+        continue;
+      }
+      sanitizedParams[key] = rawParams[key];
+    }
 
     switch (command.action) {
       case 'CREATE_PLANET': {

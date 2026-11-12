@@ -4,6 +4,7 @@ import { WorldGenValidationResult, CURATED_WORLD_GEN_PROMPTS } from '../types/wo
 import { UniverseConfigParser } from '../universe/generator/UniverseConfigParser';
 import { WorldGenValidator } from '../universe/generator/WorldGenValidator';
 import { PALETTES } from '../config/palettes';
+import { escapeHtml } from '../utils/dom';
 
 /**
  * Natural-Language Procedural World Generation Studio
@@ -736,12 +737,12 @@ export class WorldGenStudio {
     const chipsContainer = this.container.querySelector('#wg-preset-chips') as HTMLElement;
     chipsContainer.innerHTML = CURATED_WORLD_GEN_PROMPTS.map(
       (p) => `
-      <button class="wg-preset-chip" data-prompt="${this.escapeHtml(p.prompt)}">
+      <button class="wg-preset-chip" data-prompt="${escapeHtml(p.prompt)}">
         <div class="wg-chip-top">
-          <span class="wg-chip-title">${p.icon} ${p.title}</span>
-          <span class="wg-chip-tag">${p.tag}</span>
+          <span class="wg-chip-title">${p.icon} ${escapeHtml(p.title)}</span>
+          <span class="wg-chip-tag">${escapeHtml(p.tag)}</span>
         </div>
-        <div class="wg-chip-prompt">${p.prompt}</div>
+        <div class="wg-chip-prompt">${escapeHtml(p.prompt)}</div>
       </button>
     `
     ).join('');
@@ -930,7 +931,7 @@ export class WorldGenStudio {
 
       <div class="wg-metric-card">
         <span class="wg-metric-label">🎭 Cosmological Theme</span>
-        <span class="wg-metric-value" style="text-transform: capitalize; color: #00f2fe;">${cfg.theme}</span>
+        <span class="wg-metric-value" style="text-transform: capitalize; color: #00f2fe;">${escapeHtml(cfg.theme)}</span>
       </div>
 
       <div class="wg-metric-card">
@@ -1046,13 +1047,5 @@ export class WorldGenStudio {
     if (this.isVisible) this.hide();
     else this.show();
     return this.isVisible;
-  }
-
-  private escapeHtml(str: string): string {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   }
 }

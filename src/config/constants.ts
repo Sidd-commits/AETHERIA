@@ -1,19 +1,6 @@
-import { PhysicsConfig } from '../types/physics';
-
 /**
- * Global Constants and Default Physics Configuration
+ * Global Constants and Default Rendering Configuration
  */
-
-export const DEFAULT_PHYSICS_CONFIG: PhysicsConfig = {
-  particleCount: 3000,
-  sphereRadius: 3.2,
-  explosionForce: 1.8,
-  springStrength: 0.045,
-  damping: 0.88,
-  pinchThreshold: 0.08,
-  idleWaveSpeed: 2.2,
-  idleWaveAmplitude: 0.05
-};
 
 export const RENDERING_CONFIG = {
   cameraFov: 50,

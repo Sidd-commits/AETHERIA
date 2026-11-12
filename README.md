@@ -366,6 +366,12 @@ npm run test:coverage
 
 ```
 AETHERIA/
+├── .agents/skills/                # Cloudflare Security Audit & Ponytail skills
+│   ├── security-audit/            # Cloudflare security auditing playbooks & schema validators
+│   ├── ponytail/                  # Ponytail lean engineering & zero-bloat guidelines
+│   ├── ponytail-audit/            # Quality, load resilience, and code pruning audit
+│   └── ponytail-review/           # Diff review & regression detection
+├── .cursor/rules/                 # Cursor AI agent rules (Ponytail directives)
 ├── .github/workflows/ci.yml       # GitHub Actions CI matrix
 ├── docs/
 │   ├── architecture.md            # Deep-dive architectural specification
@@ -375,28 +381,30 @@ AETHERIA/
 │   ├── ai/                        # AI co-processor, voice, and guardian subsystems
 │   │   ├── adapters/              # Offline Heuristic & OpenAI adapters
 │   │   ├── guardian/              # AETHER Guardian & State Summarizer
-│   │   ├── validation/            # Strict CommandValidator security gate
+│   │   ├── validation/            # Strict CommandValidator security gate & prototype pollution guard
 │   │   └── voice/                 # SpeechRecognition & audio level analyser
 │   ├── config/                    # Palettes, constants, and Zod env schema
 │   ├── core/                      # CommandBus, QualityScaler, ErrorBoundary, WorldState
 │   ├── gestures/                  # GestureClassifier, Smoother, Detector, Recognizer
 │   ├── input/                     # Mouse, touch, and keyboard fallbacks
 │   ├── rendering/                 # UniverseRenderer, SceneManager, RenderLoop
+│   ├── tracking/                  # MediaPipe Hands & direct getUserMedia camera streaming
 │   ├── types/                     # Strict TypeScript interface definitions
 │   ├── ui/                        # Glassmorphic HUDs, Performance Monitor, WorldGenStudio
 │   ├── universe/                  # Pure deterministic simulation kernel
 │   │   ├── generator/             # ProceduralUniverseGenerator & ConfigParser
 │   │   ├── spatial/               # 3D SpatialHashGrid (O(1) lookups)
 │   │   └── systems/               # Gravity, Collision, Ecosystem, Particle systems
-│   └── utils/                     # Logger, math utilities, DOM helpers
+│   └── utils/                     # Logger, DOM sanitization (escapeHtml), math utilities
 ├── tests/
 │   ├── integration/               # Multi-tick deterministic simulation tests
 │   └── unit/                      # Gesture, physics, command, and AI unit tests
+├── AGENTS.md                      # Ponytail & Cloudflare Security Audit directives
 ├── Dockerfile                     # Multi-stage production container build
-├── nginx.conf                     # Production Nginx reverse proxy configuration
+├── nginx.conf                     # Production Nginx reverse proxy with hardened CSP & security headers
 ├── eslint.config.js               # ESLint 9+ Flat Config
 ├── tsconfig.json                  # Strict TypeScript compiler options
-└── vitest.config.ts               # Vitest runner configuration
+└── vite.config.ts                 # Vite bundler with vendor chunk splitting
 ```
 
 ---

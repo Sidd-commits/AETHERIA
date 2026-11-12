@@ -2,6 +2,7 @@ import { AetherGuardian } from '../ai/guardian/AetherGuardian';
 import { CommandBus } from '../core/CommandBus';
 import { UniverseTelemetrySummary, CosmicAnomaly, GuardianRecommendation } from '../types/aether';
 import { AIManager } from '../ai/AIManager';
+import { escapeHtml } from '../utils/dom';
 
 /**
  * AI Observation Panel HUD (AETHER Observatory)
@@ -361,8 +362,9 @@ export class AIObservationPanel {
   public async submitQuery(question: string): Promise<void> {
     if (!this.currentTelemetry) return;
 
+    const safeQ = escapeHtml(question);
     this.chatHistoryEl.innerHTML = `
-      <div style="color: #00f2fe; font-weight: 600; margin-bottom: 4px;">Q: "${question}"</div>
+      <div style="color: #00f2fe; font-weight: 600; margin-bottom: 4px;">Q: "${safeQ}"</div>
       <div style="color: #ffd200; font-style: italic;">👁️ AETHER analyzing cosmos telemetry...</div>
     `;
 
@@ -374,17 +376,17 @@ export class AIObservationPanel {
         actionHtml = `
           <div style="margin-top: 8px;">
             <button class="aether-apply-btn" id="btn-chat-action" style="padding: 4px 10px; font-size: 11px;">
-              ${response.suggestedAction.label}
+              ${escapeHtml(response.suggestedAction.label)}
             </button>
           </div>
         `;
       }
 
       this.chatHistoryEl.innerHTML = `
-        <div style="color: #00f2fe; font-weight: 600; margin-bottom: 6px;">Q: "${question}"</div>
-        <div style="color: #ffffff; white-space: pre-line; margin-bottom: 6px;">${response.answer}</div>
+        <div style="color: #00f2fe; font-weight: 600; margin-bottom: 6px;">Q: "${safeQ}"</div>
+        <div style="color: #ffffff; white-space: pre-line; margin-bottom: 6px;">${escapeHtml(response.answer)}</div>
         <div style="font-size: 10px; color: #8a99ad; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
-          <b>Reasoning:</b> ${response.reasoning}
+          <b>Reasoning:</b> ${escapeHtml(response.reasoning)}
         </div>
         ${actionHtml}
       `;
@@ -413,7 +415,7 @@ export class AIObservationPanel {
       }
     } catch (err: any) {
       this.chatHistoryEl.innerHTML = `
-        <div style="color: #ff5e62;">Error consulting AETHER: ${err.message}</div>
+        <div style="color: #ff5e62;">Error consulting AETHER: ${escapeHtml(err.message)}</div>
       `;
     }
   }
@@ -474,10 +476,10 @@ export class AIObservationPanel {
           return `
             <div style="background: rgba(255, 255, 255, 0.03); border-left: 2px solid ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
               <div style="display: flex; justify-content: space-between;">
-                <b style="color: ${color};">${anom.title}</b>
-                <span style="font-size: 9px; color: ${color}; font-weight: 600;">${anom.severity}</span>
+                <b style="color: ${color};">${escapeHtml(anom.title)}</b>
+                <span style="font-size: 9px; color: ${color}; font-weight: 600;">${escapeHtml(anom.severity)}</span>
               </div>
-              <div style="font-size: 10px; color: #cbd5e1; margin-top: 2px;">${anom.description}</div>
+              <div style="font-size: 10px; color: #cbd5e1; margin-top: 2px;">${escapeHtml(anom.description)}</div>
             </div>
           `;
         })
@@ -490,10 +492,10 @@ export class AIObservationPanel {
         (rec: GuardianRecommendation) => `
         <div class="aether-rec-card">
           <div style="flex: 1; padding-right: 8px;">
-            <b style="color: #ffffff;">${rec.title}</b>
-            <div style="font-size: 10px; color: #8a99ad;">${rec.text}</div>
+            <b style="color: #ffffff;">${escapeHtml(rec.title)}</b>
+            <div style="font-size: 10px; color: #8a99ad;">${escapeHtml(rec.text)}</div>
           </div>
-          ${rec.suggestedActionCommand ? `<button class="aether-apply-btn" data-action="${rec.suggestedActionCommand}">${rec.suggestedActionName || 'Apply'}</button>` : ''}
+          ${rec.suggestedActionCommand ? `<button class="aether-apply-btn" data-action="${escapeHtml(rec.suggestedActionCommand)}">${escapeHtml(rec.suggestedActionName || 'Apply')}</button>` : ''}
         </div>
       `
       )
@@ -529,8 +531,8 @@ export class AIObservationPanel {
         .map(
           (item) => `
           <div style="display: flex; justify-content: space-between; color: #cbd5e1;">
-            <span>"${item.transcript}"</span>
-            <span style="color: ${item.status === 'SUCCESS' ? '#00f5a0' : '#ff5e62'}; font-weight: 600; font-size: 10px;">${item.status}</span>
+            <span>"${escapeHtml(item.transcript)}"</span>
+            <span style="color: ${item.status === 'SUCCESS' ? '#00f5a0' : '#ff5e62'}; font-weight: 600; font-size: 10px;">${escapeHtml(item.status)}</span>
           </div>
         `
         )

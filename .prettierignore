@@ -4,3 +4,5 @@ build/
 coverage/
 .system_generated/
 scratch/
+.agents/
+.cursor/

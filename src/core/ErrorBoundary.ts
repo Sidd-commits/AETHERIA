@@ -1,4 +1,5 @@
 import { Logger } from '../utils/logger';
+import { escapeHtml } from '../utils/dom';
 
 const logger = Logger.create('ErrorBoundary');
 
@@ -128,9 +129,9 @@ export class ErrorBoundary {
             A fatal simulation or WebGL error occurred. The system safely intercepted this error to prevent an unhandled browser crash.
           </p>
           <div class="error-boundary-details">
-            <div class="error-message"><strong>Error:</strong> ${this.escapeHtml(details.message)}</div>
-            ${details.source ? `<div class="error-source"><strong>Source:</strong> ${this.escapeHtml(details.source)}:${details.lineno}:${details.colno}</div>` : ''}
-            ${details.error instanceof Error && details.error.stack ? `<pre class="error-stack">${this.escapeHtml(details.error.stack)}</pre>` : ''}
+            <div class="error-message"><strong>Error:</strong> ${escapeHtml(details.message)}</div>
+            ${details.source ? `<div class="error-source"><strong>Source:</strong> ${escapeHtml(details.source)}:${details.lineno}:${details.colno}</div>` : ''}
+            ${details.error instanceof Error && details.error.stack ? `<pre class="error-stack">${escapeHtml(details.error.stack)}</pre>` : ''}
           </div>
           <div class="error-boundary-actions">
             <button id="btn-err-reload" class="error-action-btn primary">🔄 Reload Simulation</button>
@@ -290,14 +291,5 @@ export class ErrorBoundary {
       }
     `;
     document.head.appendChild(style);
-  }
-
-  private escapeHtml(str: string): string {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 }

@@ -8,6 +8,14 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    sourcemap: true
+    sourcemap: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three']
+        }
+      }
+    }
   }
 });

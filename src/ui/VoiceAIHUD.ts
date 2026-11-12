@@ -1,6 +1,7 @@
 import { AIManager } from '../ai/AIManager';
 import { CommandBus } from '../core/CommandBus';
 import { AIStructuredCommand, VoiceState } from '../types/ai';
+import { escapeHtml } from '../utils/dom';
 
 /**
  * Voice AI HUD Controller
@@ -476,10 +477,10 @@ export class VoiceAIHUD {
         return `
           <div style="background: rgba(255,255,255,0.03); border-left: 2px solid ${color}; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #ffffff; font-weight: 500;">"${item.transcript}"</span>
-              <span style="color: ${color}; font-size: 10px; font-weight: 600;">${icon} ${item.status}</span>
+              <span style="color: #ffffff; font-weight: 500;">"${escapeHtml(item.transcript)}"</span>
+              <span style="color: ${color}; font-size: 10px; font-weight: 600;">${icon} ${escapeHtml(item.status)}</span>
             </div>
-            ${item.parsedCommand ? `<div style="font-size: 10px; color: #8a99ad; margin-top: 2px;">→ ${item.parsedCommand.action}</div>` : ''}
+            ${item.parsedCommand ? `<div style="font-size: 10px; color: #8a99ad; margin-top: 2px;">→ ${escapeHtml(item.parsedCommand.action)}</div>` : ''}
           </div>
         `;
       })
