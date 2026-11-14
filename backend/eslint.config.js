@@ -3,19 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: [
-      'dist/**',
-      'frontend/dist/**',
-      'backend/dist/**',
-      'build/**',
-      'coverage/**',
-      'node_modules/**',
-      'scratch/**',
-      'docs/**',
-      '.agents/**',
-      '.cursor/**',
-      '**/*.d.ts'
-    ]
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**', '**/*.d.ts']
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

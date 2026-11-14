@@ -14,23 +14,15 @@
     "build": "npm run build --workspaces",
     "build:frontend": "npm run build --workspace=frontend",
     "build:backend": "npm run build --workspace=backend",
-    "typecheck": "npm run typecheck --workspaces",
+    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
     "typecheck:frontend": "npm run typecheck --workspace=frontend",
     "typecheck:backend": "npm run typecheck --workspace=backend",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
     "test": "npm run test:run --workspace=frontend && npm run test --workspace=backend",
     "test:frontend": "npm run test:run --workspace=frontend",
-    "test:backend": "npm run test --workspace=backend"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "eslint": "^9.39.5",
-    "eslint-plugin-prettier": "^5.5.6",
-    "prettier": "^3.9.8",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.70.0"
+    "test:backend": "npm run test --workspace=backend",
+    "docker:up": "docker compose -f docker/docker-compose.yml up --build"
   }
 }

@@ -401,8 +401,13 @@ AETHERIA/
 │   ├── vite.config.ts                 # Vite bundler with vendor chunk splitting
 │   ├── vitest.config.ts               # Vitest configuration
 │   ├── tsconfig.json                  # TypeScript strict configuration
+│   ├── eslint.config.js               # Scoped ESLint configuration
+│   ├── .prettierrc                    # Scoped Prettier configuration
+│   ├── .env.example                   # Client environment template
+│   ├── .dockerignore                  # Scoped Docker ignore
 │   ├── nginx.conf                     # Hardened Nginx reverse proxy configuration
-│   └── Dockerfile                     # Multi-stage production container build
+│   ├── Dockerfile                     # Multi-stage production container build
+│   └── package.json                   # Frontend dependencies & scripts
 │
 ├── backend/                           # Secure Node.js & Express API Microservice
 │   ├── src/
@@ -418,15 +423,22 @@ AETHERIA/
 │   ├── tests/                         # Backend API endpoint test suite
 │   ├── tsconfig.json                  # NodeNext TypeScript strict configuration
 │   ├── vitest.config.ts               # Vitest configuration for backend tests
-│   ├── .env.example                   # Template showing isolated server configurations
-│   └── Dockerfile                     # Multi-stage production container build
+│   ├── eslint.config.js               # Scoped ESLint configuration
+│   ├── .prettierrc                    # Scoped Prettier configuration
+│   ├── .env.example                   # Isolated server configuration template
+│   ├── .dockerignore                  # Scoped Docker ignore
+│   ├── Dockerfile                     # Multi-stage production container build
+│   └── package.json                   # Backend dependencies & scripts
+│
+├── docker/                            # Production Container Orchestration
+│   ├── docker-compose.yml             # Orchestration (frontend:8080, backend:5000)
+│   └── .dockerignore                  # Docker build exclusions
 │
 ├── .github/workflows/ci.yml           # GitHub Actions CI matrix for frontend & backend
-├── docker-compose.yml                 # Monorepo orchestration (frontend:8080, backend:5000)
-├── AGENTS.md                          # Ponytail & Cloudflare Security Audit directives
-├── eslint.config.js                   # Root ESLint 9+ Flat Config
-├── tsconfig.json                      # Solution-level TypeScript compiler options
-└── package.json                       # Monorepo npm workspaces configuration
+├── .gitignore                         # Strict exclusion rules (zero secrets, private references ignored)
+├── LICENSE                            # MIT License
+├── README.md                          # Public repository documentation
+└── package.json                       # Lightweight root workspace runner
 ```
 ```
 
