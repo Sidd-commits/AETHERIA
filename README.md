@@ -11,9 +11,9 @@
 [![Docker Ready](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**AETHERIA** is a real-time, deterministic procedural 3D universe simulation and computer vision interaction engine. Built with a decoupled pure-math simulation kernel, scale-invariant hand gesture recognition via MediaPipe, an emergent living particle ecosystem, black hole accretion physics, and natural-language procedural world generation.
+**AETHERIA** is a real-time, deterministic procedural 3D universe simulation and computer vision interaction engine. Built as a full-stack monorepo featuring a decoupled pure-math simulation kernel, scale-invariant hand gesture recognition via MediaPipe, an emergent living particle ecosystem, black hole accretion physics, and natural-language procedural world generation.
 
-[Explore Architecture](docs/architecture.md) • [Performance Benchmarks](docs/performance.md) • [Physics Model](docs/physics.md) • [Contributing Guide](CONTRIBUTING.md)
+[System Architecture](#5-system-architecture) • [Performance Benchmarks](#10-performance-benchmarks) • [Physics Model](#8-physics-engine) • [Monorepo Structure](#15-project-structure) • [Contributing Guide](CONTRIBUTING.md)
 
 </div>
 
@@ -49,13 +49,21 @@
 
 ## 2. Live Demo & Quick Look
 
-### Local Interactive Demo
+### Local Interactive Demo (Full-Stack Monorepo)
 
 ```bash
 git clone https://github.com/Sidd-commits/AETHERIA.git
 cd AETHERIA
-npm ci
+
+# Install monorepo dependencies (frontend & backend)
+npm install
+
+# Start both frontend & backend services
 npm run dev
+
+# Or start individually:
+# npm run dev:frontend   (Vite UI at http://localhost:3000)
+# npm run dev:backend    (Express API at http://localhost:5000)
 ```
 
 Open your browser at `http://localhost:3000/`. Allow webcam permissions for hand gesture control, or use mouse and keyboard fallbacks.
@@ -368,45 +376,58 @@ npm run test:coverage
 
 ```
 AETHERIA/
-├── .agents/skills/                # Cloudflare Security Audit & Ponytail skills
-│   ├── security-audit/            # Cloudflare security auditing playbooks & schema validators
-│   ├── ponytail/                  # Ponytail lean engineering & zero-bloat guidelines
-│   ├── ponytail-audit/            # Quality, load resilience, and code pruning audit
-│   └── ponytail-review/           # Diff review & regression detection
-├── .cursor/rules/                 # Cursor AI agent rules (Ponytail directives)
-├── .github/workflows/ci.yml       # GitHub Actions CI matrix
-├── docs/
-│   ├── architecture.md            # Deep-dive architectural specification
-│   ├── performance.md             # Profiling analysis & benchmark data
-│   └── physics.md                 # Mathematical formulation of physics models
-├── src/
-│   ├── ai/                        # AI co-processor, voice, and guardian subsystems
-│   │   ├── adapters/              # Offline Heuristic & OpenAI adapters
-│   │   ├── guardian/              # AETHER Guardian & State Summarizer
-│   │   ├── validation/            # Strict CommandValidator security gate & prototype pollution guard
-│   │   └── voice/                 # SpeechRecognition & audio level analyser
-│   ├── config/                    # Palettes, constants, and Zod env schema
-│   ├── core/                      # CommandBus, QualityScaler, ErrorBoundary, WorldState
-│   ├── gestures/                  # GestureClassifier, Smoother, Detector, Recognizer
-│   ├── input/                     # Mouse, touch, and keyboard fallbacks
-│   ├── rendering/                 # UniverseRenderer, SceneManager, RenderLoop
-│   ├── tracking/                  # MediaPipe Hands & direct getUserMedia camera streaming
-│   ├── types/                     # Strict TypeScript interface definitions
-│   ├── ui/                        # Glassmorphic HUDs, Performance Monitor, WorldGenStudio
-│   ├── universe/                  # Pure deterministic simulation kernel
-│   │   ├── generator/             # ProceduralUniverseGenerator & ConfigParser
-│   │   ├── spatial/               # 3D SpatialHashGrid (O(1) lookups)
-│   │   └── systems/               # Gravity, Collision, Ecosystem, Particle systems
-│   └── utils/                     # Logger, DOM sanitization (escapeHtml), math utilities
-├── tests/
-│   ├── integration/               # Multi-tick deterministic simulation tests
-│   └── unit/                      # Gesture, physics, command, and AI unit tests
-├── AGENTS.md                      # Ponytail & Cloudflare Security Audit directives
-├── Dockerfile                     # Multi-stage production container build
-├── nginx.conf                     # Production Nginx reverse proxy with hardened CSP & security headers
-├── eslint.config.js               # ESLint 9+ Flat Config
-├── tsconfig.json                  # Strict TypeScript compiler options
-└── vite.config.ts                 # Vite bundler with vendor chunk splitting
+├── frontend/                          # Client WebGL Simulation, Vision & UI SPA
+│   ├── src/
+│   │   ├── ai/                        # AI co-processor, voice client, and guardian client
+│   │   │   ├── adapters/              # Offline Heuristic & OpenAI client adapters
+│   │   │   ├── guardian/              # AETHER Guardian & State Summarizer
+│   │   │   ├── validation/            # Strict CommandValidator security gate & prototype pollution guard
+│   │   │   └── voice/                 # SpeechRecognition & audio level analyser
+│   │   ├── config/                    # Palettes, constants, and Zod env schema
+│   │   ├── core/                      # CommandBus, QualityScaler, ErrorBoundary, WorldState
+│   │   ├── gestures/                  # GestureClassifier, Smoother, Detector, Recognizer
+│   │   ├── input/                     # Mouse, touch, and keyboard fallbacks
+│   │   ├── rendering/                 # UniverseRenderer, SceneManager, RenderLoop
+│   │   ├── tracking/                  # MediaPipe Hands & direct getUserMedia camera streaming
+│   │   ├── types/                     # Strict TypeScript interface definitions
+│   │   ├── ui/                        # Glassmorphic HUDs, Performance Monitor, WorldGenStudio
+│   │   ├── universe/                  # Pure deterministic simulation kernel
+│   │   │   ├── generator/             # ProceduralUniverseGenerator & ConfigParser
+│   │   │   ├── spatial/               # 3D SpatialHashGrid (O(1) lookups)
+│   │   │   └── systems/               # Gravity, Collision, Ecosystem, Particle systems
+│   │   └── utils/                     # Logger, DOM sanitization (escapeHtml), math utilities
+│   ├── tests/                         # Vitest unit & integration test suites
+│   ├── index.html                     # HTML5 entry with strict CSP headers
+│   ├── vite.config.ts                 # Vite bundler with vendor chunk splitting
+│   ├── vitest.config.ts               # Vitest configuration
+│   ├── tsconfig.json                  # TypeScript strict configuration
+│   ├── nginx.conf                     # Hardened Nginx reverse proxy configuration
+│   └── Dockerfile                     # Multi-stage production container build
+│
+├── backend/                           # Secure Node.js & Express API Microservice
+│   ├── src/
+│   │   ├── config/                    # Zod validated environment variables
+│   │   ├── middleware/                # Rate limiting, security headers, CORS protection
+│   │   ├── routes/                    # Health, AI command proxy, WorldGen, and presets routes
+│   │   │   ├── health.ts              # /health & /api/health telemetry
+│   │   │   ├── ai.ts                  # /api/ai/command & /api/ai/query endpoints
+│   │   │   ├── worldgen.ts            # /api/worldgen/generate procedural API
+│   │   │   └── presets.ts             # /api/presets celestial library
+│   │   ├── services/                  # Business logic (AIService, WorldgenService)
+│   │   └── server.ts                  # Express application factory & server entry point
+│   ├── tests/                         # Backend API endpoint test suite
+│   ├── tsconfig.json                  # NodeNext TypeScript strict configuration
+│   ├── vitest.config.ts               # Vitest configuration for backend tests
+│   ├── .env.example                   # Template showing isolated server configurations
+│   └── Dockerfile                     # Multi-stage production container build
+│
+├── .github/workflows/ci.yml           # GitHub Actions CI matrix for frontend & backend
+├── docker-compose.yml                 # Monorepo orchestration (frontend:8080, backend:5000)
+├── AGENTS.md                          # Ponytail & Cloudflare Security Audit directives
+├── eslint.config.js                   # Root ESLint 9+ Flat Config
+├── tsconfig.json                      # Solution-level TypeScript compiler options
+└── package.json                       # Monorepo npm workspaces configuration
+```
 ```
 
 ---

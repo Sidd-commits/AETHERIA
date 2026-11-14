@@ -9,16 +9,22 @@ dist-ssr/
 build/
 coverage/
 *.tsbuildinfo
+frontend/dist/
+backend/dist/
 
 # Environment & Sensitive files (NEVER commit secrets or real .env)
 .env
-.env.local
-.env.*.local
-.env.development
-.env.production
-.env.test
+.env.*
+*.env
+*.env.*
+!*.env.example
+!frontend/.env.example
+!backend/.env.example
 *.pem
 *.key
+*.cert
+id_rsa*
+*.secret
 
 # Logs & Diagnostics
 *.log
@@ -42,8 +48,15 @@ lerna-debug.log*
 Thumbs.db
 ehthumbs.db
 
-# Scratch and test cache
+# Internal Reference Documents & Agent Playbooks (Private references, excluded from GitHub)
+docs/
+references/
 scratch/
+.agents/
+.cursor/
+.system_generated/
+
+# Test and lint cache
 .eslintcache
 .vitest/
 .cache/

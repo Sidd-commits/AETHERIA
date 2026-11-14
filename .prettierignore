@@ -1,8 +1,12 @@
 node_modules/
 dist/
+frontend/dist/
+backend/dist/
 build/
 coverage/
 .system_generated/
 scratch/
+docs/
 .agents/
 .cursor/
+package-lock.json

@@ -5,10 +5,13 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      'frontend/dist/**',
+      'backend/dist/**',
       'build/**',
       'coverage/**',
       'node_modules/**',
       'scratch/**',
+      'docs/**',
       '.agents/**',
       '.cursor/**',
       '**/*.d.ts'
@@ -27,7 +30,7 @@ export default tseslint.config(
         }
       ],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }]
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }]
     }
   }
 );

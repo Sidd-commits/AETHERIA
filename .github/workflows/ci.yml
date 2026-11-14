@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Typecheck, Lint, Test & Build
+    name: Typecheck, Lint, Test & Build (Full-Stack Monorepo)
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,24 +29,24 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
-        run: npm ci
+      - name: 📦 Install Monorepo Dependencies
+        run: npm install
 
-      - name: 🔍 TypeScript Strict Typecheck
+      - name: 🔍 TypeScript Strict Typecheck (Frontend & Backend)
         run: npm run typecheck
 
       - name: 🧹 ESLint Code Quality
         run: npm run lint
 
-      - name: ⚡ Run Vitest Unit & Integration Test Suite
-        run: npm run test:run
+      - name: ⚡ Run Vitest Suites (Frontend & Backend)
+        run: npm run test
 
-      - name: 🏗️ Production Vite Build
+      - name: 🏗️ Production Build (Frontend & Backend)
         run: npm run build
 
-      - name: 📊 Upload Production Build Artifacts
+      - name: 📊 Upload Frontend Production Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: aetheria-dist
-          path: dist/
+          name: aetheria-frontend-dist
+          path: frontend/dist/
           retention-days: 7
