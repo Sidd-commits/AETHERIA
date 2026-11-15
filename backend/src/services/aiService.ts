@@ -10,7 +10,10 @@ export const CommandPayloadSchema = z.object({
     'SET_PALETTE',
     'DESTROY_ENTITY',
     'ALIGN_ORBITS',
-    'ENERGY_BURST'
+    'ENERGY_BURST',
+    'TOGGLE_ORBITAL_TRAJECTORIES',
+    'TOGGLE_SPACETIME_GRID',
+    'SET_INTEGRATOR_MODE'
   ]),
   payload: z.record(z.unknown()).optional(),
   confidence: z.number().min(0).max(1).default(0.95),
@@ -124,6 +127,36 @@ export class AIService {
         payload: { stars: 50, radius: 15 },
         confidence: 0.92,
         reasoning: 'Procedural spiral galaxy cluster generated.'
+      };
+    }
+
+    // Spacetime grid visualization
+    if (lower.includes('spacetime') || lower.includes('curvature') || lower.includes('gravity grid')) {
+      return {
+        type: 'TOGGLE_SPACETIME_GRID',
+        payload: {},
+        confidence: 0.95,
+        reasoning: 'Toggled general-relativistic spacetime curvature grid.'
+      };
+    }
+
+    // Orbital trajectory paths
+    if (lower.includes('trajectory') || lower.includes('orbit line') || lower.includes('show orbits')) {
+      return {
+        type: 'TOGGLE_ORBITAL_TRAJECTORIES',
+        payload: {},
+        confidence: 0.95,
+        reasoning: 'Toggled Keplerian orbital trajectory paths.'
+      };
+    }
+
+    // Physics integrator selection
+    if (lower.includes('integrator') || lower.includes('verlet') || lower.includes('precision physics')) {
+      return {
+        type: 'SET_INTEGRATOR_MODE',
+        payload: { mode: 'VERLET' },
+        confidence: 0.92,
+        reasoning: 'Switched to symplectic Velocity-Verlet energy-conserving physics.'
       };
     }
 

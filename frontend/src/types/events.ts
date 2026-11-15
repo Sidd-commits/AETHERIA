@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { UniversePresetId } from './universe';
 import { UniverseEntity } from './entity';
 import { UniverseConfiguration } from './worldGen';
+import { IntegratorMode } from './trajectory';
 
 /**
  * Command and Event types for centralized command bus
@@ -35,7 +36,10 @@ export type CommandType =
   | 'ALIGN_ORBITS'
   | 'TOGGLE_VOICE_AI'
   | 'GENERATE_PROCEDURAL_UNIVERSE'
-  | 'TOGGLE_WORLD_GEN';
+  | 'TOGGLE_WORLD_GEN'
+  | 'TOGGLE_ORBITAL_TRAJECTORIES'
+  | 'TOGGLE_SPACETIME_GRID'
+  | 'SET_INTEGRATOR_MODE';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -176,6 +180,9 @@ export interface CommandPayloadMap {
   TOGGLE_VOICE_AI: ToggleVoiceAIPayload | void;
   GENERATE_PROCEDURAL_UNIVERSE: { config: UniverseConfiguration };
   TOGGLE_WORLD_GEN: void;
+  TOGGLE_ORBITAL_TRAJECTORIES: void;
+  TOGGLE_SPACETIME_GRID: void;
+  SET_INTEGRATOR_MODE: { mode?: IntegratorMode } | void;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

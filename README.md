@@ -6,7 +6,7 @@
 
 [![CI Pipeline](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml/badge.svg)](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.3%20Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vitest Tests](https://img.shields.io/badge/Tests-47%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vitest Tests](https://img.shields.io/badge/Tests-68%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
 [![Code Quality](https://img.shields.io/badge/ESLint%209-Passing-4B32C3?logo=eslint)](https://eslint.org/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -70,10 +70,15 @@ Open your browser at `http://localhost:3000/`. Allow webcam permissions for hand
 
 ### Quick Keyboard & Gesture Shortcuts
 
+- **`T`**: Toggle Keplerian Orbital Trajectory Projection Lines
+- **`G`**: Toggle General-Relativistic Spacetime Curvature Grid
+- **`O`**: Toggle Physics Integrator (Symplectic Velocity-Verlet vs Semi-Implicit Euler)
 - **`P`**: Toggle Performance Telemetry & Diagnostic HUD
 - **`D`**: Toggle Gesture Skeleton & Tracking Debug Overlay
 - **`Spacebar`**: Pause / Resume Simulation
 - **`R`**: Reset and re-seed active universe preset
+- **`B`**: Spawn Black Hole Singularity at mouse cursor
+- **`W`**: Toggle Natural Language World Generation Studio
 - **`0`–`5`**: Switch cosmic color palettes
 - **🖐️ `OPEN_PALM`**: Pan & tilt 3D celestial camera
 - **👌 `PINCH`**: Gravitational energy accumulation & supernova charge
@@ -102,6 +107,9 @@ AETHERIA bridges real-time astrophysics simulation, spatial computing, and artif
 - **Keplerian Orbital Dynamics**: Calculates stable tangential orbital velocity vectors $\mathbf{v}_{\text{orb}} = \sqrt{G M / r} \cdot \hat{\mathbf{t}}$ for planetary concentric disks.
 - **Relativistic Black Holes**: First-class singularity entities featuring event horizon mass absorption, accretion disk radius, and tangential vortex swirling.
 - **Supernova Detonations**: Compressional shockwave physics that ionize surrounding matter and propel high-velocity cosmic dust.
+- **Keplerian Orbital Trajectory Projection**: Real-time forward propagation and rendering of 64-point analytical orbital ellipses, calculating semi-major axis $a$, eccentricity $e$, orbital period $T$, and escape velocity $v_{\text{esc}}$.
+- **Spacetime Curvature Grid**: Real-time 3D gravitational potential deformation lattice ($\Delta y \propto -\sum \frac{GM}{r}$) visualizing general relativity, gravitational funnels under black holes, and wave ripples.
+- **Dual Physics Integrators**: Switch seamlessly between **High-Throughput Semi-Implicit Euler** (for 16,000+ particle performance) and **Symplectic Velocity-Verlet** (for exact energy and angular momentum conservation in multi-body orbital dynamics).
 
 ### 🧬 Living Particle Ecosystem
 

@@ -56,17 +56,32 @@ export class GravitySystem {
     }
 
     // Integrate velocities and positions (Verlet / Semi-implicit Euler)
+    const isVerlet = config.integratorMode === 'VERLET';
+
     for (let i = 0; i < count; i++) {
       const e = entities[i];
       if (e.isDead) continue;
 
-      e.velocity.x += e.acceleration.x * dt;
-      e.velocity.y += e.acceleration.y * dt;
-      e.velocity.z += e.acceleration.z * dt;
+      if (isVerlet) {
+        // Symplectic Velocity-Verlet position advancement
+        const halfDtSq = 0.5 * dt * dt;
+        e.position.x += e.velocity.x * dt + e.acceleration.x * halfDtSq;
+        e.position.y += e.velocity.y * dt + e.acceleration.y * halfDtSq;
+        e.position.z += e.velocity.z * dt + e.acceleration.z * halfDtSq;
 
-      e.position.x += e.velocity.x * dt;
-      e.position.y += e.velocity.y * dt;
-      e.position.z += e.velocity.z * dt;
+        e.velocity.x += e.acceleration.x * dt;
+        e.velocity.y += e.acceleration.y * dt;
+        e.velocity.z += e.acceleration.z * dt;
+      } else {
+        // Semi-implicit Euler
+        e.velocity.x += e.acceleration.x * dt;
+        e.velocity.y += e.acceleration.y * dt;
+        e.velocity.z += e.acceleration.z * dt;
+
+        e.position.x += e.velocity.x * dt;
+        e.position.y += e.velocity.y * dt;
+        e.position.z += e.velocity.z * dt;
+      }
     }
   }
 

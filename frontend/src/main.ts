@@ -194,6 +194,48 @@ export class AetheriaApp {
         'SYSTEM'
       );
     });
+
+    // Orbital Trajectories & Spacetime Curvature Commands
+    this.commandBus.on('TOGGLE_ORBITAL_TRAJECTORIES', () => {
+      const active = this.universeEngine.toggleOrbitalTrajectories();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: active ? '💫 Orbital Trajectories Active (Key: T)' : '🌑 Orbital Trajectories Hidden',
+          icon: '💫'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('TOGGLE_SPACETIME_GRID', () => {
+      const active = this.universeEngine.toggleSpacetimeGrid();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: active ? '🌌 Spacetime Curvature Grid Active (Key: G)' : '🌑 Spacetime Grid Hidden',
+          icon: '🌌'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('SET_INTEGRATOR_MODE', (cmd) => {
+      let mode = cmd.payload?.mode;
+      if (!mode) {
+        mode = this.universeEngine.toggleIntegratorMode();
+      } else {
+        this.universeEngine.setIntegratorMode(mode);
+      }
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `⚙️ Physics Integrator: ${mode === 'VERLET' ? 'Symplectic Velocity-Verlet (Energy Conserving)' : 'Semi-Implicit Euler (Max Throughput)'}`,
+          icon: '⚙️'
+        },
+        'SYSTEM'
+      );
+    });
   }
 
   public async start(): Promise<void> {

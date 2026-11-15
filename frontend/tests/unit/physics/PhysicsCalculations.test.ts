@@ -28,7 +28,10 @@ describe('Physics Calculations & Numerical Accuracy', () => {
       blackHolePullForce: 1.5,
       starLuminosityDecay: 0.01,
       particleCount: 1000,
-      universeBounds: 50
+      universeBounds: 50,
+      integratorMode: 'VERLET',
+      showOrbitalTrajectories: true,
+      showSpacetimeGrid: true
     };
   });
 

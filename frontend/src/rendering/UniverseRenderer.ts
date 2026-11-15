@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { UniverseSnapshot } from '../types/universe';
 import { UniverseEntity } from '../types/entity';
+import { TrajectoryPath, SpacetimeGridData } from '../types/trajectory';
 
 /**
  * Decoupled Three.js Universe Visualizer
@@ -19,6 +20,15 @@ export class UniverseRenderer {
   private particlePoints: THREE.Points;
   private particlePosAttr: THREE.BufferAttribute;
   private particleColAttr: THREE.BufferAttribute;
+
+  // Trajectory visualization
+  private trajectoryGroup: THREE.Group;
+  private trajectoryLines: Map<string, THREE.Line> = new Map();
+
+  // Spacetime curvature grid
+  private spacetimeGroup: THREE.Group;
+  private spacetimeMesh: THREE.LineSegments | null = null;
+  private spacetimePosAttr: THREE.BufferAttribute | null = null;
 
   // Shared Geometries & Materials
   private sphereGeo: THREE.SphereGeometry;
@@ -52,6 +62,13 @@ export class UniverseRenderer {
 
     this.particlePoints = new THREE.Points(this.particleGeometry, this.particleMaterial);
     this.group.add(this.particlePoints);
+
+    // Setup groups for orbital trajectories and spacetime curvature grid
+    this.trajectoryGroup = new THREE.Group();
+    this.group.add(this.trajectoryGroup);
+
+    this.spacetimeGroup = new THREE.Group();
+    this.group.add(this.spacetimeGroup);
   }
 
   public getRootGroup(): THREE.Group {
@@ -202,6 +219,116 @@ export class UniverseRenderer {
 
     this.particlePosAttr.needsUpdate = true;
     this.particleColAttr.needsUpdate = true;
+
+    // 4. Update Orbital Trajectories
+    this.updateTrajectories(snapshot.trajectories);
+
+    // 5. Update Spacetime Curvature Grid
+    this.updateSpacetimeGrid(snapshot.spacetimeGrid);
+  }
+
+  private updateTrajectories(trajectories?: TrajectoryPath[]): void {
+    if (!trajectories || trajectories.length === 0) {
+      this.trajectoryGroup.visible = false;
+      return;
+    }
+    this.trajectoryGroup.visible = true;
+
+    const activeIds = new Set<string>();
+
+    for (let i = 0; i < trajectories.length; i++) {
+      const traj = trajectories[i];
+      activeIds.add(traj.entityId);
+
+      let line = this.trajectoryLines.get(traj.entityId);
+      if (!line) {
+        const geo = new THREE.BufferGeometry();
+        const posAttr = new THREE.BufferAttribute(new Float32Array(traj.pointCount * 3), 3);
+        geo.setAttribute('position', posAttr);
+
+        const mat = new THREE.LineBasicMaterial({
+          color: traj.color,
+          transparent: true,
+          opacity: 0.65,
+          blending: THREE.AdditiveBlending
+        });
+
+        line = new THREE.Line(geo, mat);
+        this.trajectoryLines.set(traj.entityId, line);
+        this.trajectoryGroup.add(line);
+      }
+
+      // Update positions
+      const posAttr = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+      (posAttr.array as Float32Array).set(traj.points);
+      posAttr.needsUpdate = true;
+    }
+
+    // Prune removed trajectories
+    this.trajectoryLines.forEach((line, id) => {
+      if (!activeIds.has(id)) {
+        this.trajectoryGroup.remove(line);
+        line.geometry.dispose();
+        (line.material as THREE.Material).dispose();
+        this.trajectoryLines.delete(id);
+      }
+    });
+  }
+
+  private updateSpacetimeGrid(gridData?: SpacetimeGridData): void {
+    if (!gridData) {
+      this.spacetimeGroup.visible = false;
+      return;
+    }
+    this.spacetimeGroup.visible = true;
+
+    if (!this.spacetimeMesh) {
+      this.createSpacetimeGridMesh(gridData);
+    }
+
+    if (this.spacetimePosAttr) {
+      (this.spacetimePosAttr.array as Float32Array).set(gridData.vertices);
+      this.spacetimePosAttr.needsUpdate = true;
+    }
+  }
+
+  private createSpacetimeGridMesh(gridData: SpacetimeGridData): void {
+    const { resolution, vertices } = gridData;
+    const geometry = new THREE.BufferGeometry();
+
+    const posArray = new Float32Array(vertices.length);
+    posArray.set(vertices);
+    this.spacetimePosAttr = new THREE.BufferAttribute(posArray, 3);
+    geometry.setAttribute('position', this.spacetimePosAttr);
+
+    // Compute line segment indices for grid lines
+    const indices: number[] = [];
+    for (let iz = 0; iz < resolution; iz++) {
+      for (let ix = 0; ix < resolution; ix++) {
+        const current = iz * resolution + ix;
+        // Right neighbor
+        if (ix < resolution - 1) {
+          indices.push(current, current + 1);
+        }
+        // Down neighbor
+        if (iz < resolution - 1) {
+          indices.push(current, current + resolution);
+        }
+      }
+    }
+
+    geometry.setIndex(indices);
+
+    const material = new THREE.LineBasicMaterial({
+      color: 0x00e5ff,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    this.spacetimeMesh = new THREE.LineSegments(geometry, material);
+    this.spacetimeGroup.add(this.spacetimeMesh);
   }
 
   /**

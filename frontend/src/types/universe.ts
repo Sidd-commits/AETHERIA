@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { UniverseEntity, CosmicParticleBuffer } from './entity';
+import { IntegratorMode, TrajectoryPath, SpacetimeGridData } from './trajectory';
 
 export type UniversePresetId =
   | 'SOLAR_SYSTEM'
@@ -23,6 +24,9 @@ export interface UniverseConfig {
   particleCount: number;
   universeBounds: number;
   fixedTimestep: number; // default 1/60s
+  integratorMode: IntegratorMode;
+  showOrbitalTrajectories: boolean;
+  showSpacetimeGrid: boolean;
 }
 
 /**
@@ -55,6 +59,9 @@ export interface UniverseSnapshot {
   dominantBodiesCount: number;
   totalMass: number;
   totalEnergy: number;
+  integratorMode: IntegratorMode;
+  trajectories?: TrajectoryPath[];
+  spacetimeGrid?: SpacetimeGridData;
 }
 
 /**

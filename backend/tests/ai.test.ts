@@ -36,6 +36,37 @@ describe('Backend AI Command & Query Endpoints', () => {
     expect(res.body.command.type).toBe('RESET_ECOSYSTEM');
   });
 
+  it('translates spacetime command into TOGGLE_SPACETIME_GRID', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'show spacetime curvature grid' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('TOGGLE_SPACETIME_GRID');
+  });
+
+  it('translates orbit line command into TOGGLE_ORBITAL_TRAJECTORIES', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'show orbital trajectory lines' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('TOGGLE_ORBITAL_TRAJECTORIES');
+  });
+
+  it('translates verlet physics command into SET_INTEGRATOR_MODE', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'enable verlet precision physics' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('SET_INTEGRATOR_MODE');
+    expect(res.body.command.payload.mode).toBe('VERLET');
+  });
+
   it('rejects empty command payloads with 400', async () => {
     const res = await request(app)
       .post('/api/ai/command')

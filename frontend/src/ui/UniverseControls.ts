@@ -87,6 +87,18 @@ export class UniverseControls {
         <span>+ Black Hole</span>
       </button>
 
+      <!-- Toggle Orbital Trajectories -->
+      <button id="btn-toggle-orbits" class="action-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.35);" title="Toggle Orbital Trajectories (T key)">
+        <span>💫</span>
+        <span>Orbits</span>
+      </button>
+
+      <!-- Toggle Spacetime Grid -->
+      <button id="btn-toggle-grid" class="action-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(0, 245, 160, 0.15); border: 1px solid rgba(0, 245, 160, 0.35);" title="Toggle Spacetime Curvature Grid (G key)">
+        <span>🌌</span>
+        <span>Grid</span>
+      </button>
+
       <!-- Supernova Explosion Button -->
       <button id="btn-explode-demo" class="action-btn" style="padding: 6px 12px; border-radius: 20px; background: rgba(255, 8, 68, 0.15); border: 1px solid rgba(255, 8, 68, 0.35);" title="Trigger Supernova Explosion (X key)">
         <span>💥</span>
@@ -187,6 +199,18 @@ export class UniverseControls {
         );
       });
     }
+
+    // Toggle Orbits Button
+    const orbitsBtn = document.getElementById('btn-toggle-orbits') as HTMLButtonElement | null;
+    orbitsBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_ORBITAL_TRAJECTORIES', undefined, 'UI');
+    });
+
+    // Toggle Spacetime Grid Button
+    const gridBtn = document.getElementById('btn-toggle-grid') as HTMLButtonElement | null;
+    gridBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'UI');
+    });
 
     // 5. Reset Button
     const resetBtn = document.getElementById('btn-uni-reset') as HTMLButtonElement;

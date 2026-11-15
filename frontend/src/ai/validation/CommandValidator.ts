@@ -223,6 +223,9 @@ export class CommandValidator {
       case 'RESUME_SIMULATION':
       case 'ALIGN_ORBITS':
       case 'CREATE_STAR':
+      case 'TOGGLE_ORBITAL_TRAJECTORIES':
+      case 'TOGGLE_SPACETIME_GRID':
+      case 'SET_INTEGRATOR_MODE':
         break;
 
       default:

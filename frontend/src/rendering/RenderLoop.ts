@@ -141,6 +141,9 @@ export class RenderLoop {
         maxParticles: snapshot.particles.maxCount,
         memoryUsageMb: memoryMb
       });
+
+      // Update Celestial Dynamics Inspector
+      this.uiManager.updateCelestialInspector(snapshot);
     }
 
     // 6. Update scene group transforms (lerping position, rotation, scale)

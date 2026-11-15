@@ -11,10 +11,11 @@ import { VoiceAIHUD } from './VoiceAIHUD';
 import { AIObservationPanel } from './AIObservationPanel';
 import { WorldGenStudio } from './WorldGenStudio';
 import { PerformanceMonitor } from './PerformanceMonitor';
+import { CelestialInspectorHUD } from './CelestialInspectorHUD';
 import { QualityScaler } from '../core/QualityScaler';
 import { UniverseEngine } from '../universe/UniverseEngine';
 import { AIManager } from '../ai/AIManager';
-import { UniverseState } from '../types/universe';
+import { UniverseState, UniverseSnapshot } from '../types/universe';
 import { GestureDetector } from '../gestures/GestureDetector';
 
 /**
@@ -37,6 +38,7 @@ export class UIManager {
   private worldGenStudio: WorldGenStudio;
   private qualityScaler: QualityScaler;
   private perfMonitor: PerformanceMonitor;
+  private celestialInspector: CelestialInspectorHUD;
 
   private videoElement: HTMLVideoElement | null = null;
   private toggleCamBtn: HTMLButtonElement | null = null;
@@ -48,6 +50,7 @@ export class UIManager {
   private toggleAetherBtn: HTMLButtonElement | null = null;
   private toggleWorldGenBtn: HTMLButtonElement | null = null;
   private togglePerfBtn: HTMLButtonElement | null = null;
+  private toggleInspectorBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
@@ -61,6 +64,7 @@ export class UIManager {
 
     this.qualityScaler = new QualityScaler(universeEngine, this.commandBus);
     this.perfMonitor = new PerformanceMonitor(this.qualityScaler);
+    this.celestialInspector = new CelestialInspectorHUD(this.commandBus);
 
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
@@ -82,6 +86,7 @@ export class UIManager {
     this.toggleAetherBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-aether');
     this.toggleWorldGenBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-worldgen');
     this.togglePerfBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-perf');
+    this.toggleInspectorBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-inspector');
 
     this.bindButtons();
     this.bindStateUpdates();
@@ -201,6 +206,20 @@ export class UIManager {
         );
       });
     }
+
+    if (this.toggleInspectorBtn) {
+      this.toggleInspectorBtn.addEventListener('click', () => {
+        const isVisible = this.celestialInspector.toggle();
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: isVisible ? '🌌 Celestial Inspector Active (Key I)' : '🌑 Celestial Inspector Hidden',
+            icon: '🌌'
+          },
+          'UI'
+        );
+      });
+    }
   }
 
   private bindStateUpdates(): void {
@@ -260,5 +279,13 @@ export class UIManager {
 
   public getPerformanceMonitor(): PerformanceMonitor {
     return this.perfMonitor;
+  }
+
+  public getCelestialInspector(): CelestialInspectorHUD {
+    return this.celestialInspector;
+  }
+
+  public updateCelestialInspector(snapshot: UniverseSnapshot): void {
+    this.celestialInspector.update(snapshot);
   }
 }

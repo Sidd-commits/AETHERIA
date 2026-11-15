@@ -6,6 +6,7 @@ import {
   EcosystemStats
 } from '../types/universe';
 import { UniverseConfiguration, WorldGenResult } from '../types/worldGen';
+import { IntegratorMode, TrajectoryPath, SpacetimeGridData } from '../types/trajectory';
 import { GravitySystem } from './systems/GravitySystem';
 import { ParticleSystem } from './systems/ParticleSystem';
 import { CollisionSystem } from './systems/CollisionSystem';
@@ -13,6 +14,8 @@ import { EnergySystem } from './systems/EnergySystem';
 import { FormationSystem } from './systems/FormationSystem';
 import { DestructionSystem } from './systems/DestructionSystem';
 import { EcosystemSystem } from './systems/EcosystemSystem';
+import { OrbitalTrajectorySystem } from './systems/OrbitalTrajectorySystem';
+import { SpacetimeGridSystem } from './systems/SpacetimeGridSystem';
 import { ProceduralUniverseGenerator } from './generator/ProceduralUniverseGenerator';
 
 export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
@@ -26,7 +29,10 @@ export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
   starLuminosityDecay: 0.05,
   particleCount: 5000,
   universeBounds: 40.0,
-  fixedTimestep: 1 / 60
+  fixedTimestep: 1 / 60,
+  integratorMode: 'VERLET',
+  showOrbitalTrajectories: true,
+  showSpacetimeGrid: true
 };
 
 /**
@@ -47,6 +53,8 @@ export class UniverseEngine {
   private formationSystem: FormationSystem;
   private destructionSystem: DestructionSystem;
   private ecosystemSystem: EcosystemSystem;
+  private trajectorySystem: OrbitalTrajectorySystem;
+  private spacetimeGridSystem: SpacetimeGridSystem;
 
   // Simulation Timekeeping
   private simulationTime: number = 0;
@@ -63,6 +71,8 @@ export class UniverseEngine {
     this.formationSystem = new FormationSystem();
     this.destructionSystem = new DestructionSystem();
     this.ecosystemSystem = new EcosystemSystem();
+    this.trajectorySystem = new OrbitalTrajectorySystem();
+    this.spacetimeGridSystem = new SpacetimeGridSystem();
 
     this.loadPreset('SOLAR_SYSTEM');
   }
@@ -430,7 +440,9 @@ export class UniverseEngine {
     activePreset: 'SOLAR_SYSTEM',
     dominantBodiesCount: 0,
     totalMass: 0,
-    totalEnergy: 0
+    totalEnergy: 0,
+    integratorMode: 'VERLET',
+    trajectories: []
   };
 
   /**
@@ -481,6 +493,16 @@ export class UniverseEngine {
 
     // 6. Destruction System: Entity lifecycle aging and cleanup
     this.entities = this.destructionSystem.updateLifecycles(this.entities, dt);
+
+    // 7. Orbital Trajectory Projection System (Calculated at 20Hz / throttled ticks)
+    if (this.config.showOrbitalTrajectories && this.tickCount % 3 === 0) {
+      this.trajectorySystem.update(this.entities, this.config);
+    }
+
+    // 8. Spacetime Curvature Grid System
+    if (this.config.showSpacetimeGrid && this.tickCount % 2 === 0) {
+      this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+    }
   }
 
   /**
@@ -521,8 +543,54 @@ export class UniverseEngine {
     this.cachedSnapshot.dominantBodiesCount = dominantCount;
     this.cachedSnapshot.totalMass = Math.round(totalMass * 10) / 10;
     this.cachedSnapshot.totalEnergy = Math.round(totalEnergy * 10) / 10;
+    this.cachedSnapshot.integratorMode = this.config.integratorMode;
+
+    if (this.config.showOrbitalTrajectories) {
+      this.cachedSnapshot.trajectories = [...this.trajectorySystem.getTrajectories()];
+    } else {
+      this.cachedSnapshot.trajectories = [];
+    }
+
+    if (this.config.showSpacetimeGrid) {
+      this.cachedSnapshot.spacetimeGrid = this.spacetimeGridSystem.getGridData();
+    } else {
+      this.cachedSnapshot.spacetimeGrid = undefined;
+    }
 
     return this.cachedSnapshot;
+  }
+
+  public toggleOrbitalTrajectories(): boolean {
+    this.config.showOrbitalTrajectories = !this.config.showOrbitalTrajectories;
+    if (this.config.showOrbitalTrajectories) {
+      this.trajectorySystem.update(this.entities, this.config);
+    }
+    return this.config.showOrbitalTrajectories;
+  }
+
+  public toggleSpacetimeGrid(): boolean {
+    this.config.showSpacetimeGrid = !this.config.showSpacetimeGrid;
+    if (this.config.showSpacetimeGrid) {
+      this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+    }
+    return this.config.showSpacetimeGrid;
+  }
+
+  public setIntegratorMode(mode: IntegratorMode): void {
+    this.config.integratorMode = mode;
+  }
+
+  public toggleIntegratorMode(): IntegratorMode {
+    this.config.integratorMode = this.config.integratorMode === 'VERLET' ? 'EULER' : 'VERLET';
+    return this.config.integratorMode;
+  }
+
+  public getTrajectories(): ReadonlyArray<TrajectoryPath> {
+    return this.trajectorySystem.getTrajectories();
+  }
+
+  public getSpacetimeGrid(): SpacetimeGridData {
+    return this.spacetimeGridSystem.getGridData();
   }
 
   public getParticleSystem(): ParticleSystem {

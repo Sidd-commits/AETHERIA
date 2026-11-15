@@ -126,6 +126,21 @@ export class InputManager {
       if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
         this.commandBus.dispatch('TOGGLE_WORLD_GEN', undefined, 'MOUSE_KEYBOARD');
       }
+    } else if (e.key === 't' || e.key === 'T') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('TOGGLE_ORBITAL_TRAJECTORIES', undefined, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === 'g' || e.key === 'G') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === 'o' || e.key === 'O') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('SET_INTEGRATOR_MODE', undefined, 'MOUSE_KEYBOARD');
+      }
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
       this.commandBus.dispatch(
