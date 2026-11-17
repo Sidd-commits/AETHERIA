@@ -16,6 +16,8 @@ import { DestructionSystem } from './systems/DestructionSystem';
 import { EcosystemSystem } from './systems/EcosystemSystem';
 import { OrbitalTrajectorySystem } from './systems/OrbitalTrajectorySystem';
 import { SpacetimeGridSystem } from './systems/SpacetimeGridSystem';
+import { ChronoWarpEngine } from './chrono/ChronoWarpEngine';
+import { ChronoPlaybackMode, ChronoTimelineState } from '../types/chrono';
 import { ProceduralUniverseGenerator } from './generator/ProceduralUniverseGenerator';
 
 export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
@@ -55,6 +57,7 @@ export class UniverseEngine {
   private ecosystemSystem: EcosystemSystem;
   private trajectorySystem: OrbitalTrajectorySystem;
   private spacetimeGridSystem: SpacetimeGridSystem;
+  private chronoEngine: ChronoWarpEngine;
 
   // Simulation Timekeeping
   private simulationTime: number = 0;
@@ -73,6 +76,7 @@ export class UniverseEngine {
     this.ecosystemSystem = new EcosystemSystem();
     this.trajectorySystem = new OrbitalTrajectorySystem();
     this.spacetimeGridSystem = new SpacetimeGridSystem();
+    this.chronoEngine = new ChronoWarpEngine(360, this.config.particleCount);
 
     this.loadPreset('SOLAR_SYSTEM');
   }
@@ -105,6 +109,15 @@ export class UniverseEngine {
     this.activePreset = presetId;
     this.entities = this.formationSystem.generatePreset(presetId, this.particleSystem);
     this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), 650, 2400);
+    if (this.chronoEngine) {
+      this.chronoEngine.reset();
+      this.chronoEngine.recordEventMarker(
+        'PRESET_LOAD',
+        `Preset: ${presetId}`,
+        this.simulationTime,
+        this.tickCount
+      );
+    }
   }
 
   public generateFromConfig(customConfig: UniverseConfiguration): WorldGenResult {
@@ -121,6 +134,15 @@ export class UniverseEngine {
     );
 
     this.entities = entities;
+    if (this.chronoEngine) {
+      this.chronoEngine.reset();
+      this.chronoEngine.recordEventMarker(
+        'PRESET_LOAD',
+        `Universe: ${customConfig.theme}`,
+        this.simulationTime,
+        this.tickCount
+      );
+    }
     return result;
   }
 
@@ -218,6 +240,15 @@ export class UniverseEngine {
       color: '#000000',
       lifetime: Infinity
     });
+
+    if (this.chronoEngine) {
+      this.chronoEngine.recordEventMarker(
+        'BLACK_HOLE_SPAWN',
+        bh.name,
+        this.simulationTime,
+        this.tickCount
+      );
+    }
 
     return bh;
   }
@@ -405,6 +436,15 @@ export class UniverseEngine {
       this.particleSystem.getBuffer(),
       this.entities
     );
+
+    if (this.chronoEngine) {
+      this.chronoEngine.recordEventMarker(
+        'SUPERNOVA',
+        `Supernova (Power: ${power.toFixed(1)})`,
+        this.simulationTime,
+        this.tickCount
+      );
+    }
   }
 
   /**
@@ -449,6 +489,19 @@ export class UniverseEngine {
    * Single deterministic tick (Zero GC)
    */
   private fixedTick(dt: number): void {
+    // 0. ChronoWarp Reversible Playback Interception
+    if (this.chronoEngine && this.chronoEngine.isReverse()) {
+      this.simulationTime = Math.max(0, this.simulationTime - dt);
+      this.chronoEngine.tickReverse(this.particleSystem.getBuffer(), this.entities);
+      if (this.config.showOrbitalTrajectories) {
+        this.trajectorySystem.update(this.entities, this.config);
+      }
+      if (this.config.showSpacetimeGrid) {
+        this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+      }
+      return;
+    }
+
     this.simulationTime += dt;
     this.tickCount++;
 
@@ -502,6 +555,16 @@ export class UniverseEngine {
     // 8. Spacetime Curvature Grid System
     if (this.config.showSpacetimeGrid && this.tickCount % 2 === 0) {
       this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+    }
+
+    // 9. ChronoWarp State Journal (Zero GC state recording for reversible scrubbing)
+    if (this.chronoEngine) {
+      this.chronoEngine.recordTick(
+        this.tickCount,
+        this.simulationTime,
+        this.particleSystem.getBuffer(),
+        this.entities
+      );
     }
   }
 
@@ -557,6 +620,10 @@ export class UniverseEngine {
       this.cachedSnapshot.spacetimeGrid = undefined;
     }
 
+    if (this.chronoEngine) {
+      this.cachedSnapshot.chrono = this.chronoEngine.getState();
+    }
+
     return this.cachedSnapshot;
   }
 
@@ -583,6 +650,65 @@ export class UniverseEngine {
   public toggleIntegratorMode(): IntegratorMode {
     this.config.integratorMode = this.config.integratorMode === 'VERLET' ? 'EULER' : 'VERLET';
     return this.config.integratorMode;
+  }
+
+  public getChronoEngine(): ChronoWarpEngine {
+    return this.chronoEngine;
+  }
+
+  public getChronoState(): ChronoTimelineState {
+    return this.chronoEngine.getState();
+  }
+
+  public rewindSimulation(): ChronoPlaybackMode {
+    return this.chronoEngine.toggleReverse();
+  }
+
+  public stepSimulationTimeline(delta: number): number {
+    const offset = this.chronoEngine.step(delta, this.particleSystem.getBuffer(), this.entities);
+    if (this.config.showOrbitalTrajectories) {
+      this.trajectorySystem.update(this.entities, this.config);
+    }
+    if (this.config.showSpacetimeGrid) {
+      this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+    }
+    return offset;
+  }
+
+  public scrubSimulationTimeline(ratio: number): number {
+    const offset = this.chronoEngine.scrubToNormalized(
+      ratio,
+      this.particleSystem.getBuffer(),
+      this.entities
+    );
+    if (this.config.showOrbitalTrajectories) {
+      this.trajectorySystem.update(this.entities, this.config);
+    }
+    if (this.config.showSpacetimeGrid) {
+      this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+    }
+    return offset;
+  }
+
+  public resumeLiveSimulation(): void {
+    this.chronoEngine.resumeLive();
+  }
+
+  public replayLastEvent(): boolean {
+    const marker = this.chronoEngine.jumpToLastMarker(
+      this.particleSystem.getBuffer(),
+      this.entities
+    );
+    if (marker) {
+      if (this.config.showOrbitalTrajectories) {
+        this.trajectorySystem.update(this.entities, this.config);
+      }
+      if (this.config.showSpacetimeGrid) {
+        this.spacetimeGridSystem.update(this.entities, this.config, this.simulationTime);
+      }
+      return true;
+    }
+    return false;
   }
 
   public getTrajectories(): ReadonlyArray<TrajectoryPath> {

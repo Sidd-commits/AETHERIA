@@ -3,6 +3,7 @@ import { UniversePresetId } from './universe';
 import { UniverseEntity } from './entity';
 import { UniverseConfiguration } from './worldGen';
 import { IntegratorMode } from './trajectory';
+import { ChronoPlaybackMode } from './chrono';
 
 /**
  * Command and Event types for centralized command bus
@@ -39,7 +40,13 @@ export type CommandType =
   | 'TOGGLE_WORLD_GEN'
   | 'TOGGLE_ORBITAL_TRAJECTORIES'
   | 'TOGGLE_SPACETIME_GRID'
-  | 'SET_INTEGRATOR_MODE';
+  | 'SET_INTEGRATOR_MODE'
+  | 'CHRONO_SET_MODE'
+  | 'CHRONO_SCRUB'
+  | 'CHRONO_STEP'
+  | 'CHRONO_RESUME_LIVE'
+  | 'CHRONO_REPLAY_LAST_EVENT'
+  | 'CHRONO_TOGGLE_HUD';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -183,6 +190,12 @@ export interface CommandPayloadMap {
   TOGGLE_ORBITAL_TRAJECTORIES: void;
   TOGGLE_SPACETIME_GRID: void;
   SET_INTEGRATOR_MODE: { mode?: IntegratorMode } | void;
+  CHRONO_SET_MODE: { mode: ChronoPlaybackMode };
+  CHRONO_SCRUB: { ratio: number };
+  CHRONO_STEP: { delta: number };
+  CHRONO_RESUME_LIVE: void;
+  CHRONO_REPLAY_LAST_EVENT: void;
+  CHRONO_TOGGLE_HUD: void;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

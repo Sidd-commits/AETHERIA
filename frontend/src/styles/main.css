@@ -80,19 +80,19 @@ body {
 /* Mini PiP Webcam Preview */
 #pip-container {
   position: absolute;
-  bottom: 24px;
+  bottom: 130px;
   left: 24px;
-  width: 150px;
-  height: 110px;
-  border-radius: 12px;
+  width: 154px;
+  height: 114px;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--panel-border);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 25;
+  background: rgba(10, 14, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 35;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
 }
 
 #pip-container:hover {
@@ -452,9 +452,25 @@ body {
 }
 
 /* Responsive styling */
+/* Responsive styling & Control Decks */
+.universe-controls-panel,
+.chrono-scrubber-panel {
+  max-width: min(940px, calc(100vw - 32px));
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  white-space: nowrap;
+}
+
+.universe-controls-panel::-webkit-scrollbar,
+.chrono-scrubber-panel::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 1024px) {
-  .universe-controls-panel {
-    max-width: 95vw;
+  .universe-controls-panel,
+  .chrono-scrubber-panel {
+    max-width: calc(100vw - 32px);
   }
 }
 
@@ -487,14 +503,14 @@ body {
     display: none;
   }
   #pip-container {
-    width: 100px;
-    height: 75px;
-    bottom: 18px;
-    left: 18px;
+    width: 104px;
+    height: 78px;
+    bottom: 118px;
+    left: 12px;
   }
   .action-btn {
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 6px 10px;
+    font-size: 11px;
   }
   .population-monitor-panel {
     top: 70px !important;
@@ -510,10 +526,17 @@ body {
     padding: 12px !important;
     font-size: 11px !important;
   }
+  .chrono-scrubber-panel {
+    bottom: 56px !important;
+    max-width: calc(100vw - 16px) !important;
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    font-size: 10px !important;
+  }
   .universe-controls-panel {
-    bottom: 12px !important;
-    max-width: 98vw !important;
-    padding: 6px 10px !important;
+    bottom: 10px !important;
+    max-width: calc(100vw - 16px) !important;
+    padding: 5px 8px !important;
     gap: 6px !important;
   }
 }

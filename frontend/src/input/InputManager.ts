@@ -141,6 +141,31 @@ export class InputManager {
       if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
         this.commandBus.dispatch('SET_INTEGRATOR_MODE', undefined, 'MOUSE_KEYBOARD');
       }
+    } else if (e.key === '[') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('CHRONO_STEP', { delta: -1 }, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === ']') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('CHRONO_STEP', { delta: 1 }, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === '\\' || e.key === 'Backspace') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('CHRONO_SET_MODE', { mode: 'REVERSE' }, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === 'Home' || e.key === 'l' || e.key === 'L') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'MOUSE_KEYBOARD');
+      }
+    } else if (e.key === 'j' || e.key === 'J') {
+      const target = e.target as HTMLElement | null;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
+        this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'MOUSE_KEYBOARD');
+      }
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
       this.commandBus.dispatch(

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { UniverseEntity, CosmicParticleBuffer } from './entity';
 import { IntegratorMode, TrajectoryPath, SpacetimeGridData } from './trajectory';
+import { ChronoTimelineState } from './chrono';
 
 export type UniversePresetId =
   | 'SOLAR_SYSTEM'
@@ -62,6 +63,7 @@ export interface UniverseSnapshot {
   integratorMode: IntegratorMode;
   trajectories?: TrajectoryPath[];
   spacetimeGrid?: SpacetimeGridData;
+  chrono?: ChronoTimelineState;
 }
 
 /**

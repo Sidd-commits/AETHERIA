@@ -443,6 +443,42 @@ export class AIManager {
         this.commandBus.dispatch('RESET_UNIVERSE', undefined, 'VOICE_AI');
         break;
 
+      case 'TOGGLE_ORBITAL_TRAJECTORIES':
+        this.commandBus.dispatch('TOGGLE_ORBITAL_TRAJECTORIES', undefined, 'VOICE_AI');
+        break;
+
+      case 'TOGGLE_SPACETIME_GRID':
+        this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'VOICE_AI');
+        break;
+
+      case 'SET_INTEGRATOR_MODE':
+        this.commandBus.dispatch(
+          'SET_INTEGRATOR_MODE',
+          { mode: parameters.mode },
+          'VOICE_AI'
+        );
+        break;
+
+      case 'REWIND_TIMELINE':
+        this.commandBus.dispatch('CHRONO_SET_MODE', { mode: 'REVERSE' }, 'VOICE_AI');
+        break;
+
+      case 'STEP_TIMELINE':
+        this.commandBus.dispatch('CHRONO_STEP', { delta: parameters.delta || -1 }, 'VOICE_AI');
+        break;
+
+      case 'SCRUB_TIMELINE':
+        this.commandBus.dispatch('CHRONO_SCRUB', { ratio: parameters.ratio ?? 0.5 }, 'VOICE_AI');
+        break;
+
+      case 'RESUME_LIVE':
+        this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'VOICE_AI');
+        break;
+
+      case 'REPLAY_LAST_EVENT':
+        this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'VOICE_AI');
+        break;
+
       default:
         console.warn(`Unmapped AI Action: ${action}`);
     }

@@ -12,6 +12,7 @@ import { AIObservationPanel } from './AIObservationPanel';
 import { WorldGenStudio } from './WorldGenStudio';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { CelestialInspectorHUD } from './CelestialInspectorHUD';
+import { ChronoScrubberHUD } from './ChronoScrubberHUD';
 import { QualityScaler } from '../core/QualityScaler';
 import { UniverseEngine } from '../universe/UniverseEngine';
 import { AIManager } from '../ai/AIManager';
@@ -39,6 +40,7 @@ export class UIManager {
   private qualityScaler: QualityScaler;
   private perfMonitor: PerformanceMonitor;
   private celestialInspector: CelestialInspectorHUD;
+  private chronoHUD: ChronoScrubberHUD;
 
   private videoElement: HTMLVideoElement | null = null;
   private toggleCamBtn: HTMLButtonElement | null = null;
@@ -65,6 +67,7 @@ export class UIManager {
     this.qualityScaler = new QualityScaler(universeEngine, this.commandBus);
     this.perfMonitor = new PerformanceMonitor(this.qualityScaler);
     this.celestialInspector = new CelestialInspectorHUD(this.commandBus);
+    this.chronoHUD = new ChronoScrubberHUD(this.commandBus);
 
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
@@ -287,5 +290,10 @@ export class UIManager {
 
   public updateCelestialInspector(snapshot: UniverseSnapshot): void {
     this.celestialInspector.update(snapshot);
+    this.chronoHUD.update(snapshot);
+  }
+
+  public getChronoHUD(): ChronoScrubberHUD {
+    return this.chronoHUD;
   }
 }

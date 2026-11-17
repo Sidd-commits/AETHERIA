@@ -13,7 +13,11 @@ export const CommandPayloadSchema = z.object({
     'ENERGY_BURST',
     'TOGGLE_ORBITAL_TRAJECTORIES',
     'TOGGLE_SPACETIME_GRID',
-    'SET_INTEGRATOR_MODE'
+    'SET_INTEGRATOR_MODE',
+    'REWIND_TIMELINE',
+    'STEP_TIMELINE',
+    'RESUME_LIVE',
+    'REPLAY_LAST_EVENT'
   ]),
   payload: z.record(z.unknown()).optional(),
   confidence: z.number().min(0).max(1).default(0.95),
@@ -97,6 +101,54 @@ export class AIService {
         payload: { multiplier: 1.0 },
         confidence: 0.8,
         reasoning: 'Reset gravitational constant to baseline.'
+      };
+    }
+
+    // ChronoWarp Event Replay (Specific check before general triggers)
+    if (lower.includes('replay') || lower.includes('re-play')) {
+      return {
+        type: 'REPLAY_LAST_EVENT',
+        payload: {},
+        confidence: 0.95,
+        reasoning: 'Rewound simulation to right before last catastrophic cosmic event.'
+      };
+    }
+
+    // ChronoWarp Step Frame
+    if (lower.includes('step back') || lower.includes('step backward') || lower.includes('previous frame')) {
+      return {
+        type: 'STEP_TIMELINE',
+        payload: { delta: -1 },
+        confidence: 0.94,
+        reasoning: 'Stepped simulation timeline 1 frame into the past.'
+      };
+    }
+
+    if (lower.includes('step fwd') || lower.includes('step forward') || lower.includes('next frame')) {
+      return {
+        type: 'STEP_TIMELINE',
+        payload: { delta: 1 },
+        confidence: 0.94,
+        reasoning: 'Stepped simulation timeline 1 frame into the future.'
+      };
+    }
+
+    // ChronoWarp Reversible Playback
+    if (lower.includes('rewind') || lower.includes('reverse time')) {
+      return {
+        type: 'REWIND_TIMELINE',
+        payload: { mode: 'REVERSE' },
+        confidence: 0.98,
+        reasoning: 'Activated ChronoWarp reversible temporal playback.'
+      };
+    }
+
+    if (lower.includes('resume time') || lower.includes('back to live') || lower.includes('return to live')) {
+      return {
+        type: 'RESUME_LIVE',
+        payload: {},
+        confidence: 0.95,
+        reasoning: 'Returned timeline playback to live real-time simulation.'
       };
     }
 

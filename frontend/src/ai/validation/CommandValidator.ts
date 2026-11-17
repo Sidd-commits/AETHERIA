@@ -226,6 +226,11 @@ export class CommandValidator {
       case 'TOGGLE_ORBITAL_TRAJECTORIES':
       case 'TOGGLE_SPACETIME_GRID':
       case 'SET_INTEGRATOR_MODE':
+      case 'REWIND_TIMELINE':
+      case 'STEP_TIMELINE':
+      case 'SCRUB_TIMELINE':
+      case 'RESUME_LIVE':
+      case 'REPLAY_LAST_EVENT':
         break;
 
       default:

@@ -236,6 +236,84 @@ export class AetheriaApp {
         'SYSTEM'
       );
     });
+
+    // ChronoWarp Reversible Deterministic Timeline Commands
+    this.commandBus.on('CHRONO_SET_MODE', (cmd) => {
+      const mode = cmd.payload?.mode;
+      if (mode === 'REVERSE') {
+        const nextMode = this.universeEngine.rewindSimulation();
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message:
+              nextMode === 'REVERSE'
+                ? '⏪ ChronoWarp: Reverse Cosmic Playback Active'
+                : '🔴 ChronoWarp: Resumed Live Simulation',
+            icon: '⏳'
+          },
+          'SYSTEM'
+        );
+      } else {
+        this.universeEngine.getChronoEngine().setPlaybackMode(mode);
+      }
+    });
+
+    this.commandBus.on('CHRONO_SCRUB', (cmd) => {
+      const offset = this.universeEngine.scrubSimulationTimeline(cmd.payload.ratio);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message:
+            offset === 0
+              ? '🔴 ChronoWarp: Live Real-Time'
+              : `⏳ Scrubbed to ${offset.toFixed(2)}s in Cosmic History`,
+          icon: '⏳'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('CHRONO_STEP', (cmd) => {
+      const offset = this.universeEngine.stepSimulationTimeline(cmd.payload.delta);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: `⏳ Stepped Frame: ${offset.toFixed(2)}s from Live`,
+          icon: '⏳'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('CHRONO_RESUME_LIVE', () => {
+      this.universeEngine.resumeLiveSimulation();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '🔴 Resumed Live Real-Time Cosmic Simulation',
+          icon: '🔴'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('CHRONO_REPLAY_LAST_EVENT', () => {
+      const replayed = this.universeEngine.replayLastEvent();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: replayed
+            ? '↺ Rewound to pre-supernova event state'
+            : '⚠️ No recent event bookmarks in timeline buffer',
+          icon: '↺'
+        },
+        'SYSTEM'
+      );
+    });
+
+    this.commandBus.on('CHRONO_TOGGLE_HUD', () => {
+      this.uiManager.getChronoHUD().toggle();
+    });
   }
 
   public async start(): Promise<void> {

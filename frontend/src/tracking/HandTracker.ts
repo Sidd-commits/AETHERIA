@@ -176,6 +176,8 @@ export class HandTracker {
       const isPermissionDenied =
         err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError';
 
+      this.drawCameraOfflineNotice(isPermissionDenied);
+
       this.commandBus.dispatch(
         'SET_TRACKING_STATUS',
         {
@@ -198,14 +200,48 @@ export class HandTracker {
     }
   }
 
+  /**
+   * Render intuitive fallback visual inside PiP canvas when camera is offline
+   */
+  public drawCameraOfflineNotice(permissionDenied: boolean = false): void {
+    const w = this.pipCanvas.width || 320;
+    const h = this.pipCanvas.height || 240;
+    this.pipCtx.fillStyle = 'rgba(10, 14, 22, 0.95)';
+    this.pipCtx.fillRect(0, 0, w, h);
+
+    this.pipCtx.fillStyle = '#64748b';
+    this.pipCtx.font = '12px "Outfit", sans-serif';
+    this.pipCtx.textAlign = 'center';
+    this.pipCtx.textBaseline = 'middle';
+    this.pipCtx.fillText(
+      permissionDenied ? '🚫 Camera Blocked' : '📷 Camera Offline',
+      w / 2,
+      h / 2 - 10
+    );
+
+    this.pipCtx.fillStyle = '#00f2fe';
+    this.pipCtx.font = '11px "Outfit", sans-serif';
+    this.pipCtx.fillText('🖱️ Mouse Control Active', w / 2, h / 2 + 12);
+  }
+
+  /**
+   * Re-attempt camera initialization on user demand
+   */
+  public async retryCamera(): Promise<void> {
+    if (this.isTracking) return;
+    await this.initialize();
+  }
+
   private startFrameLoop(): void {
     const processFrame = async () => {
       if (!this.isTracking) return;
 
       if (this.videoElement.readyState >= 2) {
-        // Continuous PiP video feed rendering
-        this.pipCanvas.width = this.videoElement.videoWidth || 320;
-        this.pipCanvas.height = this.videoElement.videoHeight || 240;
+        const targetW = this.videoElement.videoWidth || 320;
+        const targetH = this.videoElement.videoHeight || 240;
+        if (this.pipCanvas.width !== targetW) this.pipCanvas.width = targetW;
+        if (this.pipCanvas.height !== targetH) this.pipCanvas.height = targetH;
+
         this.pipCtx.drawImage(this.videoElement, 0, 0, this.pipCanvas.width, this.pipCanvas.height);
 
         // Send frame to MediaPipe Hands if available (~30 FPS inference throttle)
@@ -232,8 +268,10 @@ export class HandTracker {
   }
 
   private handleResults = (results: any): void => {
-    this.pipCanvas.width = this.videoElement.videoWidth || 320;
-    this.pipCanvas.height = this.videoElement.videoHeight || 240;
+    const targetW = this.videoElement.videoWidth || 320;
+    const targetH = this.videoElement.videoHeight || 240;
+    if (this.pipCanvas.width !== targetW) this.pipCanvas.width = targetW;
+    if (this.pipCanvas.height !== targetH) this.pipCanvas.height = targetH;
 
     // Clear and draw camera image to PiP
     this.pipCtx.clearRect(0, 0, this.pipCanvas.width, this.pipCanvas.height);

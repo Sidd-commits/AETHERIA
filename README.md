@@ -111,6 +111,14 @@ AETHERIA bridges real-time astrophysics simulation, spatial computing, and artif
 - **Spacetime Curvature Grid**: Real-time 3D gravitational potential deformation lattice ($\Delta y \propto -\sum \frac{GM}{r}$) visualizing general relativity, gravitational funnels under black holes, and wave ripples.
 - **Dual Physics Integrators**: Switch seamlessly between **High-Throughput Semi-Implicit Euler** (for 16,000+ particle performance) and **Symplectic Velocity-Verlet** (for exact energy and angular momentum conservation in multi-body orbital dynamics).
 
+### ⏳ ChronoWarp Reversible Deterministic Time-Scrubbing & Event Replay Engine
+
+- **Zero-Allocation Ring-Buffered Journal**: High-performance circular buffer (`ChronoWarpEngine`) storing up to 360 frames (12 seconds of 30 Hz history) of typed coordinate vectors (`Float32Array`) with zero per-frame garbage collection.
+- **Interactive Time-Scrubbing**: Scrub backward and forward in cosmic history, inspect collision dynamics frame-by-frame (`[` and `]`), and seamlessly resume live simulation.
+- **Reverse Cosmic Playback**: Play the entire universe simulation backwards in time ($-1\times$ / $-2\times$) via `Backspace` or `\`.
+- **Event Bookmark Replay**: Automatically registers bookmarks during catastrophic cosmic events (supernova collapse, black hole formation) and replays them at the touch of a button (`[↺ Replay Supernova]` or `j` key).
+- **Quantum Timeline Branching**: Intervene or trigger new events during scrubbing to fork and simulate alternate timelines from that exact historical state.
+
 ### 🧬 Living Particle Ecosystem
 
 - **Three Entity Particle Classes**: `ENERGY`, `MATTER`, and `ORGANISM`.
@@ -356,27 +364,30 @@ Configuration options can be customized via `.env` or environment variables:
 
 ## 14. Testing & Verification
 
-AETHERIA includes a 47-test deterministic test suite powered by **Vitest**:
+AETHERIA includes a comprehensive 78-test deterministic test suite powered by **Vitest**:
 
 ```bash
-# Run all unit and integration tests
-npm run test:run
-
-# Run tests in watch mode
+# Run all unit and integration tests across frontend and backend
 npm run test
 
-# Generate code coverage report
-npm run test:coverage
+# Run tests in watch mode
+npm run test --workspace=frontend
+npm run test --workspace=backend
 ```
 
 ### Test Coverage Highlights
 
-- **Gesture Recognition**: `tests/unit/gestures/GestureClassifier.test.ts`, `GestureSmoother.test.ts`
-- **Astrophysics Calculations**: `tests/unit/physics/PhysicsCalculations.test.ts`
-- **Command & Schema Safety**: `tests/unit/core/CommandValidation.test.ts`
-- **Procedural World Generation**: `tests/unit/universe/UniverseGeneration.test.ts`
-- **Natural Language Parsing**: `tests/unit/ai/AICommandParsing.test.ts`
-- **Multi-Tick Simulation Integration**: `tests/integration/UniverseSimulation.test.ts`
+- **Reversible Time-Scrubbing & Event Replay**: `frontend/tests/unit/universe/ChronoWarp.test.ts`
+- **Orbital Trajectory & Ellipse Prediction**: `frontend/tests/unit/physics/OrbitalTrajectory.test.ts`
+- **Spacetime Curvature Grid**: `frontend/tests/unit/physics/SpacetimeGrid.test.ts`
+- **Symplectic Velocity-Verlet Integration**: `frontend/tests/unit/physics/SymplecticIntegrator.test.ts`
+- **Gesture Recognition**: `frontend/tests/unit/gestures/GestureClassifier.test.ts`, `GestureSmoother.test.ts`
+- **Astrophysics Calculations**: `frontend/tests/unit/physics/PhysicsCalculations.test.ts`
+- **Command & Schema Safety**: `frontend/tests/unit/core/CommandValidation.test.ts`
+- **Procedural World Generation**: `frontend/tests/unit/universe/UniverseGeneration.test.ts`
+- **Natural Language Parsing**: `frontend/tests/unit/ai/AICommandParsing.test.ts`, `backend/tests/ai.test.ts`
+- **Multi-Tick Simulation Integration**: `frontend/tests/integration/UniverseSimulation.test.ts`
+- **Backend API & Health Telemetry**: `backend/tests/health.test.ts`, `backend/tests/worldgen.test.ts`
 
 ---
 
@@ -487,6 +498,26 @@ AETHERIA/
 |  [ 🎤 Voice AI Active ] "AETHER: Stability nominal at 98%. Gravity balanced."  |
 +-------------------------------------------------------------------------------+
 ```
+
+### Keyboard & Timeline Controls Reference
+
+| Key | Action | Description |
+|---|---|---|
+| `Space` | Play / Pause | Toggle simulation time advance |
+| `[` | Step Backward (-1F) | Step 1 frame backward into recorded cosmic history |
+| `]` | Step Forward (+1F) | Step 1 frame forward toward live simulation |
+| `\` or `Backspace` | Toggle Rewind | Enable / disable reverse time playback ($-1\times$) |
+| `Home` / `L` | Jump to Live | Resume real-time forward simulation |
+| `J` | Replay Supernova | Rewind timeline to before the last catastrophic event |
+| `T` | Toggle Trajectories | Show / hide Keplerian orbital trajectory paths |
+| `G` | Toggle Spacetime Grid | Show / hide 3D general-relativistic curvature mesh |
+| `O` | Toggle Integrator | Switch between Symplectic Verlet and Euler physics |
+| `B` | Spawn Black Hole | Create a singularity at cursor position |
+| `W` | World Gen Studio | Open AI natural language world generator |
+| `V` | Voice AI HUD | Open speech-to-command cosmic controller |
+| `E` | Ecosystem HUD | Open emergent organism population telemetry |
+| `P` | Perf HUD | Open FPS, physics frametime, and adaptive quality monitor |
+| `0` - `5` | Cosmic Palettes | Cycle through spectrum themes |
 
 ---
 

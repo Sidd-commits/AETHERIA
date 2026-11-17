@@ -67,6 +67,38 @@ describe('Backend AI Command & Query Endpoints', () => {
     expect(res.body.command.payload.mode).toBe('VERLET');
   });
 
+  it('translates rewind command into REWIND_TIMELINE', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'rewind the simulation' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('REWIND_TIMELINE');
+    expect(res.body.command.payload.mode).toBe('REVERSE');
+  });
+
+  it('translates replay supernova command into REPLAY_LAST_EVENT', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'replay supernova event' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('REPLAY_LAST_EVENT');
+  });
+
+  it('translates step backward command into STEP_TIMELINE', async () => {
+    const res = await request(app)
+      .post('/api/ai/command')
+      .send({ text: 'step backward in time' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.command.type).toBe('STEP_TIMELINE');
+    expect(res.body.command.payload.delta).toBe(-1);
+  });
+
   it('rejects empty command payloads with 400', async () => {
     const res = await request(app)
       .post('/api/ai/command')
