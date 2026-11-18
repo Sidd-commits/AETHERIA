@@ -80,6 +80,31 @@ describe('AI Natural Language Command Parsing Unit Tests', () => {
     expect(result.command?.parameters.power).toBeGreaterThan(1.0);
   });
 
+  it('should parse ChronoWarp rewind and replay commands', async () => {
+    const rewindRes = await adapter.parseCommand('Rewind the simulation', mockContext);
+    expect(rewindRes.success).toBe(true);
+    expect(rewindRes.command?.action).toBe('REWIND_TIMELINE');
+
+    const replayRes = await adapter.parseCommand('Replay the last supernova', mockContext);
+    expect(replayRes.success).toBe(true);
+    expect(replayRes.command?.action).toBe('REPLAY_LAST_EVENT');
+
+    const stepRes = await adapter.parseCommand('Step backward one frame', mockContext);
+    expect(stepRes.success).toBe(true);
+    expect(stepRes.command?.action).toBe('STEP_TIMELINE');
+    expect(stepRes.command?.parameters.delta).toBe(-1);
+  });
+
+  it('should parse astrophysics toggles (spacetime grid and orbital trajectories)', async () => {
+    const gridRes = await adapter.parseCommand('Show spacetime curvature grid', mockContext);
+    expect(gridRes.success).toBe(true);
+    expect(gridRes.command?.action).toBe('TOGGLE_SPACETIME_GRID');
+
+    const orbitRes = await adapter.parseCommand('Show orbital trajectories', mockContext);
+    expect(orbitRes.success).toBe(true);
+    expect(orbitRes.command?.action).toBe('TOGGLE_ORBITAL_TRAJECTORIES');
+  });
+
   it('should return helpful error response for unparseable input', async () => {
     const result = await adapter.parseCommand('Blah blah gibberish xyz123', mockContext);
 

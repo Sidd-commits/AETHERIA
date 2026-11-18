@@ -54,14 +54,15 @@ aiRouter.post('/query', async (req: Request, res: Response, next: NextFunction) 
     }
 
     const { query, telemetry } = parseResult.data;
-    const particleCount = telemetry?.particleCount ?? 15000;
-    const fps = telemetry?.fps ?? 60;
+    const sanitizedQuery = query.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 200);
+    const particleCount = Number(telemetry?.particleCount) || 15000;
+    const fps = Number(telemetry?.fps) || 60;
 
-    const answer = `[AETHER Guardian Advisor] Simulation running smoothly at ${fps} FPS across ${particleCount} active celestial particles. Query evaluated: "${query}". Gravitational tensors remain within equilibrium.`;
+    const answer = `[AETHER Guardian Advisor] Simulation running smoothly at ${fps} FPS across ${particleCount} active celestial particles. Query evaluated: "${sanitizedQuery}". Gravitational tensors remain within equilibrium.`;
 
     res.json({
       success: true,
-      query,
+      query: sanitizedQuery,
       answer,
       timestamp: new Date().toISOString()
     });

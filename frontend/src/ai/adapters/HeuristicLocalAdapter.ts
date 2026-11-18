@@ -91,10 +91,12 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
 
     // 2. SUPERNOVA ("Create a supernova", "Trigger supernova", "Explode star", "Stellar burst")
     if (
-      text.includes('supernova') ||
-      (text.includes('explode') &&
-        (text.includes('star') || text.includes('sun') || text.includes('universe'))) ||
-      text.includes('detonate')
+      !text.includes('replay') &&
+      !text.includes('re-play') &&
+      (text.includes('supernova') ||
+        (text.includes('explode') &&
+          (text.includes('star') || text.includes('sun') || text.includes('universe'))) ||
+        text.includes('detonate'))
     ) {
       return {
         action: 'CREATE_SUPERNOVA',
@@ -306,10 +308,12 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
     }
 
     if (
-      text.includes('resume') ||
-      text.includes('play') ||
-      text.includes('unpause') ||
-      text.includes('continue')
+      !text.includes('replay') &&
+      !text.includes('re-play') &&
+      (text.includes('resume') ||
+        /\bplay\b/.test(text) ||
+        text.includes('unpause') ||
+        text.includes('continue'))
     ) {
       return {
         action: 'RESUME_SIMULATION',
@@ -321,10 +325,15 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
 
     // 9. TIME SPEED / SCALE ("Speed up", "Slow down", "Set speed to 2x", "Half speed", "Time scale 5")
     if (
-      text.includes('speed') ||
-      text.includes('time') ||
-      text.includes('fast') ||
-      text.includes('slow')
+      !text.includes('spacetime') &&
+      !text.includes('timeline') &&
+      !text.includes('reverse time') &&
+      !text.includes('resume time') &&
+      !text.includes('step') &&
+      (text.includes('speed') ||
+        text.includes('time') ||
+        text.includes('fast') ||
+        text.includes('slow'))
     ) {
       let scale = 1.0;
       if (text.includes('0.25') || text.includes('quarter')) scale = 0.25;
@@ -379,7 +388,88 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
       };
     }
 
-    // 11. PRESET SELECTION ("Load solar system", "Binary stars preset", "Load galaxy", "Chaos galaxy", "Lattice")
+    // 11. CHRONOWARP & TIMELINE CONTROLS
+    if (text.includes('replay') || text.includes('re-play')) {
+      return {
+        action: 'REPLAY_LAST_EVENT',
+        parameters: {},
+        confidence: 0.98,
+        explanation: 'Rewinding simulation to right before last catastrophic cosmic event.'
+      };
+    }
+
+    if (text.includes('step back') || text.includes('step backward') || text.includes('previous frame')) {
+      return {
+        action: 'STEP_TIMELINE',
+        parameters: { delta: -1 },
+        confidence: 0.95,
+        explanation: 'Stepping cosmic simulation 1 frame into the past.'
+      };
+    }
+
+    if (text.includes('step forward') || text.includes('step fwd') || text.includes('next frame')) {
+      return {
+        action: 'STEP_TIMELINE',
+        parameters: { delta: 1 },
+        confidence: 0.95,
+        explanation: 'Stepping cosmic simulation 1 frame into the future.'
+      };
+    }
+
+    if (text.includes('rewind') || text.includes('reverse time')) {
+      return {
+        action: 'REWIND_TIMELINE',
+        parameters: { mode: 'REVERSE' },
+        confidence: 0.98,
+        explanation: 'Activating ChronoWarp reversible temporal simulation.'
+      };
+    }
+
+    if (text.includes('resume time') || text.includes('back to live') || text.includes('return to live')) {
+      return {
+        action: 'RESUME_LIVE',
+        parameters: {},
+        confidence: 0.98,
+        explanation: 'Returning timeline to live real-time simulation.'
+      };
+    }
+
+    // 12. ASTROPHYSICS & TELEMETRY TOGGLES
+    if (text.includes('spacetime') || text.includes('curvature') || text.includes('gravity grid')) {
+      return {
+        action: 'TOGGLE_SPACETIME_GRID',
+        parameters: {},
+        confidence: 0.96,
+        explanation: 'Toggling general-relativistic spacetime curvature grid.'
+      };
+    }
+
+    if (
+      text.includes('trajector') ||
+      text.includes('orbit line') ||
+      text.includes('show orbits') ||
+      text.includes('hide orbits') ||
+      text.includes('orbital trajectories') ||
+      text.includes('orbital paths')
+    ) {
+      return {
+        action: 'TOGGLE_ORBITAL_TRAJECTORIES',
+        parameters: {},
+        confidence: 0.96,
+        explanation: 'Toggling Keplerian orbital trajectories.'
+      };
+    }
+
+    if (text.includes('integrator') || text.includes('verlet') || text.includes('euler physics')) {
+      return {
+        action: 'SET_INTEGRATOR_MODE',
+        parameters: { mode: text.includes('euler') ? 'EULER' : 'VERLET' },
+        confidence: 0.94,
+        explanation: 'Switching numerical physics integrator.'
+      };
+    }
+
+    // 13. PRESET SELECTION ("Load solar system", "Binary stars preset", "Load galaxy", "Chaos galaxy", "Lattice")
     if (
       text.includes('preset') ||
       text.includes('solar system') ||

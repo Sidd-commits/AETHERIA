@@ -23,10 +23,11 @@ export function createApp() {
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps, curl, server-to-server)
-        if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+        const currentEnv = process.env.NODE_ENV || env.NODE_ENV;
+        if (!origin || allowedOrigins.includes(origin) || currentEnv !== 'production') {
           return callback(null, true);
         }
-        return callback(new Error('CORS origin rejected by security policy'));
+        return callback(null, false);
       },
       credentials: true,
       methods: ['GET', 'POST', 'OPTIONS']

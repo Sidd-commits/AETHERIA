@@ -19,9 +19,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 COPY package.json ./
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
+
+# Harden security: assign non-root ownership and run as unprivileged node user
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 5000
 

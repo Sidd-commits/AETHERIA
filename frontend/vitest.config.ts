@@ -4,6 +4,13 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    },
+    fileParallelism: false,
     include: ['tests/**/*.{test,spec}.ts'],
     coverage: {
       provider: 'v8',

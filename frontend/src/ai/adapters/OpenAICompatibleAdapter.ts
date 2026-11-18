@@ -31,6 +31,14 @@ AVAILABLE ACTIONS:
 - SPAWN_ENERGY_BURST: {"action": "SPAWN_ENERGY_BURST", "parameters": {"count": 250}}
 - LOAD_PRESET: {"action": "LOAD_PRESET", "parameters": {"preset": "SOLAR_SYSTEM"|"BINARY_STARS_NEBULA"|"BLACK_HOLE_ACCRETION"|"CHAOS_GALAXY"|"AETHERIA_LATTICE"}}
 - RESET_UNIVERSE: {"action": "RESET_UNIVERSE", "parameters": {}, "isDestructive": true}
+- TOGGLE_ORBITAL_TRAJECTORIES: {"action": "TOGGLE_ORBITAL_TRAJECTORIES", "parameters": {}}
+- TOGGLE_SPACETIME_GRID: {"action": "TOGGLE_SPACETIME_GRID", "parameters": {}}
+- SET_INTEGRATOR_MODE: {"action": "SET_INTEGRATOR_MODE", "parameters": {"mode": "VERLET"|"EULER"}}
+- REWIND_TIMELINE: {"action": "REWIND_TIMELINE", "parameters": {"mode": "REVERSE"}}
+- STEP_TIMELINE: {"action": "STEP_TIMELINE", "parameters": {"delta": -1|1}}
+- SCRUB_TIMELINE: {"action": "SCRUB_TIMELINE", "parameters": {"ratio": number}}
+- RESUME_LIVE: {"action": "RESUME_LIVE", "parameters": {}}
+- REPLAY_LAST_EVENT: {"action": "REPLAY_LAST_EVENT", "parameters": {}}
 
 Return JSON with format:
 {
@@ -84,6 +92,7 @@ export class OpenAICompatibleAdapter implements AICommandAdapter {
     try {
       const response = await fetch(this.config.endpoint, {
         method: 'POST',
+        signal: AbortSignal.timeout(10000),
         headers: {
           'Content-Type': 'application/json',
           ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {})
