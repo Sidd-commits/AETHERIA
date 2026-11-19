@@ -109,7 +109,12 @@ export class DebugOverlay {
 
   private bindKeyboardToggle(): void {
     window.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+
       if (e.key === 'd' || e.key === 'D') {
+        this.toggle();
+      } else if (e.key === 'Escape' && this.isVisible) {
         this.toggle();
       }
     });

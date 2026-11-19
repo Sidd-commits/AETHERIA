@@ -33,11 +33,13 @@ export class UniverseRenderer {
   // Shared Geometries & Materials
   private sphereGeo: THREE.SphereGeometry;
   private starCoronaTexture: THREE.CanvasTexture;
+  private lensingTexture: THREE.CanvasTexture;
 
   constructor() {
     this.group = new THREE.Group();
     this.sphereGeo = new THREE.SphereGeometry(1, 24, 24);
     this.starCoronaTexture = this.createGlowTexture();
+    this.lensingTexture = this.createLensingTexture();
 
     // Setup cosmic particle points buffer (supports up to 16,000 particles)
     this.particleGeometry = new THREE.BufferGeometry();
@@ -188,11 +190,12 @@ export class UniverseRenderer {
       }
     }
 
-    // 2. Prune Dead Entity Meshes (Zero GC)
+    // 2. Prune Dead Entity Meshes (Zero GC + Leak-Free GPU Resource Disposal)
     this.entityMeshes.forEach((mesh, id) => {
       if (!this.activeEntityIds.has(id)) {
         this.deadEntityIds.push(id);
         this.group.remove(mesh);
+        this.disposeObject3D(mesh);
         const light = this.entityLights.get(id);
         if (light) {
           this.group.remove(light);
@@ -381,9 +384,8 @@ export class UniverseRenderer {
         bhGroup.add(coreMesh);
 
         // 2. Gravitational Lensing Halo / Einstein Ring (Distortion Effect)
-        const lensingTexture = this.createLensingTexture();
         const lensingMat = new THREE.SpriteMaterial({
-          map: lensingTexture,
+          map: this.lensingTexture,
           color: 0x00f2fe,
           transparent: true,
           opacity: 0.75,
@@ -485,12 +487,50 @@ export class UniverseRenderer {
     }
   }
 
+  /**
+   * Recursively dispose geometries and materials of an Object3D to eliminate WebGL leaks
+   */
+  private disposeObject3D(obj: THREE.Object3D): void {
+    obj.traverse((child: any) => {
+      if (child.geometry && child.geometry !== this.sphereGeo) {
+        child.geometry.dispose();
+      }
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((m: THREE.Material) => m.dispose());
+        } else {
+          child.material.dispose();
+        }
+      }
+    });
+  }
+
   public dispose(): void {
-    this.entityMeshes.forEach((mesh) => this.group.remove(mesh));
+    this.entityMeshes.forEach((mesh) => {
+      this.group.remove(mesh);
+      this.disposeObject3D(mesh);
+    });
     this.entityLights.forEach((light) => this.group.remove(light));
     this.entityMeshes.clear();
     this.entityLights.clear();
+
+    this.trajectoryLines.forEach((line) => {
+      this.trajectoryGroup.remove(line);
+      line.geometry.dispose();
+      (line.material as THREE.Material).dispose();
+    });
+    this.trajectoryLines.clear();
+
+    if (this.spacetimeMesh) {
+      this.spacetimeGroup.remove(this.spacetimeMesh);
+      this.spacetimeMesh.geometry.dispose();
+      (this.spacetimeMesh.material as THREE.Material).dispose();
+      this.spacetimeMesh = null;
+    }
+
     this.sphereGeo.dispose();
+    this.starCoronaTexture.dispose();
+    this.lensingTexture.dispose();
     this.particleGeometry.dispose();
     this.particleMaterial.dispose();
   }

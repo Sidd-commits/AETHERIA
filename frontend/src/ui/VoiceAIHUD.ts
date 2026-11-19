@@ -320,6 +320,8 @@ export class VoiceAIHUD {
 
       if (e.key === 'v' || e.key === 'V') {
         this.toggle();
+      } else if (e.key === 'Escape' && this.isVisible) {
+        this.toggle();
       }
     });
   }

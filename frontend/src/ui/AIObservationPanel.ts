@@ -323,6 +323,8 @@ export class AIObservationPanel {
 
       if (e.key === 'a' || e.key === 'A') {
         this.toggle();
+      } else if (e.key === 'Escape' && this.isVisible) {
+        this.toggle();
       }
     });
   }

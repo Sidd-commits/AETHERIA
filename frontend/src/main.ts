@@ -181,6 +181,26 @@ export class AetheriaApp {
       this.uiManager.getVoiceAIHUD().toggle();
     });
 
+    this.commandBus.on('TOGGLE_WORLD_GEN', () => {
+      this.uiManager.getWorldGenStudio().toggle();
+    });
+
+    this.commandBus.on('TOGGLE_INSPECTOR', () => {
+      this.uiManager.getCelestialInspector().toggle();
+    });
+
+    this.commandBus.on('TOGGLE_AETHER_OBSERVATORY', () => {
+      this.uiManager.getAIObservationPanel().toggle();
+    });
+
+    this.commandBus.on('TOGGLE_DEBUG', () => {
+      this.uiManager.getDebugOverlay().toggle();
+    });
+
+    this.commandBus.on('TOGGLE_PERF', () => {
+      this.uiManager.getPerformanceMonitor().toggle();
+    });
+
     this.commandBus.on('GENERATE_PROCEDURAL_UNIVERSE', (cmd) => {
       const result = this.universeEngine.generateFromConfig(cmd.payload.config);
       const paletteIdx = WorldGenValidator.getPaletteIndex(cmd.payload.config.colorPalette);

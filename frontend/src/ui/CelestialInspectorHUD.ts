@@ -130,6 +130,17 @@ export class CelestialInspectorHUD {
     integratorBtn?.addEventListener('click', () => {
       this.commandBus.dispatch('SET_INTEGRATOR_MODE', undefined, 'UI');
     });
+
+    window.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+
+      if (e.key === 'i' || e.key === 'I') {
+        this.toggle();
+      } else if (e.key === 'Escape' && this.isVisible) {
+        this.toggle(false);
+      }
+    });
   }
 
   public toggle(force?: boolean): boolean {

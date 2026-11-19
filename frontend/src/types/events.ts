@@ -38,6 +38,10 @@ export type CommandType =
   | 'TOGGLE_VOICE_AI'
   | 'GENERATE_PROCEDURAL_UNIVERSE'
   | 'TOGGLE_WORLD_GEN'
+  | 'TOGGLE_DEBUG'
+  | 'TOGGLE_INSPECTOR'
+  | 'TOGGLE_AETHER_OBSERVATORY'
+  | 'TOGGLE_PERF'
   | 'TOGGLE_ORBITAL_TRAJECTORIES'
   | 'TOGGLE_SPACETIME_GRID'
   | 'SET_INTEGRATOR_MODE'
@@ -187,6 +191,10 @@ export interface CommandPayloadMap {
   TOGGLE_VOICE_AI: ToggleVoiceAIPayload | void;
   GENERATE_PROCEDURAL_UNIVERSE: { config: UniverseConfiguration };
   TOGGLE_WORLD_GEN: void;
+  TOGGLE_DEBUG: void;
+  TOGGLE_INSPECTOR: void;
+  TOGGLE_AETHER_OBSERVATORY: void;
+  TOGGLE_PERF: void;
   TOGGLE_ORBITAL_TRAJECTORIES: void;
   TOGGLE_SPACETIME_GRID: void;
   SET_INTEGRATOR_MODE: { mode?: IntegratorMode } | void;

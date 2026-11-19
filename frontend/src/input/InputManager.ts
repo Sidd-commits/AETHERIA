@@ -87,7 +87,19 @@ export class InputManager {
     }
   };
 
+  private isTyping(e: KeyboardEvent): boolean {
+    const target = e.target as HTMLElement | null;
+    return !!(
+      target &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable)
+    );
+  }
+
   private onKeyDown = (e: KeyboardEvent): void => {
+    if (this.isTyping(e)) return;
+
     if (e.key >= '0' && e.key <= '5') {
       const idx = parseInt(e.key, 10);
       this.commandBus.dispatch('SET_PALETTE', { index: idx }, 'MOUSE_KEYBOARD');
@@ -122,50 +134,49 @@ export class InputManager {
         'MOUSE_KEYBOARD'
       );
     } else if (e.key === 'w' || e.key === 'W') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('TOGGLE_WORLD_GEN', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('TOGGLE_WORLD_GEN', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'i' || e.key === 'I') {
+      this.commandBus.dispatch('TOGGLE_INSPECTOR', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'a' || e.key === 'A') {
+      this.commandBus.dispatch('TOGGLE_AETHER_OBSERVATORY', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'd' || e.key === 'D') {
+      this.commandBus.dispatch('TOGGLE_DEBUG', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'e' || e.key === 'E') {
+      this.commandBus.dispatch('TOGGLE_POPULATION_MONITOR', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'v' || e.key === 'V') {
+      this.commandBus.dispatch('TOGGLE_VOICE_AI', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'p' || e.key === 'P') {
+      this.commandBus.dispatch('TOGGLE_PERF', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'h' || e.key === 'H') {
+      this.commandBus.dispatch('CHRONO_TOGGLE_HUD', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'k' || e.key === 'K') {
+      this.commandBus.dispatch('TOGGLE_PAUSE', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 'r' || e.key === 'R') {
+      this.commandBus.dispatch('RESET_UNIVERSE', undefined, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '🔄 Universe Reset to Initial Equilibrium',
+          icon: '🔄'
+        },
+        'MOUSE_KEYBOARD'
+      );
     } else if (e.key === 't' || e.key === 'T') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('TOGGLE_ORBITAL_TRAJECTORIES', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('TOGGLE_ORBITAL_TRAJECTORIES', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'g' || e.key === 'G') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'o' || e.key === 'O') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('SET_INTEGRATOR_MODE', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('SET_INTEGRATOR_MODE', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === '[') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('CHRONO_STEP', { delta: -1 }, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('CHRONO_STEP', { delta: -1 }, 'MOUSE_KEYBOARD');
     } else if (e.key === ']') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('CHRONO_STEP', { delta: 1 }, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('CHRONO_STEP', { delta: 1 }, 'MOUSE_KEYBOARD');
     } else if (e.key === '\\' || e.key === 'Backspace') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('CHRONO_SET_MODE', { mode: 'REVERSE' }, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('CHRONO_SET_MODE', { mode: 'REVERSE' }, 'MOUSE_KEYBOARD');
     } else if (e.key === 'Home' || e.key === 'l' || e.key === 'L') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'j' || e.key === 'J') {
-      const target = e.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) {
-        this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'MOUSE_KEYBOARD');
-      }
+      this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === ' ') {
       this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
       this.commandBus.dispatch(

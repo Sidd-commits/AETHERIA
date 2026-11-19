@@ -276,6 +276,8 @@ export class PopulationMonitor {
 
       if (e.key === 'e' || e.key === 'E') {
         this.toggle();
+      } else if (e.key === 'Escape' && this.isVisible) {
+        this.toggle();
       }
     });
   }

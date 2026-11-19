@@ -169,6 +169,16 @@ export class ChronoScrubberHUD {
     this.replayBtn?.addEventListener('click', () => {
       this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'UI');
     });
+
+    // 7. Keyboard Shortcut (H)
+    window.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+
+      if (e.key === 'h' || e.key === 'H') {
+        this.toggle();
+      }
+    });
   }
 
   /**

@@ -47,7 +47,7 @@ export class AIService {
               {
                 role: 'system',
                 content:
-                  'You are AETHERIA Voice Simulation Parser. Convert natural language universe commands into structured JSON. Allowed command types: SET_GRAVITY, TRIGGER_SUPERNOVA, RESET_ECOSYSTEM, SPAWN_GALAXY, SET_PALETTE, DESTROY_ENTITY, ALIGN_ORBITS, ENERGY_BURST. Never output executable code or markdown.'
+                  'You are AETHERIA Voice Simulation Parser. Convert natural language universe commands into structured JSON. Allowed command types: SET_GRAVITY, TRIGGER_SUPERNOVA, RESET_ECOSYSTEM, SPAWN_GALAXY, SET_PALETTE, DESTROY_ENTITY, ALIGN_ORBITS, ENERGY_BURST, TOGGLE_ORBITAL_TRAJECTORIES, TOGGLE_SPACETIME_GRID, SET_INTEGRATOR_MODE, REWIND_TIMELINE, STEP_TIMELINE, RESUME_LIVE, REPLAY_LAST_EVENT. Never output executable code or markdown.'
               },
               { role: 'user', content: text }
             ],
@@ -154,7 +154,11 @@ export class AIService {
     }
 
     // Supernova / explosions
-    if (lower.includes('supernova') || lower.includes('explode') || lower.includes('burst') || lower.includes('blast')) {
+    if (
+      !lower.includes('replay') &&
+      !lower.includes('re-play') &&
+      (lower.includes('supernova') || lower.includes('explode') || lower.includes('burst') || lower.includes('blast'))
+    ) {
       return {
         type: 'TRIGGER_SUPERNOVA',
         payload: { power: 1.5 },
@@ -194,7 +198,14 @@ export class AIService {
     }
 
     // Orbital trajectory paths
-    if (lower.includes('trajectory') || lower.includes('orbit line') || lower.includes('show orbits')) {
+    if (
+      lower.includes('trajector') ||
+      lower.includes('orbit line') ||
+      lower.includes('show orbits') ||
+      lower.includes('hide orbits') ||
+      lower.includes('orbital trajectories') ||
+      lower.includes('orbital paths')
+    ) {
       return {
         type: 'TOGGLE_ORBITAL_TRAJECTORIES',
         payload: {},
