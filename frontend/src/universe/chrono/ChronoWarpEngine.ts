@@ -246,7 +246,7 @@ export class ChronoWarpEngine {
   ): number {
     if (this.recordedCount === 0) return 0;
 
-    const clampedRatio = Math.max(0, Math.min(1, ratio));
+    const clampedRatio = Number.isFinite(ratio) ? Math.max(0, Math.min(1, ratio)) : 1.0;
     if (clampedRatio >= 0.999) {
       this.resumeLive();
       return 0;
@@ -273,6 +273,9 @@ export class ChronoWarpEngine {
   ): number {
     if (this.recordedCount <= 1) return 0;
 
+    const safeDelta = Number.isFinite(delta) ? Math.round(delta) : 0;
+    if (safeDelta === 0) return this.getTimeOffsetFromLive();
+
     if (this.playbackSlot === -1) {
       // Stepping back from live
       this.playbackSlot = (this.writeHead - 1 + this.capacity) % this.capacity;
@@ -281,11 +284,11 @@ export class ChronoWarpEngine {
     this.mode = 'SCRUBBING';
     const oldestSlot = (this.writeHead - this.recordedCount + this.capacity) % this.capacity;
 
-    let targetSlot = (this.playbackSlot + delta + this.capacity) % this.capacity;
+    let targetSlot = (this.playbackSlot + safeDelta + this.capacity) % this.capacity;
 
     // Clamp within available recorded range
     const currentOffset = (this.playbackSlot - oldestSlot + this.capacity) % this.capacity;
-    const newOffset = currentOffset + delta;
+    const newOffset = currentOffset + safeDelta;
 
     if (newOffset <= 0) {
       targetSlot = oldestSlot;

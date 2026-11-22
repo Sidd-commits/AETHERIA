@@ -130,4 +130,48 @@ describe('Orbital Trajectory Prediction System', () => {
     const trajectories = system.update([deadStar], DEFAULT_UNIVERSE_CONFIG);
     expect(trajectories.length).toBe(0);
   });
+
+  it('handles hyperbolic or unbound trajectories (eccentricity >= 1.0) without producing NaN coordinates in buffer', () => {
+    const system = new OrbitalTrajectorySystem();
+    const star: UniverseEntity = {
+      id: 'star-center',
+      type: 'STAR',
+      name: 'Sun',
+      position: { x: 0, y: 0, z: 0 },
+      velocity: { x: 0, y: 0, z: 0 },
+      acceleration: { x: 0, y: 0, z: 0 },
+      mass: 50.0,
+      radius: 1.0,
+      energy: 100,
+      age: 0,
+      lifetime: Infinity,
+      isDead: false,
+      color: '#fff'
+    };
+
+    // Extremely high tangential velocity => hyperbolic trajectory (eccentricity > 1)
+    const hyperbolicProbe: UniverseEntity = {
+      id: 'hyperbolic-probe',
+      type: 'ASTEROID',
+      name: 'Oumuamua',
+      position: { x: 10, y: 0, z: 0 },
+      velocity: { x: 0, y: 0, z: 100.0 },
+      acceleration: { x: 0, y: 0, z: 0 },
+      mass: 0.01,
+      radius: 0.1,
+      energy: 10,
+      age: 0,
+      lifetime: Infinity,
+      isDead: false,
+      color: '#aaa'
+    };
+
+    const trajectories = system.update([star, hyperbolicProbe], DEFAULT_UNIVERSE_CONFIG);
+    expect(trajectories.length).toBe(1);
+    const points = trajectories[0].points;
+    for (let i = 0; i < points.length; i++) {
+      expect(Number.isFinite(points[i])).toBe(true);
+      expect(Number.isNaN(points[i])).toBe(false);
+    }
+  });
 });

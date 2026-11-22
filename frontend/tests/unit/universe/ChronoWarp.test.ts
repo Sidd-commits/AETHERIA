@@ -201,4 +201,31 @@ describe('ChronoWarpEngine Unit Tests', () => {
     expect(chrono.getMode()).toBe('LIVE');
     expect(chrono.getTimeOffsetFromLive()).toBe(0);
   });
+
+  it('handles non-finite scrubbing values (NaN, Infinity) safely by defaulting to live', () => {
+    for (let t = 1; t <= 5; t++) {
+      chrono.recordTick(t, t * 0.1, particleBuffer, entities);
+    }
+
+    const offsetNaN = chrono.scrubToNormalized(NaN, particleBuffer, entities);
+    expect(offsetNaN).toBe(0);
+    expect(chrono.isLive()).toBe(true);
+
+    const offsetInf = chrono.scrubToNormalized(Infinity, particleBuffer, entities);
+    expect(offsetInf).toBe(0);
+    expect(chrono.isLive()).toBe(true);
+  });
+
+  it('handles zero or non-finite step delta without altering valid playback position', () => {
+    for (let t = 1; t <= 5; t++) {
+      chrono.recordTick(t, t * 0.1, particleBuffer, entities);
+    }
+
+    chrono.step(-2, particleBuffer, entities);
+    expect(chrono.getMode()).toBe('SCRUBBING');
+
+    // Stepping with NaN or 0 should not throw and should retain valid state
+    const offset = chrono.step(NaN, particleBuffer, entities);
+    expect(Number.isFinite(offset)).toBe(true);
+  });
 });

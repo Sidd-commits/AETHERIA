@@ -36,6 +36,7 @@ export class OrbitalTrajectorySystem {
     }
 
     const mu = G * primary.mass;
+    if (mu <= 1e-4 || !Number.isFinite(mu)) return this.trajectories;
 
     for (let i = 0; i < entities.length; i++) {
       const body = entities[i];
@@ -46,7 +47,7 @@ export class OrbitalTrajectorySystem {
       const ry = body.position.y - primary.position.y;
       const rz = body.position.z - primary.position.z;
       const r = Math.sqrt(rx * rx + ry * ry + rz * rz);
-      if (r < 0.1) continue;
+      if (r < 0.1 || !Number.isFinite(r)) continue;
 
       const vx = body.velocity.x;
       const vy = body.velocity.y;
@@ -65,12 +66,14 @@ export class OrbitalTrajectorySystem {
       const specificEnergy = vSq * 0.5 - mu / r;
 
       // Semi-major axis a = -mu / (2 * E)
-      const isBound = specificEnergy < 0;
-      const semiMajorAxis = isBound ? -mu / (2 * specificEnergy) : r * 1.5;
+      const isBound = specificEnergy < -1e-6;
+      const rawA = isBound ? -mu / (2 * specificEnergy) : r * 1.5;
+      const semiMajorAxis = Number.isFinite(rawA) && rawA > 0 ? rawA : r * 1.5;
 
       // Eccentricity e = sqrt(1 + 2*E*h^2 / mu^2)
       const eArg = 1.0 + (2.0 * specificEnergy * hSq) / Math.max(1e-6, mu * mu);
-      const eccentricity = Math.sqrt(Math.max(0, eArg));
+      const rawE = Math.sqrt(Math.max(0, Number.isFinite(eArg) ? eArg : 0));
+      const eccentricity = Number.isFinite(rawE) ? rawE : 0;
 
       // Orbital Period T = 2 * PI * sqrt(a^3 / mu)
       const orbitalPeriod = isBound
@@ -145,9 +148,12 @@ export class OrbitalTrajectorySystem {
     const currentAngle = Math.atan2(dz, dx);
     const radius = Math.max(1.0, Math.hypot(dx, dz));
 
+    const safeA = Number.isFinite(semiMajorAxis) && semiMajorAxis > 0 ? semiMajorAxis : radius;
+    const safeE = Number.isFinite(eccentricity) && eccentricity >= 0 ? eccentricity : 0;
+
     // Semi-minor axis b = a * sqrt(1 - e^2)
-    const b = eccentricity < 1.0 ? semiMajorAxis * Math.sqrt(1.0 - eccentricity * eccentricity) : radius;
-    const orbitRadius = Math.min(semiMajorAxis, radius);
+    const b = safeE < 1.0 ? safeA * Math.sqrt(Math.max(0.001, 1.0 - safeE * safeE)) : radius;
+    const orbitRadius = Math.min(safeA, radius);
 
     for (let k = 0; k < pointCount; k++) {
       const theta = currentAngle + (k / (pointCount - 1)) * Math.PI * 2;

@@ -189,6 +189,44 @@ describe('Physics Calculations & Numerical Accuracy', () => {
       expect(doomedPlanet.isDead).toBe(true);
       expect(blackHole.mass).toBeGreaterThan(initialMass);
     });
+
+    it('should ignore collisions involving massless or non-positive mass bodies without producing NaN', () => {
+      const bodyA: UniverseEntity = {
+        id: 'body-zero-mass',
+        name: 'Ghost Body',
+        type: 'PLANET',
+        position: { x: 0, y: 0, z: 0 },
+        velocity: { x: 1, y: 0, z: 0 },
+        acceleration: { x: 0, y: 0, z: 0 },
+        mass: 0,
+        radius: 1.0,
+        energy: 10,
+        lifetime: 1000,
+        age: 0,
+        isDead: false,
+        color: '#fff'
+      };
+
+      const bodyB: UniverseEntity = {
+        id: 'body-normal',
+        name: 'Normal Planet',
+        type: 'PLANET',
+        position: { x: 0.5, y: 0, z: 0 },
+        velocity: { x: -1, y: 0, z: 0 },
+        acceleration: { x: 0, y: 0, z: 0 },
+        mass: 5,
+        radius: 1.0,
+        energy: 10,
+        lifetime: 1000,
+        age: 0,
+        isDead: false,
+        color: '#00f'
+      };
+
+      collisionSystem.resolveBodyCollisions([bodyA, bodyB], config);
+      expect(Number.isNaN(bodyA.velocity.x)).toBe(false);
+      expect(Number.isNaN(bodyB.velocity.x)).toBe(false);
+    });
   });
 
   describe('ParticleSystem Dynamics & Damping', () => {

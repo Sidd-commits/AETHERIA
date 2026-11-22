@@ -31,11 +31,11 @@ export class CollisionSystem {
 
     for (let i = 0; i < count; i++) {
       const eA = entities[i];
-      if (eA.isDead) continue;
+      if (eA.isDead || eA.mass <= 0) continue;
 
       for (let j = i + 1; j < count; j++) {
         const eB = entities[j];
-        if (eB.isDead) continue;
+        if (eB.isDead || eB.mass <= 0) continue;
 
         const dx = eB.position.x - eA.position.x;
         const dy = eB.position.y - eA.position.y;
@@ -82,20 +82,25 @@ export class CollisionSystem {
           if (velAlongNormal < 0) {
             // Bodies moving toward each other
             const restitution = 0.35; // Inelastic collision
+            const invMassA = 1 / eA.mass;
+            const invMassB = 1 / eB.mass;
+            const totalInvMass = invMassA + invMassB;
+            if (totalInvMass <= 0 || !Number.isFinite(totalInvMass)) continue;
+
             const impulseMagnitude =
-              (-(1 + restitution) * velAlongNormal) / (1 / eA.mass + 1 / eB.mass);
+              (-(1 + restitution) * velAlongNormal) / totalInvMass;
 
             const impX = impulseMagnitude * nx;
             const impY = impulseMagnitude * ny;
             const impZ = impulseMagnitude * nz;
 
-            eA.velocity.x -= impX / eA.mass;
-            eA.velocity.y -= impY / eA.mass;
-            eA.velocity.z -= impZ / eA.mass;
+            eA.velocity.x -= impX * invMassA;
+            eA.velocity.y -= impY * invMassA;
+            eA.velocity.z -= impZ * invMassA;
 
-            eB.velocity.x += impX / eB.mass;
-            eB.velocity.y += impY / eB.mass;
-            eB.velocity.z += impZ / eB.mass;
+            eB.velocity.x += impX * invMassB;
+            eB.velocity.y += impY * invMassB;
+            eB.velocity.z += impZ * invMassB;
 
             // Asteroid destruction upon high-energy impact
             if (eA.type === 'ASTEROID' && eB.type !== 'ASTEROID') {
@@ -135,8 +140,8 @@ export class CollisionSystem {
     for (let b = 0; b < blackHoles.length; b++) {
       const bh = blackHoles[b];
       if (bh.isDead) continue;
-      const horizon = bh.eventHorizonRadius || bh.radius * 0.75;
-      const accretionR = bh.accretionRadius || bh.radius * 3.8;
+      const horizon = Math.max(0.1, bh.eventHorizonRadius || bh.radius * 0.75);
+      const accretionR = Math.max(horizon * 1.5, bh.accretionRadius || bh.radius * 3.8);
 
       for (let p = 0; p < buffer.count; p++) {
         const p3 = p * 3;
@@ -149,13 +154,14 @@ export class CollisionSystem {
           // Recycle absorbed particle to outer accretion boundary with relativistic orbital velocity
           const angle = Math.random() * Math.PI * 2;
           const outerR = accretionR * (0.85 + Math.random() * 0.45);
+          const outerRSafe = Math.max(0.1, outerR);
           buffer.positions[p3] = bh.position.x + Math.cos(angle) * outerR;
           buffer.positions[p3 + 1] =
             bh.position.y + (Math.random() - 0.5) * 0.15 * (outerR / accretionR);
           buffer.positions[p3 + 2] = bh.position.z + Math.sin(angle) * outerR;
 
           // Relativistic Keplerian orbital speed
-          const speed = Math.sqrt((bh.mass * 1.0) / outerR) * (bh.accretionStrength || 1.0);
+          const speed = Math.sqrt((Math.max(0, bh.mass) * 1.0) / outerRSafe) * (bh.accretionStrength || 1.0);
           buffer.velocities[p3] = -Math.sin(angle) * speed;
           buffer.velocities[p3 + 1] = 0;
           buffer.velocities[p3 + 2] = Math.cos(angle) * speed;
