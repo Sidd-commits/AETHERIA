@@ -210,11 +210,13 @@ export class UniverseRenderer {
 
     // 3. Update Cosmic Particle Buffer via fast native TypedArray copy
     const { count, positions, colors } = snapshot.particles;
-    this.particleGeometry.setDrawRange(0, count);
+    const maxMeshParticles = this.particlePosAttr.array.length / 3;
+    const safeCount = Math.min(count, maxMeshParticles);
+    this.particleGeometry.setDrawRange(0, safeCount);
 
     const posArray = this.particlePosAttr.array as Float32Array;
     const colArray = this.particleColAttr.array as Float32Array;
-    const totalFloats = count * 3;
+    const totalFloats = safeCount * 3;
 
     // Fast contiguous memory copy
     posArray.set(positions.subarray(0, totalFloats));

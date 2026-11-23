@@ -146,8 +146,9 @@ export class GravitySystem {
           const accretionRadius = well.accretionRadius || well.radius * 3.8;
           if (dist < accretionRadius * 2.2) {
             const dist2D = Math.hypot(dx, dz) || 0.001;
+            const safeGM = Math.max(0, G * well.mass);
             const orbitSpeed =
-              Math.sqrt((G * well.mass) / Math.max(0.4, dist)) * 0.45 * accretionStrength * falloff;
+              Math.sqrt(safeGM / Math.max(0.4, dist)) * 0.45 * accretionStrength * falloff;
             // Tangential unit vector in XZ plane: (-dz/dist2D, 0, dx/dist2D)
             ax += (-dz / dist2D) * orbitSpeed;
             az += (dx / dist2D) * orbitSpeed;

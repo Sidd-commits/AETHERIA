@@ -54,7 +54,7 @@ export class SpatialHashGrid {
    * Insert a particle at (x, y, z) into the spatial grid (O(1))
    */
   public insert(index: number, x: number, y: number, z: number): void {
-    if (index >= this.maxParticles) return;
+    if (index < 0 || index >= this.maxParticles) return;
 
     const cx = Math.floor(x * this.invCellSize);
     const cy = Math.floor(y * this.invCellSize);
@@ -104,8 +104,12 @@ export class SpatialHashGrid {
             const dSq = dx * dx + dy * dy + dz * dz;
 
             if (dSq <= radiusSq) {
-              this.queryResultBuffer[this.queryResultCount++] = pIdx;
-              if (this.queryResultCount >= maxResults) {
+              if (
+                this.queryResultCount < maxResults &&
+                this.queryResultCount < this.queryResultBuffer.length
+              ) {
+                this.queryResultBuffer[this.queryResultCount++] = pIdx;
+              } else {
                 return this.queryResultCount;
               }
             }

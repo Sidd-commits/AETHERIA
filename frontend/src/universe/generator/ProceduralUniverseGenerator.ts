@@ -324,19 +324,18 @@ export class ProceduralUniverseGenerator {
       blackHoleEntities
     );
 
-    // 6. Seed Ecosystem Organisms & Ambient Energy Bursts
+    // 6. Seed Ecosystem Organisms & Ambient Energy Bursts dynamically scaled to particle count
     ecosystemSystem.reset();
     const particleBuffer = particleSystem.getBuffer();
-    const energyCount = Math.round(1800 * validConfig.energyDensity);
+    const totalBufferParticles = particleBuffer.count || particleSystem.getMaxCapacity();
+    const energyCount = Math.round(totalBufferParticles * 0.32 * validConfig.energyDensity);
     const organismCount = validConfig.seedOrganisms
-      ? validConfig.theme === 'chaotic'
-        ? 250
-        : 600
+      ? Math.round(totalBufferParticles * (validConfig.theme === 'chaotic' ? 0.05 : 0.08))
       : 0;
 
     ecosystemSystem.initializeEcosystem(particleBuffer, organismCount, energyCount);
     generatedCounts.organisms = organismCount;
-    generatedCounts.energyFields = Math.round(energyCount / 50);
+    generatedCounts.energyFields = Math.max(1, Math.round(energyCount / 50));
 
     const result: WorldGenResult = {
       config: validConfig,
