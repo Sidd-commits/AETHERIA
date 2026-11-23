@@ -1,6 +1,6 @@
 import { UniverseEntity } from '../../types/entity';
 import { UniverseConfig } from '../../types/universe';
-import { OrbitalElements, TrajectoryPath } from '../../types/trajectory';
+import { OrbitalElements, TrajectoryPath, LagrangePoints } from '../../types/trajectory';
 
 const POINTS_PER_TRAJECTORY = 64;
 
@@ -125,12 +125,61 @@ export class OrbitalTrajectorySystem {
         POINTS_PER_TRAJECTORY
       );
 
+      // Compute analytical 5 Lagrange Equilibrium Points (L1 - L5)
+      const ux = rx / r;
+      const uy = ry / r;
+      const uz = rz / r;
+
+      let nx = -uz;
+      let ny = 0;
+      let nz = ux;
+      if (h > 1e-4) {
+        const hnx = hx / h;
+        const hny = hy / h;
+        const hnz = hz / h;
+        nx = hny * uz - hnz * uy;
+        ny = hnz * ux - hnx * uz;
+        nz = hnx * uy - hny * ux;
+      }
+
+      const gamma = Math.cbrt(Math.max(1e-6, body.mass / (3.0 * Math.max(0.1, primary.mass))));
+      const mRatio = body.mass / Math.max(0.1, primary.mass);
+
+      const lagrangePoints: LagrangePoints = {
+        l1: {
+          x: Math.round((primary.position.x + ux * r * (1 - gamma)) * 100) / 100,
+          y: Math.round((primary.position.y + uy * r * (1 - gamma)) * 100) / 100,
+          z: Math.round((primary.position.z + uz * r * (1 - gamma)) * 100) / 100
+        },
+        l2: {
+          x: Math.round((primary.position.x + ux * r * (1 + gamma)) * 100) / 100,
+          y: Math.round((primary.position.y + uy * r * (1 + gamma)) * 100) / 100,
+          z: Math.round((primary.position.z + uz * r * (1 + gamma)) * 100) / 100
+        },
+        l3: {
+          x: Math.round((primary.position.x - ux * r * (1 + (5 / 12) * mRatio)) * 100) / 100,
+          y: Math.round((primary.position.y - uy * r * (1 + (5 / 12) * mRatio)) * 100) / 100,
+          z: Math.round((primary.position.z - uz * r * (1 + (5 / 12) * mRatio)) * 100) / 100
+        },
+        l4: {
+          x: Math.round((primary.position.x + r * (0.5 * ux + 0.866025 * nx)) * 100) / 100,
+          y: Math.round((primary.position.y + r * (0.5 * uy + 0.866025 * ny)) * 100) / 100,
+          z: Math.round((primary.position.z + r * (0.5 * uz + 0.866025 * nz)) * 100) / 100
+        },
+        l5: {
+          x: Math.round((primary.position.x + r * (0.5 * ux - 0.866025 * nx)) * 100) / 100,
+          y: Math.round((primary.position.y + r * (0.5 * uy - 0.866025 * ny)) * 100) / 100,
+          z: Math.round((primary.position.z + r * (0.5 * uz - 0.866025 * nz)) * 100) / 100
+        }
+      };
+
       this.trajectories.push({
         entityId: body.id,
         color: typeof body.color === 'string' ? body.color : '#00f5a0',
         pointCount: POINTS_PER_TRAJECTORY,
         points: pointBuffer,
-        elements
+        elements,
+        lagrangePoints
       });
     }
 

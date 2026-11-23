@@ -60,6 +60,15 @@ describe('Orbital Trajectory Prediction System', () => {
     // Hill sphere radius & Roche limit should be finite positive quantities
     expect(el.hillSphereRadius).toBeGreaterThan(0);
     expect(el.rocheLimit).toBeGreaterThan(0);
+
+    // Analytical 5 Lagrange equilibrium points should be calculated
+    expect(traj.lagrangePoints).toBeDefined();
+    const lp = traj.lagrangePoints!;
+    expect(Number.isFinite(lp.l1.x)).toBe(true);
+    expect(Number.isFinite(lp.l2.x)).toBe(true);
+    expect(Number.isFinite(lp.l3.x)).toBe(true);
+    expect(Number.isFinite(lp.l4.x)).toBe(true);
+    expect(Number.isFinite(lp.l5.x)).toBe(true);
   });
 
   it('generates 64 smooth trajectory points in 3D coordinate space', () => {

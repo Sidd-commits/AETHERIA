@@ -13,12 +13,27 @@ export interface OrbitalElements {
   rocheLimit?: number; // Fluid Roche tidal disruption distance
 }
 
+export interface LagrangePointCoordinates {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface LagrangePoints {
+  l1: LagrangePointCoordinates;
+  l2: LagrangePointCoordinates;
+  l3: LagrangePointCoordinates;
+  l4: LagrangePointCoordinates;
+  l5: LagrangePointCoordinates;
+}
+
 export interface TrajectoryPath {
   entityId: string;
   color: string;
   pointCount: number;
   points: Float32Array; // Flattened x, y, z array (pointCount * 3)
   elements: OrbitalElements | null;
+  lagrangePoints?: LagrangePoints;
 }
 
 export interface SpacetimeGridData {

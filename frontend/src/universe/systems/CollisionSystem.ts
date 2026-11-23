@@ -184,11 +184,18 @@ export class CollisionSystem {
           buffer.velocities[p3 + 1] = 0;
           buffer.velocities[p3 + 2] = Math.cos(angle) * speed;
 
-          // Relativistic accretion thermal glow color (Gold / Cyan / White)
-          const isIonized = Math.random() > 0.5;
-          buffer.colors[p3] = isIonized ? 1.0 : 0.2;
-          buffer.colors[p3 + 1] = isIonized ? 0.88 : 0.95;
-          buffer.colors[p3 + 2] = isIonized ? 0.35 : 1.0;
+          // Relativistic accretion thermal glow color with Doppler beaming
+          // Approaching observer along -Z is blueshifted (cyan/white), receding (+Z) is redshifted (amber/red)
+          const approaching = buffer.velocities[p3 + 2] < 0;
+          if (approaching) {
+            buffer.colors[p3] = 0.25;
+            buffer.colors[p3 + 1] = 0.95;
+            buffer.colors[p3 + 2] = 1.0;
+          } else {
+            buffer.colors[p3] = 1.0;
+            buffer.colors[p3 + 1] = 0.45;
+            buffer.colors[p3 + 2] = 0.15;
+          }
 
           buffer.energies[p] = 1.0;
           bh.energy += 0.05;

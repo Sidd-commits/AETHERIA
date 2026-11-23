@@ -204,6 +204,11 @@ export class CelestialInspectorHUD {
                 <span>Roche: ${el.rocheLimit ? el.rocheLimit.toFixed(1) + 'u' : 'N/A'}</span>
                 <span>v_esc: ${el.escapeVelocity.toFixed(1)}</span>
               </div>
+              ${t.lagrangePoints ? `
+              <div style="display: flex; justify-content: space-between; color: #38bdf8; font-size: 9px; margin-top: 2px; font-family: monospace;">
+                <span>L1: (${t.lagrangePoints.l1.x.toFixed(1)}, ${t.lagrangePoints.l1.z.toFixed(1)})</span>
+                <span>L4: (${t.lagrangePoints.l4.x.toFixed(1)}, ${t.lagrangePoints.l4.z.toFixed(1)})</span>
+              </div>` : ''}
             </div>
           `;
         })
