@@ -199,6 +199,11 @@ export class CelestialInspectorHUD {
                 <span>e: ${el.eccentricity.toFixed(2)}</span>
                 <span>T: ${isFinite(el.orbitalPeriod) ? el.orbitalPeriod.toFixed(1) + 's' : '∞'}</span>
               </div>
+              <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 10px; margin-top: 2px;">
+                <span>Hill: ${el.hillSphereRadius ? el.hillSphereRadius.toFixed(1) + 'u' : 'N/A'}</span>
+                <span>Roche: ${el.rocheLimit ? el.rocheLimit.toFixed(1) + 'u' : 'N/A'}</span>
+                <span>v_esc: ${el.escapeVelocity.toFixed(1)}</span>
+              </div>
             </div>
           `;
         })

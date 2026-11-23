@@ -57,6 +57,9 @@ describe('Orbital Trajectory Prediction System', () => {
     expect(el.orbitalPeriod).toBeCloseTo(19.9, 0);
     // Escape velocity = sqrt(2 * mu / r) = sqrt(2 * 100 / 10) = sqrt(20) ≈ 4.47
     expect(el.escapeVelocity).toBeCloseTo(4.47, 1);
+    // Hill sphere radius & Roche limit should be finite positive quantities
+    expect(el.hillSphereRadius).toBeGreaterThan(0);
+    expect(el.rocheLimit).toBeGreaterThan(0);
   });
 
   it('generates 64 smooth trajectory points in 3D coordinate space', () => {

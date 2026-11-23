@@ -9,6 +9,8 @@ export interface OrbitalElements {
   escapeVelocity: number; // speed required to escape central gravity well
   currentSpeed: number; // current magnitude of velocity
   specificEnergy: number; // orbital mechanical energy per unit mass
+  hillSphereRadius?: number; // Hill gravitational sphere of influence radius
+  rocheLimit?: number; // Fluid Roche tidal disruption distance
 }
 
 export interface TrajectoryPath {

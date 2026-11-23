@@ -18,27 +18,33 @@ export class FormationSystem {
    */
   public generatePreset(
     presetId: UniversePresetId,
-    particleSystem: ParticleSystem
+    particleSystem: ParticleSystem,
+    particleCount?: number
   ): UniverseEntity[] {
+    const targetCount =
+      particleCount !== undefined ? particleCount : particleSystem.getMaxCapacity();
     switch (presetId) {
       case 'SOLAR_SYSTEM':
-        return this.buildSolarSystem(particleSystem);
+        return this.buildSolarSystem(particleSystem, targetCount);
       case 'BINARY_STARS_NEBULA':
-        return this.buildBinaryStarsNebula(particleSystem);
+        return this.buildBinaryStarsNebula(particleSystem, targetCount);
       case 'BLACK_HOLE_ACCRETION':
-        return this.buildBlackHoleAccretion(particleSystem);
+        return this.buildBlackHoleAccretion(particleSystem, targetCount);
       case 'CHAOS_GALAXY':
-        return this.buildChaosGalaxy(particleSystem);
+        return this.buildChaosGalaxy(particleSystem, targetCount);
       case 'AETHERIA_LATTICE':
       default:
-        return this.buildAetheriaLattice(particleSystem);
+        return this.buildAetheriaLattice(particleSystem, targetCount);
     }
   }
 
   /**
    * Preset 1: Solar System with central star, 6 orbiting planets, and asteroid belt
    */
-  public buildSolarSystem(particleSystem: ParticleSystem): UniverseEntity[] {
+  public buildSolarSystem(
+    particleSystem: ParticleSystem,
+    targetCount: number = 10000
+  ): UniverseEntity[] {
     const entities: UniverseEntity[] = [];
 
     // Central Sun
@@ -127,7 +133,8 @@ export class FormationSystem {
     }
 
     // Seed cosmic background dust in orbital disk
-    particleSystem.seedAccretionDisk({ x: 0, y: 0, z: 0 }, 1.8, 12.0, 3500, [0.0, 0.95, 1.0]);
+    const count = Math.min(targetCount, particleSystem.getMaxCapacity());
+    particleSystem.seedAccretionDisk({ x: 0, y: 0, z: 0 }, 1.8, 12.0, count, [0.0, 0.95, 1.0]);
 
     return entities;
   }
@@ -135,7 +142,10 @@ export class FormationSystem {
   /**
    * Preset 2: Binary Stars in a Glowing Nebula
    */
-  public buildBinaryStarsNebula(particleSystem: ParticleSystem): UniverseEntity[] {
+  public buildBinaryStarsNebula(
+    particleSystem: ParticleSystem,
+    targetCount: number = 10000
+  ): UniverseEntity[] {
     const entities: UniverseEntity[] = [];
 
     // Star A (Cyan Primary)
@@ -214,7 +224,8 @@ export class FormationSystem {
     });
 
     // Seed colorful nebula dust
-    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 5.5, 4000);
+    const count = Math.min(targetCount, particleSystem.getMaxCapacity());
+    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 5.5, count);
 
     return entities;
   }
@@ -222,7 +233,10 @@ export class FormationSystem {
   /**
    * Preset 3: Supermassive Black Hole with Accretion Disk
    */
-  public buildBlackHoleAccretion(particleSystem: ParticleSystem): UniverseEntity[] {
+  public buildBlackHoleAccretion(
+    particleSystem: ParticleSystem,
+    targetCount: number = 10000
+  ): UniverseEntity[] {
     const entities: UniverseEntity[] = [];
 
     // Supermassive Black Hole Singularity
@@ -292,7 +306,8 @@ export class FormationSystem {
     }
 
     // High-speed accretion disk
-    particleSystem.seedAccretionDisk({ x: 0, y: 0, z: 0 }, 1.5, 7.5, 4500, [1.0, 0.4, 0.05]);
+    const count = Math.min(targetCount, particleSystem.getMaxCapacity());
+    particleSystem.seedAccretionDisk({ x: 0, y: 0, z: 0 }, 1.5, 7.5, count, [1.0, 0.4, 0.05]);
 
     return entities;
   }
@@ -300,7 +315,10 @@ export class FormationSystem {
   /**
    * Preset 4: Chaos Galaxy Cluster
    */
-  public buildChaosGalaxy(particleSystem: ParticleSystem): UniverseEntity[] {
+  public buildChaosGalaxy(
+    particleSystem: ParticleSystem,
+    targetCount: number = 10000
+  ): UniverseEntity[] {
     const entities: UniverseEntity[] = [];
 
     // 3 Mini Star Centers
@@ -328,14 +346,18 @@ export class FormationSystem {
       });
     });
 
-    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 6.0, 4000);
+    const count = Math.min(targetCount, particleSystem.getMaxCapacity());
+    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 6.0, count);
     return entities;
   }
 
   /**
    * Preset 5: Classic Aetheria Harmonic Lattice (100% Backward Visual Compatibility)
    */
-  public buildAetheriaLattice(particleSystem: ParticleSystem): UniverseEntity[] {
+  public buildAetheriaLattice(
+    particleSystem: ParticleSystem,
+    targetCount: number = 10000
+  ): UniverseEntity[] {
     const entities: UniverseEntity[] = [];
 
     // Central Radiant Energy Core
@@ -355,8 +377,9 @@ export class FormationSystem {
       color: '#00f2fe'
     });
 
-    // 3,000 Particle Uniform Spherical Lattice
-    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 3.2, 3000);
+    // Particle Uniform Spherical Lattice
+    const count = Math.min(targetCount, particleSystem.getMaxCapacity());
+    particleSystem.seedSphericalLattice({ x: 0, y: 0, z: 0 }, 3.2, count);
 
     return entities;
   }

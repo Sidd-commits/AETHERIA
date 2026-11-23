@@ -227,6 +227,51 @@ describe('Physics Calculations & Numerical Accuracy', () => {
       expect(Number.isNaN(bodyA.velocity.x)).toBe(false);
       expect(Number.isNaN(bodyB.velocity.x)).toBe(false);
     });
+
+    it('should tidally disrupt asteroids entering within Roche limit of black hole', () => {
+      const blackHole: UniverseEntity = {
+        id: 'bh-singularity',
+        name: 'Gargantua',
+        type: 'BLACK_HOLE',
+        position: { x: 0, y: 0, z: 0 },
+        velocity: { x: 0, y: 0, z: 0 },
+        acceleration: { x: 0, y: 0, z: 0 },
+        mass: 150,
+        radius: 1.0,
+        eventHorizonRadius: 1.2,
+        energy: 500,
+        lifetime: 1000,
+        age: 0,
+        isDead: false,
+        color: '#000'
+      };
+
+      // Positioned outside horizon (1.2) but within fluid Roche limit (~3.5)
+      const asteroid: UniverseEntity = {
+        id: 'asteroid-doomed',
+        name: 'Tidally Sheared Asteroid',
+        type: 'ASTEROID',
+        position: { x: 2.2, y: 0, z: 0 },
+        velocity: { x: 0, y: 0, z: 2.0 },
+        acceleration: { x: 0, y: 0, z: 0 },
+        mass: 0.1,
+        radius: 0.1,
+        energy: 10,
+        lifetime: 1000,
+        age: 0,
+        isDead: false,
+        color: '#888'
+      };
+
+      const initialMass = blackHole.mass;
+      collisionSystem.resolveBodyCollisions([blackHole, asteroid], config);
+
+      expect(asteroid.isDead).toBe(true);
+      expect(blackHole.mass).toBeGreaterThan(initialMass);
+      const events = collisionSystem.getRecentEvents();
+      expect(events.length).toBeGreaterThan(0);
+      expect(events[0].energyReleased).toBeGreaterThan(0);
+    });
   });
 
   describe('ParticleSystem Dynamics & Damping', () => {

@@ -29,7 +29,7 @@ export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
   maxEntities: 100,
   blackHolePullForce: 2.2,
   starLuminosityDecay: 0.05,
-  particleCount: 5000,
+  particleCount: 10000,
   universeBounds: 40.0,
   fixedTimestep: 1 / 60,
   integratorMode: 'VERLET',
@@ -67,8 +67,9 @@ export class UniverseEngine {
   constructor(initialConfig: Partial<UniverseConfig> = {}) {
     this.config = { ...DEFAULT_UNIVERSE_CONFIG, ...initialConfig };
 
+    const maxCapacity = Math.max(16000, this.config.particleCount);
     this.gravitySystem = new GravitySystem();
-    this.particleSystem = new ParticleSystem(this.config.particleCount);
+    this.particleSystem = new ParticleSystem(maxCapacity);
     this.collisionSystem = new CollisionSystem();
     this.energySystem = new EnergySystem();
     this.formationSystem = new FormationSystem();
@@ -76,7 +77,8 @@ export class UniverseEngine {
     this.ecosystemSystem = new EcosystemSystem();
     this.trajectorySystem = new OrbitalTrajectorySystem();
     this.spacetimeGridSystem = new SpacetimeGridSystem();
-    this.chronoEngine = new ChronoWarpEngine(360, this.config.particleCount);
+    this.chronoEngine = new ChronoWarpEngine(360, maxCapacity);
+    this.particleSystem.setActiveCount(this.config.particleCount);
 
     this.loadPreset('SOLAR_SYSTEM');
   }
@@ -87,6 +89,9 @@ export class UniverseEngine {
 
   public setConfig(newConfig: Partial<UniverseConfig>): void {
     this.config = { ...this.config, ...newConfig };
+    if (newConfig.particleCount !== undefined) {
+      this.particleSystem.setActiveCount(newConfig.particleCount);
+    }
   }
 
   public setTimeScale(scale: number): void {
@@ -107,8 +112,15 @@ export class UniverseEngine {
   public loadPreset(presetId: UniversePresetId): void {
     this.activeCustomConfig = null;
     this.activePreset = presetId;
-    this.entities = this.formationSystem.generatePreset(presetId, this.particleSystem);
-    this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), 650, 2400);
+    this.entities = this.formationSystem.generatePreset(
+      presetId,
+      this.particleSystem,
+      this.config.particleCount
+    );
+    const activeCount = this.particleSystem.getParticleCount();
+    const organismCount = Math.round(activeCount * 0.08);
+    const energyCount = Math.round(activeCount * 0.32);
+    this.ecosystemSystem.initializeEcosystem(this.particleSystem.getBuffer(), organismCount, energyCount);
     if (this.chronoEngine) {
       this.chronoEngine.reset();
       this.chronoEngine.recordEventMarker(
@@ -724,7 +736,11 @@ export class UniverseEngine {
   }
 
   public setActiveParticleCount(count: number): void {
-    this.particleSystem.setActiveCount(count);
+    this.config.particleCount = Math.max(
+      100,
+      Math.min(this.particleSystem.getMaxCapacity(), Math.round(count))
+    );
+    this.particleSystem.setActiveCount(this.config.particleCount);
   }
 
   public getEntities(): ReadonlyArray<UniverseEntity> {

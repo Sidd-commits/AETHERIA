@@ -84,6 +84,14 @@ export class OrbitalTrajectorySystem {
       const apoapsisDistance = isBound ? semiMajorAxis * (1 + eccentricity) : Infinity;
       const escapeVelocity = Math.sqrt((2 * mu) / r);
 
+      // Hill Sphere Radius: r_H = a * (body.mass / (3 * primary.mass))^(1/3)
+      const massRatio = Math.max(1e-6, body.mass / (3.0 * Math.max(0.1, primary.mass)));
+      const hillSphereRadius = semiMajorAxis * Math.cbrt(massRatio);
+
+      // Fluid Roche Limit of primary acting on body: d_Roche = 1.26 * primary.radius * (primary.mass / body.mass)^(1/3)
+      const primaryMassRatio = Math.max(1e-4, primary.mass / Math.max(0.01, body.mass));
+      const rocheLimit = 1.26 * primary.radius * Math.cbrt(primaryMassRatio);
+
       const elements: OrbitalElements = {
         semiMajorAxis: Math.round(semiMajorAxis * 100) / 100,
         eccentricity: Math.round(eccentricity * 1000) / 1000,
@@ -94,7 +102,9 @@ export class OrbitalTrajectorySystem {
           : 999.9,
         escapeVelocity: Math.round(escapeVelocity * 100) / 100,
         currentSpeed: Math.round(v * 100) / 100,
-        specificEnergy: Math.round(specificEnergy * 100) / 100
+        specificEnergy: Math.round(specificEnergy * 100) / 100,
+        hillSphereRadius: Math.round(hillSphereRadius * 100) / 100,
+        rocheLimit: Math.round(rocheLimit * 100) / 100
       };
 
       // Get or allocate static point buffer

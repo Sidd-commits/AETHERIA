@@ -43,14 +43,18 @@ export class CollisionSystem {
         const dist = Math.hypot(dx, dy, dz);
         const minDist = eA.radius + eB.radius;
 
-        // 1. Black Hole Event Horizon Absorption
+        // 1. Black Hole Event Horizon Absorption & Tidal Disruption (Roche Shearing)
         if (eA.type === 'BLACK_HOLE' || eB.type === 'BLACK_HOLE') {
           const bh = eA.type === 'BLACK_HOLE' ? eA : eB;
           const other = eA.type === 'BLACK_HOLE' ? eB : eA;
           const horizonRadius = bh.eventHorizonRadius || bh.radius;
 
+          // Fluid Roche Limit: d_Roche = 1.26 * bh.radius * (bh.mass / other.mass)^(1/3)
+          const massRatio = Math.max(1.0, bh.mass / Math.max(0.05, other.mass));
+          const rocheLimit = Math.min(bh.radius * 3.5, 1.26 * bh.radius * Math.cbrt(massRatio));
+
           if (dist < horizonRadius + other.radius * 0.5) {
-            // Absorb other body into black hole
+            // Event Horizon direct absorption
             other.isDead = true;
             bh.mass += other.mass * 0.85;
             bh.radius = Math.min(3.0, bh.radius + 0.05);
@@ -62,6 +66,20 @@ export class CollisionSystem {
               impactPoint: { ...other.position },
               relativeVelocity: Math.hypot(other.velocity.x, other.velocity.y, other.velocity.z),
               energyReleased: other.mass * 20
+            });
+            continue;
+          } else if (dist < rocheLimit && (other.type === 'ASTEROID' || other.mass < bh.mass * 0.08)) {
+            // Tidal Disruption Event (TDE): gravitational shear tears smaller bodies into accretion fragments
+            other.isDead = true;
+            bh.mass += other.mass * 0.6;
+            bh.energy += other.energy + other.mass * 15;
+
+            this.collisionEvents.push({
+              bodyA: bh,
+              bodyB: other,
+              impactPoint: { ...other.position },
+              relativeVelocity: Math.hypot(other.velocity.x, other.velocity.y, other.velocity.z),
+              energyReleased: other.mass * 35
             });
             continue;
           }
