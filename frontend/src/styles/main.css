@@ -238,6 +238,21 @@ body {
 .status-dot.active {
   background: #00f5a0;
   box-shadow: 0 0 10px #00f5a0;
+  animation: pulseGreen 2.2s infinite ease-in-out;
+}
+
+@keyframes pulseGreen {
+  0%,
+  100% {
+    box-shadow: 0 0 8px #00f5a0;
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 16px #00f5a0,
+      0 0 24px rgba(0, 245, 160, 0.4);
+    transform: scale(1.18);
+  }
 }
 
 /* Live HUD Stats Pill Box */

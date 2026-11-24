@@ -47,20 +47,20 @@ export class PopulationMonitor {
     this.container.className = 'population-monitor-panel interactive';
     this.container.style.cssText = `
       position: absolute;
-      top: 90px;
-      right: 32px;
+      bottom: 140px;
+      right: 24px;
       width: 290px;
-      background: rgba(10, 15, 26, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 245, 160, 0.25);
+      background: rgba(10, 15, 26, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(0, 245, 160, 0.3);
       border-radius: 18px;
       padding: 16px;
       z-index: 45;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 245, 160, 0.08);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       font-family: 'Outfit', sans-serif;
       color: #f0f4fc;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
     `;
 

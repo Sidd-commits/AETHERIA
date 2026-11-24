@@ -213,6 +213,7 @@ export class SpeechRecognitionEngine {
    * Initialize audio analyser for dynamic HUD waveform visualization
    */
   private async startAudioAnalysis(): Promise<void> {
+    if (this.analyser || this.audioContext) return; // Prevent duplicate audio pipelines
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
 

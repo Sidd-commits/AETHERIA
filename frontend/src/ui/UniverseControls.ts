@@ -212,6 +212,20 @@ export class UniverseControls {
       this.commandBus.dispatch('TOGGLE_SPACETIME_GRID', undefined, 'UI');
     });
 
+    // Supernova Button
+    const explodeBtn = document.getElementById('btn-explode-demo') as HTMLButtonElement | null;
+    explodeBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.2 }, 'UI');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '💥 Catastrophic Supernova Detonated!',
+          icon: '💥'
+        },
+        'UI'
+      );
+    });
+
     // 5. Reset Button
     const resetBtn = document.getElementById('btn-uni-reset') as HTMLButtonElement;
     resetBtn.addEventListener('click', () => {
@@ -227,6 +241,16 @@ export class UniverseControls {
         this.togglePause();
       } else if (e.key === 'r' || e.key === 'R') {
         this.reset();
+      } else if (e.key === 'x' || e.key === 'X') {
+        this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.2 }, 'UI');
+        this.commandBus.dispatch(
+          'SHOW_TOAST',
+          {
+            message: '💥 Catastrophic Supernova Detonated!',
+            icon: '💥'
+          },
+          'UI'
+        );
       }
     });
   }
