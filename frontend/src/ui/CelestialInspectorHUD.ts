@@ -13,6 +13,7 @@ export class CelestialInspectorHUD {
   private isVisible: boolean = false;
   private contentEl: HTMLElement | null = null;
   private lastUpdate: number = 0;
+  private selectedEntityId: string | null = null;
 
   constructor(commandBus: CommandBus = CommandBus.getInstance()) {
     this.commandBus = commandBus;
@@ -182,36 +183,75 @@ export class CelestialInspectorHUD {
 
     let trajectoriesHtml = '';
     if (trajectories.length > 0) {
-      trajectoriesHtml = trajectories
-        .slice(0, 3)
+      if (!this.selectedEntityId || !trajectories.some((t) => t.entityId === this.selectedEntityId)) {
+        this.selectedEntityId = trajectories[0].entityId;
+      }
+
+      const activeTraj =
+        trajectories.find((t) => t.entityId === this.selectedEntityId) || trajectories[0];
+      const entityName =
+        snapshot.entities.find((e) => e.id === activeTraj.entityId)?.name ||
+        `Body #${activeTraj.entityId.slice(-4)}`;
+
+      const selectorPills = trajectories
+        .slice(0, 6)
         .map((t) => {
-          const el = t.elements;
-          if (!el) return '';
-          return `
-            <div style="background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 6px 8px; margin-top: 6px;">
-              <div style="display: flex; justify-content: space-between; font-weight: 600; color: ${escapeHtml(t.color)};">
-                <span>Body #${escapeHtml(t.entityId.slice(-4))}</span>
-                <span>${el.currentSpeed.toFixed(1)} u/s</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; color: #8a99ad; font-size: 11px; margin-top: 2px;">
-                <span>a: ${el.semiMajorAxis.toFixed(1)}</span>
-                <span>e: ${el.eccentricity.toFixed(2)}</span>
-                <span>T: ${isFinite(el.orbitalPeriod) ? el.orbitalPeriod.toFixed(1) + 's' : '∞'}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 10px; margin-top: 2px;">
-                <span>Hill: ${el.hillSphereRadius ? el.hillSphereRadius.toFixed(1) + 'u' : 'N/A'}</span>
-                <span>Roche: ${el.rocheLimit ? el.rocheLimit.toFixed(1) + 'u' : 'N/A'}</span>
-                <span>v_esc: ${el.escapeVelocity.toFixed(1)}</span>
-              </div>
-              ${t.lagrangePoints ? `
-              <div style="display: flex; justify-content: space-between; color: #38bdf8; font-size: 9px; margin-top: 2px; font-family: monospace;">
-                <span>L1: (${t.lagrangePoints.l1.x.toFixed(1)}, ${t.lagrangePoints.l1.z.toFixed(1)})</span>
-                <span>L4: (${t.lagrangePoints.l4.x.toFixed(1)}, ${t.lagrangePoints.l4.z.toFixed(1)})</span>
-              </div>` : ''}
-            </div>
-          `;
+          const isSelected = t.entityId === activeTraj.entityId;
+          const shortName =
+            snapshot.entities.find((e) => e.id === t.entityId)?.name?.split(' ')[0] ||
+            `#${t.entityId.slice(-4)}`;
+          return `<button class="inspector-body-tab" data-body-id="${escapeHtml(t.entityId)}" style="
+            background: ${isSelected ? 'rgba(0, 242, 254, 0.22)' : 'rgba(255, 255, 255, 0.05)'};
+            border: 1px solid ${isSelected ? 'rgba(0, 242, 254, 0.65)' : 'rgba(255, 255, 255, 0.1)'};
+            color: ${isSelected ? '#ffffff' : '#94a3b8'};
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 10px;
+            font-weight: ${isSelected ? '700' : '500'};
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          "><span style="width:6px;height:6px;border-radius:50%;background:${escapeHtml(t.color)};"></span>${escapeHtml(shortName)}</button>`;
         })
         .join('');
+
+      const el = activeTraj.elements;
+      trajectoriesHtml = el
+        ? `
+          <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; margin-bottom: 6px;">
+            ${selectorPills}
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 10px;">
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: ${escapeHtml(activeTraj.color)}; margin-bottom: 4px;">
+              <span>${escapeHtml(entityName)}</span>
+              <span>${el.currentSpeed.toFixed(2)} u/s</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; color: #cbd5e1; font-size: 11px;">
+              <span>a: <b>${el.semiMajorAxis.toFixed(2)}</b></span>
+              <span>e: <b>${el.eccentricity.toFixed(3)}</b></span>
+              <span>T: <b>${isFinite(el.orbitalPeriod) ? el.orbitalPeriod.toFixed(1) + 's' : '∞'}</b></span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; color: #8a99ad; font-size: 10px; margin-top: 4px;">
+              <span>Hill: ${el.hillSphereRadius ? el.hillSphereRadius.toFixed(2) + 'u' : 'N/A'}</span>
+              <span>Roche: ${el.rocheLimit ? el.rocheLimit.toFixed(2) + 'u' : 'N/A'}</span>
+              <span>v_esc: ${el.escapeVelocity.toFixed(2)}</span>
+            </div>
+            ${
+              activeTraj.lagrangePoints
+                ? `
+            <div style="margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.06); display: grid; grid-template-columns: 1fr 1fr; gap: 2px 6px; color: #38bdf8; font-size: 9.5px; font-family: monospace;">
+              <span>L1: (${activeTraj.lagrangePoints.l1.x.toFixed(1)}, ${activeTraj.lagrangePoints.l1.z.toFixed(1)})</span>
+              <span>L2: (${activeTraj.lagrangePoints.l2.x.toFixed(1)}, ${activeTraj.lagrangePoints.l2.z.toFixed(1)})</span>
+              <span>L3: (${activeTraj.lagrangePoints.l3.x.toFixed(1)}, ${activeTraj.lagrangePoints.l3.z.toFixed(1)})</span>
+              <span>L4: (${activeTraj.lagrangePoints.l4.x.toFixed(1)}, ${activeTraj.lagrangePoints.l4.z.toFixed(1)})</span>
+              <span>L5: (${activeTraj.lagrangePoints.l5.x.toFixed(1)}, ${activeTraj.lagrangePoints.l5.z.toFixed(1)})</span>
+            </div>`
+                : ''
+            }
+          </div>
+        `
+        : '';
     } else {
       trajectoriesHtml = `<div style="color: #64748b; font-size: 11px; margin-top: 4px;">Trajectories hidden or no orbiting bodies</div>`;
     }
@@ -239,5 +279,16 @@ export class CelestialInspectorHUD {
       </div>
       ${trajectoriesHtml}
     `;
+
+    this.contentEl.querySelectorAll('.inspector-body-tab').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const id = (e.currentTarget as HTMLElement).dataset.bodyId;
+        if (id) {
+          this.selectedEntityId = id;
+          this.lastUpdate = 0; // Immediate refresh on body switch
+          this.update(snapshot);
+        }
+      });
+    });
   }
 }

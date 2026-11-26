@@ -105,6 +105,18 @@ export class UniverseControls {
         <span>Supernova</span>
       </button>
 
+      <!-- Gravity Quick Slider -->
+      <div style="display: flex; align-items: center; gap: 6px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;" title="Adjust Universal Gravitational Constant (G)">
+        <span style="color: #8a99ad; font-size: 11px;">G:</span>
+        <input id="slider-uni-gravity" type="range" min="0.2" max="3.5" step="0.1" value="1.0" style="width: 64px; height: 4px; accent-color: #00f2fe; cursor: pointer;" />
+        <span id="uni-gravity-val" style="color: #00f2fe; font-weight: 600; font-family: monospace; min-width: 28px;">1.0×</span>
+      </div>
+
+      <!-- Capture Screenshot Button -->
+      <button id="btn-uni-snapshot" class="action-btn" style="padding: 6px 11px; border-radius: 20px;" title="Capture High-Res Cosmos PNG Snapshot (S key)">
+        <span>📸</span>
+      </button>
+
       <!-- Reset Button -->
       <button id="btn-uni-reset" class="action-btn" style="padding: 6px 12px; border-radius: 20px;" title="Reset Universe (R key)">
         <span>🔄</span>
@@ -226,7 +238,22 @@ export class UniverseControls {
       );
     });
 
-    // 5. Reset Button
+    // 5. Gravity Quick Slider
+    const gravitySlider = document.getElementById('slider-uni-gravity') as HTMLInputElement | null;
+    const gravityVal = document.getElementById('uni-gravity-val');
+    gravitySlider?.addEventListener('input', () => {
+      const g = parseFloat(gravitySlider.value);
+      if (gravityVal) gravityVal.textContent = `${g.toFixed(1)}×`;
+      this.commandBus.dispatch('SET_GRAVITY', { gravityConstant: g }, 'UI');
+    });
+
+    // 6. Snapshot Button
+    const snapshotBtn = document.getElementById('btn-uni-snapshot') as HTMLButtonElement | null;
+    snapshotBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('CAPTURE_SCREENSHOT', undefined, 'UI');
+    });
+
+    // 7. Reset Button
     const resetBtn = document.getElementById('btn-uni-reset') as HTMLButtonElement;
     resetBtn.addEventListener('click', () => {
       this.reset();
@@ -234,6 +261,29 @@ export class UniverseControls {
   }
 
   private bindBusSync(): void {
+    this.commandBus.on('SET_GRAVITY', (cmd) => {
+      const slider = document.getElementById('slider-uni-gravity') as HTMLInputElement | null;
+      const valEl = document.getElementById('uni-gravity-val');
+      if (!slider) return;
+      let nextG = parseFloat(slider.value);
+      if (cmd.payload?.gravityConstant !== undefined) {
+        nextG = cmd.payload.gravityConstant;
+      } else if (cmd.payload?.multiplier !== undefined) {
+        nextG = nextG * cmd.payload.multiplier;
+      }
+      nextG = Math.max(0.2, Math.min(3.5, nextG));
+      slider.value = nextG.toFixed(1);
+      if (valEl) valEl.textContent = `${nextG.toFixed(1)}×`;
+    });
+
+    this.commandBus.on('GENERATE_PROCEDURAL_UNIVERSE', (cmd) => {
+      const slider = document.getElementById('slider-uni-gravity') as HTMLInputElement | null;
+      const valEl = document.getElementById('uni-gravity-val');
+      const g = Math.max(0.2, Math.min(3.5, cmd.payload.config.gravity));
+      if (slider) slider.value = g.toFixed(1);
+      if (valEl) valEl.textContent = `${g.toFixed(1)}×`;
+    });
+
     this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
       this.isPaused = cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.isPaused;
       const icon = document.getElementById('uni-pause-icon');

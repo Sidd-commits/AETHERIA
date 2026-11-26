@@ -191,6 +191,10 @@ export class InputManager {
       this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'j' || e.key === 'J') {
       this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === 's' || e.key === 'S') {
+      this.commandBus.dispatch('CAPTURE_SCREENSHOT', undefined, 'MOUSE_KEYBOARD');
+    } else if (e.key === '?') {
+      this.commandBus.dispatch('TOGGLE_SHORTCUTS', undefined, 'MOUSE_KEYBOARD');
     }
   };
 

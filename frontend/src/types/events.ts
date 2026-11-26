@@ -50,7 +50,9 @@ export type CommandType =
   | 'CHRONO_STEP'
   | 'CHRONO_RESUME_LIVE'
   | 'CHRONO_REPLAY_LAST_EVENT'
-  | 'CHRONO_TOGGLE_HUD';
+  | 'CHRONO_TOGGLE_HUD'
+  | 'CAPTURE_SCREENSHOT'
+  | 'TOGGLE_SHORTCUTS';
 
 export type CommandSource = 'GESTURE' | 'MOUSE_KEYBOARD' | 'UI' | 'VOICE_AI' | 'SYSTEM';
 
@@ -204,6 +206,8 @@ export interface CommandPayloadMap {
   CHRONO_RESUME_LIVE: void;
   CHRONO_REPLAY_LAST_EVENT: void;
   CHRONO_TOGGLE_HUD: void;
+  CAPTURE_SCREENSHOT: void;
+  TOGGLE_SHORTCUTS: void;
 }
 
 export interface UniverseCommand<K extends CommandType = CommandType> {

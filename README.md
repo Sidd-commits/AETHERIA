@@ -6,7 +6,7 @@
 
 [![CI Pipeline](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml/badge.svg)](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.3%20Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vitest Tests](https://img.shields.io/badge/Tests-92%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vitest Tests](https://img.shields.io/badge/Tests-95%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
 [![Code Quality](https://img.shields.io/badge/ESLint%209-Passing-4B32C3?logo=eslint)](https://eslint.org/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -501,7 +501,8 @@ AETHERIA/
 
 | Key | Action | Description |
 |---|---|---|
-| `Space` | Play / Pause | Toggle simulation time advance |
+| `Space` / `K` | Play / Pause | Toggle simulation time advance |
+| `X` | Supernova Burst | Trigger catastrophic supernova ionization shockwave |
 | `[` | Step Backward (-1F) | Step 1 frame backward into recorded cosmic history |
 | `]` | Step Forward (+1F) | Step 1 frame forward toward live simulation |
 | `\` or `Backspace` | Toggle Rewind | Enable / disable reverse time playback ($-1\times$) |
@@ -511,10 +512,14 @@ AETHERIA/
 | `G` | Toggle Spacetime Grid | Show / hide 3D general-relativistic curvature mesh |
 | `O` | Toggle Integrator | Switch between Symplectic Verlet and Euler physics |
 | `B` | Spawn Black Hole | Create a singularity at cursor position |
-| `W` | World Gen Studio | Open AI natural language world generator |
+| `W` | World Gen Studio | Open AI natural language world generator & server presets |
+| `A` | AETHER Observatory | Open AI diagnostics, anomaly feed & Q&A panel |
+| `I` | Celestial Inspector | Inspect Keplerian elements, Hill sphere, Roche limit & $L_1–L_5$ |
 | `V` | Voice AI HUD | Open speech-to-command cosmic controller |
 | `E` | Ecosystem HUD | Open emergent organism population telemetry |
 | `P` | Perf HUD | Open FPS, physics frametime, and adaptive quality monitor |
+| `S` | PNG Snapshot | Export crisp WebGL cosmic viewport render as PNG |
+| `?` | Shortcut Guide | Open Keyboard Shortcuts & Hand Gestures reference modal |
 | `0` - `5` | Cosmic Palettes | Cycle through spectrum themes |
 
 ---

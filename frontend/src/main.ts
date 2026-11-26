@@ -417,6 +417,24 @@ export class AetheriaApp {
     this.commandBus.on('CHRONO_TOGGLE_HUD', () => {
       this.uiManager.getChronoHUD().toggle();
     });
+
+    this.commandBus.on('CAPTURE_SCREENSHOT', () => {
+      const ok = this.sceneManager.captureScreenshot();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: ok
+            ? '📸 Cosmos PNG Snapshot Exported!'
+            : '⚠️ Unable to capture WebGL snapshot',
+          icon: ok ? '📸' : '⚠️'
+        },
+        'UI'
+      );
+    });
+
+    this.commandBus.on('TOGGLE_SHORTCUTS', () => {
+      this.uiManager.getShortcutsModal().toggle();
+    });
   }
 
   public async start(): Promise<void> {

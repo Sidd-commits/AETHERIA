@@ -104,6 +104,26 @@ export class SceneManager {
     this.renderer.render(this.scene, this.camera);
   }
 
+  /**
+   * Render an immediate frame and export the WebGL canvas as a crisp PNG download
+   */
+  public captureScreenshot(filename?: string): boolean {
+    try {
+      this.renderer.render(this.scene, this.camera);
+      const dataUrl = this.renderer.domElement.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download =
+        filename || `aetheria-cosmos-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   public dispose(): void {
     window.removeEventListener('resize', this.onWindowResize);
     this.renderer.dispose();
