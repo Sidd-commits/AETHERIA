@@ -127,13 +127,6 @@ export class SpeechRecognitionEngine {
     };
   }
 
-  /**
-   * Legacy helper (merges callbacks)
-   */
-  public setCallbacks(callbacks: SpeechRecognitionCallbacks): void {
-    this.listeners.add(callbacks);
-  }
-
   public isVoiceSupported(): boolean {
     return this.isSupported;
   }
@@ -144,11 +137,6 @@ export class SpeechRecognitionEngine {
 
   public getIsListening(): boolean {
     return this.isListening;
-  }
-
-  public addListener(listener: SpeechRecognitionCallbacks): () => void {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
   }
 
   private notifyAll(fn: (l: SpeechRecognitionCallbacks) => void): void {

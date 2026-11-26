@@ -5,6 +5,7 @@ import { LogLevel, Logger } from '../utils/logger';
  * Environment Variables Schema Definition
  */
 export const EnvSchema = z.object({
+  VITE_API_URL: z.string().url().optional().default('http://localhost:5000'),
   VITE_OPENAI_API_KEY: z.string().optional().default(''),
   VITE_APP_ENV: z.enum(['development', 'production', 'test']).default('development'),
   VITE_LOG_LEVEL: z.enum(['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE']).default('INFO'),
@@ -28,6 +29,7 @@ export type AppEnvironment = z.infer<typeof EnvSchema>;
  */
 function loadEnvironment(): AppEnvironment {
   const rawEnv = {
+    VITE_API_URL: import.meta.env?.VITE_API_URL,
     VITE_OPENAI_API_KEY: import.meta.env?.VITE_OPENAI_API_KEY,
     VITE_APP_ENV: import.meta.env?.VITE_APP_ENV || import.meta.env?.MODE,
     VITE_LOG_LEVEL: import.meta.env?.VITE_LOG_LEVEL,

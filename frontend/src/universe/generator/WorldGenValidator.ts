@@ -188,7 +188,13 @@ export class WorldGenValidator {
       return 'peaceful';
     if (t.includes('chao') || t.includes('turbul') || t.includes('viol') || t.includes('wild'))
       return 'chaotic';
-    if (t.includes('harm') || t.includes('balan') || t.includes('zen')) return 'harmonic';
+    if (
+      t.includes('harm') ||
+      t.includes('balan') ||
+      t.includes('zen') ||
+      t.includes('equilib')
+    )
+      return 'harmonic';
     if (t.includes('neb') || t.includes('gas') || t.includes('dust') || t.includes('cloud'))
       return 'nebular';
     if (t.includes('void') || t.includes('dark') || t.includes('abyss') || t.includes('empty'))
@@ -209,6 +215,7 @@ export class WorldGenValidator {
     if (
       p.includes('green') ||
       p.includes('emerald') ||
+      p.includes('aurora') ||
       p.includes('lime') ||
       p.includes('nature') ||
       p.includes('bio')
@@ -218,6 +225,7 @@ export class WorldGenValidator {
       p.includes('purple') ||
       p.includes('violet') ||
       p.includes('ultraviolet') ||
+      p.includes('void') ||
       p.includes('indigo')
     )
       return 'purple';
@@ -232,9 +240,11 @@ export class WorldGenValidator {
     if (
       p.includes('yellow') ||
       p.includes('solar') ||
+      p.includes('fire') ||
       p.includes('gold') ||
       p.includes('amber') ||
-      p.includes('orange')
+      p.includes('orange') ||
+      p.includes('cyber')
     )
       return 'amber';
     if (
@@ -251,6 +261,7 @@ export class WorldGenValidator {
     switch (colorPalette.toLowerCase()) {
       case 'purple':
       case 'violet':
+      case 'void':
         return 0; // Void Ultraviolet
       case 'blue':
       case 'cyan':
@@ -260,9 +271,12 @@ export class WorldGenValidator {
         return 2; // Sunset Magenta
       case 'green':
       case 'emerald':
+      case 'aurora':
         return 3; // Hyper Emerald
       case 'amber':
       case 'solar':
+      case 'fire':
+      case 'cyber':
       case 'yellow':
         return 4; // Solar Flare
       case 'spectrum':

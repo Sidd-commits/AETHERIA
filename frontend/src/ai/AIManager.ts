@@ -51,7 +51,7 @@ export class AIManager {
   }
 
   private setupSpeechCallbacks(): void {
-    this.speechEngine.setCallbacks({
+    this.speechEngine.addCallbacks({
       onStart: () => {
         this.setState('LISTENING');
       },

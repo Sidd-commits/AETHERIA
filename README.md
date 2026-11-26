@@ -6,14 +6,14 @@
 
 [![CI Pipeline](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml/badge.svg)](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.3%20Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vitest Tests](https://img.shields.io/badge/Tests-68%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vitest Tests](https://img.shields.io/badge/Tests-92%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
 [![Code Quality](https://img.shields.io/badge/ESLint%209-Passing-4B32C3?logo=eslint)](https://eslint.org/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **AETHERIA** is a real-time, deterministic procedural 3D universe simulation and computer vision interaction engine. Built as a full-stack monorepo featuring a decoupled pure-math simulation kernel, scale-invariant hand gesture recognition via MediaPipe, an emergent living particle ecosystem, black hole accretion physics, and natural-language procedural world generation.
 
-[System Architecture](#5-system-architecture) • [Performance Benchmarks](#10-performance-benchmarks) • [Physics Model](#8-physics-engine) • [Monorepo Structure](#15-project-structure) • [Contributing Guide](CONTRIBUTING.md)
+[System Architecture](#5-system-architecture) • [Performance Benchmarks](#10-performance-benchmarks) • [Physics Model](#8-physics-engine--mathematical-formulation) • [Monorepo Structure](#15-project-structure) • [License](LICENSE)
 
 </div>
 
@@ -294,8 +294,6 @@ Conducted on a mid-range consumer laptop (Intel Core i7-11800H / Ryzen 7 5800H, 
 | **1,000 Neighbor Queries (10k particles)** | 28.6 ms                     | **4.47 ms ($4.47\ \mu\text{s}$/query)** | **~6,400× Faster**  |
 | **GPU Buffer Upload (45,000 floats)**      | 3.80 ms (Loop copy)         | **0.12 ms (`TypedArray.set`)**          | **31× Faster**      |
 | **Per-Frame Heap Allocation**              | ~180 KB / frame (GC pauses) | **0.00 KB (Zero Allocation)**           | **Zero GC Stutter** |
-
-_For complete profiling methodology and memory allocation graphs, see [docs/performance.md](docs/performance.md)._
 
 ---
 
