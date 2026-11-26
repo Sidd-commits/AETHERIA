@@ -51,7 +51,7 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
     'Permissions-Policy',
     'camera=(self), microphone=(self), geolocation=(), interest-cohort=()'
   );
-  if (env.NODE_ENV === 'production') {
+  if ((process.env.NODE_ENV || env.NODE_ENV) === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
   next();

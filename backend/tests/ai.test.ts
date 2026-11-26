@@ -117,5 +117,21 @@ describe('Backend AI Command & Query Endpoints', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.answer).toContain('AETHER Guardian Advisor');
     expect(res.body.answer).toContain('60 FPS');
+    expect(res.body.answer).toContain('12000 active celestial particles');
+  });
+
+  it('preserves zero particleCount or fps telemetry values instead of masking with defaults', async () => {
+    const res = await request(app)
+      .post('/api/ai/query')
+      .send({
+        query: 'Check diagnostics',
+        telemetry: { fps: 0, particleCount: 0, stabilityScore: 35, blackHoles: 1 }
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.answer).toContain('0 FPS');
+    expect(res.body.answer).toContain('0 active celestial particles');
+    expect(res.body.answer).toContain('Stability Index: 35%');
+    expect(res.body.answer).toContain('elevated tidal shear');
   });
 });

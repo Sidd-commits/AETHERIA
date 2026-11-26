@@ -55,10 +55,25 @@ aiRouter.post('/query', async (req: Request, res: Response, next: NextFunction) 
 
     const { query, telemetry } = parseResult.data;
     const sanitizedQuery = query.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 200);
-    const particleCount = Number(telemetry?.particleCount) || 15000;
-    const fps = Number(telemetry?.fps) || 60;
+    const rawParticles =
+      telemetry?.particleCount != null ? Number(telemetry.particleCount) : NaN;
+    const rawFps = telemetry?.fps != null ? Number(telemetry.fps) : NaN;
+    const particleCount = Number.isFinite(rawParticles) ? rawParticles : 10000;
+    const fps = Number.isFinite(rawFps) ? rawFps : 60;
 
-    const answer = `[AETHER Guardian Advisor] Simulation running smoothly at ${fps} FPS across ${particleCount} active celestial particles. Query evaluated: "${sanitizedQuery}". Gravitational tensors remain within equilibrium.`;
+    const diagnostics: string[] = [];
+    if (Number.isFinite(Number(telemetry?.stabilityScore))) {
+      diagnostics.push(`Stability Index: ${Number(telemetry?.stabilityScore)}%`);
+    }
+    if (Number.isFinite(Number(telemetry?.gravityConstant))) {
+      diagnostics.push(`Gravity Constant: ${Number(telemetry?.gravityConstant).toFixed(2)} G`);
+    }
+    if (Number.isFinite(Number(telemetry?.blackHoles)) && Number(telemetry?.blackHoles) > 0) {
+      diagnostics.push(`Active Singularities: ${Number(telemetry?.blackHoles)}`);
+    }
+
+    const diagSummary = diagnostics.length > 0 ? ` (${diagnostics.join(', ')})` : '';
+    const answer = `[AETHER Guardian Advisor] Simulation running at ${fps} FPS across ${particleCount} active celestial particles${diagSummary}. Query evaluated: "${sanitizedQuery}". Gravitational tensors ${Number(telemetry?.stabilityScore) < 50 ? 'show elevated tidal shear' : 'remain within equilibrium'}.`;
 
     res.json({
       success: true,
