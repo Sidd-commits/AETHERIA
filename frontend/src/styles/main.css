@@ -529,6 +529,7 @@ body {
   }
   .population-monitor-panel {
     top: 70px !important;
+    bottom: auto !important;
     right: 12px !important;
     width: 250px !important;
     padding: 12px !important;

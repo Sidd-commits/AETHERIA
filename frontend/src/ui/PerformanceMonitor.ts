@@ -399,10 +399,10 @@ export class PerformanceMonitor {
       });
     });
 
-    // Keyboard shortcut 'P'
+    // Escape closes Performance HUD when visible ('P' toggle centralized in InputManager)
     window.addEventListener('keydown', (e) => {
-      if ((e.key === 'p' || e.key === 'P') && !this.isTypingInInput(e)) {
-        this.toggle();
+      if (e.key === 'Escape' && this.isVisible && !this.isTypingInInput(e)) {
+        this.hide();
       }
     });
   }
@@ -506,11 +506,13 @@ export class PerformanceMonitor {
   public show(): void {
     this.isVisible = true;
     this.container.style.display = 'block';
+    document.getElementById('btn-toggle-perf')?.classList.add('active-glow');
   }
 
   public hide(): void {
     this.isVisible = false;
     this.container.style.display = 'none';
+    document.getElementById('btn-toggle-perf')?.classList.remove('active-glow');
   }
 
   public toggle(): boolean {

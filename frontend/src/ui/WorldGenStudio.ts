@@ -857,24 +857,12 @@ export class WorldGenStudio {
       this.manifestUniverse();
     });
 
-    // Keyboard Shortcuts
+    // Keyboard Shortcuts (Escape to close; 'W' toggle centralized via InputManager -> TOGGLE_WORLD_GEN)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.isVisible) {
         this.hide();
-      } else if ((e.key === 'w' || e.key === 'W') && !this.isTypingInInput(e)) {
-        this.toggle();
       }
     });
-
-    // Listen to command bus for toggle
-    this.commandBus.on('TOGGLE_WORLD_GEN', () => {
-      this.toggle();
-    });
-  }
-
-  private isTypingInInput(e: KeyboardEvent): boolean {
-    const target = e.target as HTMLElement | null;
-    return !!(target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'));
   }
 
   private updateCharCount(): void {
@@ -1036,11 +1024,13 @@ export class WorldGenStudio {
   public show(): void {
     this.isVisible = true;
     this.container.style.display = 'flex';
+    document.getElementById('btn-toggle-worldgen')?.classList.add('active-glow');
   }
 
   public hide(): void {
     this.isVisible = false;
     this.container.style.display = 'none';
+    document.getElementById('btn-toggle-worldgen')?.classList.remove('active-glow');
   }
 
   public toggle(): boolean {

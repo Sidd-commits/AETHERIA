@@ -45,7 +45,6 @@ export class UIManager {
   private videoElement: HTMLVideoElement | null = null;
   private toggleCamBtn: HTMLButtonElement | null = null;
   private themeCycleBtn: HTMLButtonElement | null = null;
-  private explodeDemoBtn: HTMLButtonElement | null = null;
   private toggleDebugBtn: HTMLButtonElement | null = null;
   private toggleEcoBtn: HTMLButtonElement | null = null;
   private toggleVoiceBtn: HTMLButtonElement | null = null;
@@ -82,7 +81,6 @@ export class UIManager {
     this.videoElement = getOptionalElement<HTMLVideoElement>('webcam-video');
     this.toggleCamBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-cam');
     this.themeCycleBtn = getOptionalElement<HTMLButtonElement>('btn-theme-cycle');
-    this.explodeDemoBtn = getOptionalElement<HTMLButtonElement>('btn-explode-demo');
     this.toggleDebugBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-debug');
     this.toggleEcoBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-eco');
     this.toggleVoiceBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-voice');
@@ -104,124 +102,37 @@ export class UIManager {
       this.commandBus.dispatch('CYCLE_PALETTE', undefined, 'UI');
     });
 
-    if (this.explodeDemoBtn) {
-      this.explodeDemoBtn.addEventListener('click', () => {
-        this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.0 }, 'UI');
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: '💥 Supernova Explosion Triggered!',
-            icon: '💥'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleDebugBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_DEBUG', undefined, 'UI');
+    });
 
-    if (this.toggleDebugBtn) {
-      this.toggleDebugBtn.addEventListener('click', () => {
-        const isDebug = this.debugOverlay.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isDebug ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
-            icon: '🛠️'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleEcoBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_POPULATION_MONITOR', undefined, 'UI');
+    });
 
-    if (this.toggleEcoBtn) {
-      this.toggleEcoBtn.addEventListener('click', () => {
-        const isVisible = this.populationMonitor.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible
-              ? '🌿 Population Monitor Open (Press E)'
-              : '🌿 Population Monitor Hidden',
-            icon: '🌿'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleVoiceBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_VOICE_AI', undefined, 'UI');
+    });
 
-    if (this.toggleVoiceBtn) {
-      this.toggleVoiceBtn.addEventListener('click', () => {
-        const isVisible = this.voiceAIHUD.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible ? '🎙️ Voice AI HUD Open (Press V)' : '🎙️ Voice AI HUD Hidden',
-            icon: '🎙️'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleAetherBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_AETHER_OBSERVATORY', undefined, 'UI');
+    });
 
-    if (this.toggleAetherBtn) {
-      this.toggleAetherBtn.addEventListener('click', () => {
-        const isVisible = this.observationPanel.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible
-              ? '👁️ AETHER Observatory Open (Press A)'
-              : '👁️ AETHER Observatory Hidden',
-            icon: '👁️'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleWorldGenBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_WORLD_GEN', undefined, 'UI');
+    });
 
-    if (this.toggleWorldGenBtn) {
-      this.toggleWorldGenBtn.addEventListener('click', () => {
-        const isVisible = this.worldGenStudio.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible
-              ? '🌌 World Gen Studio Open (Press W)'
-              : '🌌 World Gen Studio Hidden',
-            icon: '🌌'
-          },
-          'UI'
-        );
-      });
-    }
+    this.togglePerfBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_PERF', undefined, 'UI');
+    });
 
-    if (this.togglePerfBtn) {
-      this.togglePerfBtn.addEventListener('click', () => {
-        const isVisible = this.perfMonitor.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible
-              ? '⚡ Performance HUD Active (Press P)'
-              : '⚡ Performance HUD Hidden',
-            icon: '⚡'
-          },
-          'UI'
-        );
-      });
-    }
+    this.toggleInspectorBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_INSPECTOR', undefined, 'UI');
+    });
 
-    if (this.toggleInspectorBtn) {
-      this.toggleInspectorBtn.addEventListener('click', () => {
-        const isVisible = this.celestialInspector.toggle();
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: isVisible ? '🌌 Celestial Inspector Active (Key I)' : '🌑 Celestial Inspector Hidden',
-            icon: '🌌'
-          },
-          'UI'
-        );
-      });
+    // Reflect initial Ecosystem Monitor visibility on header nav button
+    if (this.toggleEcoBtn && this.populationMonitor.getIsVisible()) {
+      this.toggleEcoBtn.classList.add('active-glow');
     }
   }
 

@@ -228,4 +228,38 @@ describe('ChronoWarpEngine Unit Tests', () => {
     const offset = chrono.step(NaN, particleBuffer, entities);
     expect(Number.isFinite(offset)).toBe(true);
   });
+
+  it('hides entities spawned after a historical frame when scrubbing backward and restores them forward', () => {
+    // Tick 1: only 2 entities
+    chrono.recordTick(1, 0.1, particleBuffer, entities);
+
+    // Tick 2: spawn a 3rd entity (black hole)
+    const lateEntity: UniverseEntity = {
+      id: 'bh-late',
+      name: 'Late Singularity',
+      type: 'BLACK_HOLE',
+      position: { x: 2, y: 0, z: 2 },
+      velocity: { x: 0, y: 0, z: 0 },
+      acceleration: { x: 0, y: 0, z: 0 },
+      mass: 150,
+      radius: 1.0,
+      energy: 500,
+      lifetime: Infinity,
+      age: 0,
+      isDead: false,
+      color: '#000000'
+    };
+    entities.push(lateEntity);
+    chrono.recordTick(2, 0.2, particleBuffer, entities);
+    // Tick 3: record again so frame 2 isn't the terminal live slot
+    chrono.recordTick(3, 0.3, particleBuffer, entities);
+
+    // Scrub to oldest frame (Tick 1, before bh-late existed)
+    chrono.scrubToNormalized(0.0, particleBuffer, entities);
+    expect(entities.find((e) => e.id === 'bh-late')?.isDead).toBe(true);
+
+    // Step forward to Tick 2 (after bh-late spawned)
+    chrono.step(1, particleBuffer, entities);
+    expect(entities.find((e) => e.id === 'bh-late')?.isDead).toBe(false);
+  });
 });

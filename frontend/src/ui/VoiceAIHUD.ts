@@ -54,6 +54,9 @@ export class VoiceAIHUD {
       font-family: 'Outfit', sans-serif;
       color: #f0f4fc;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      transform: translateX(-380px);
+      opacity: 0;
+      pointer-events: none;
       user-select: none;
       display: flex;
       flex-direction: column;
@@ -318,9 +321,7 @@ export class VoiceAIHUD {
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (e.key === 'v' || e.key === 'V') {
-        this.toggle();
-      } else if (e.key === 'Escape' && this.isVisible) {
+      if (e.key === 'Escape' && this.isVisible) {
         this.toggle();
       }
     });
@@ -328,6 +329,7 @@ export class VoiceAIHUD {
 
   public toggle(): boolean {
     this.isVisible = !this.isVisible;
+    document.getElementById('btn-toggle-voice')?.classList.toggle('active-glow', this.isVisible);
     if (this.isVisible) {
       this.container.style.transform = 'translateX(0)';
       this.container.style.opacity = '1';

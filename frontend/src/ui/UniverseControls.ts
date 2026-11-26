@@ -16,7 +16,7 @@ export class UniverseControls {
     this.container = document.createElement('div');
     this.container.id = 'universe-controls-bar';
     this.createUI();
-    this.bindKeyboardShortcuts();
+    this.bindBusSync();
   }
 
   private createUI(): void {
@@ -233,44 +233,44 @@ export class UniverseControls {
     });
   }
 
-  private bindKeyboardShortcuts(): void {
-    window.addEventListener('keydown', (e) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  private bindBusSync(): void {
+    this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
+      this.isPaused = cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.isPaused;
+      const icon = document.getElementById('uni-pause-icon');
+      const text = document.getElementById('uni-pause-text');
+      if (icon && text) {
+        icon.innerText = this.isPaused ? '▶️' : '⏸️';
+        text.innerText = this.isPaused ? 'Resume' : 'Pause';
+      }
+    });
 
-      if (e.key === ' ') {
-        this.togglePause();
-      } else if (e.key === 'r' || e.key === 'R') {
-        this.reset();
-      } else if (e.key === 'x' || e.key === 'X') {
-        this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.2 }, 'UI');
-        this.commandBus.dispatch(
-          'SHOW_TOAST',
-          {
-            message: '💥 Catastrophic Supernova Detonated!',
-            icon: '💥'
-          },
-          'UI'
-        );
+    this.commandBus.on('SET_TIME_SCALE', (cmd) => {
+      const scale = cmd.payload.scale;
+      const speedBtns = this.container.querySelectorAll('.speed-btn');
+      speedBtns.forEach((btn) => {
+        const val = parseFloat((btn as HTMLElement).dataset.speed || '1.0');
+        btn.classList.toggle('active-speed', Math.abs(val - scale) < 0.01);
+      });
+    });
+
+    this.commandBus.on('SET_UNIVERSE_PRESET', (cmd) => {
+      this.currentPreset = cmd.payload.preset;
+      const presetSelect = document.getElementById('select-uni-preset') as HTMLSelectElement | null;
+      if (presetSelect) {
+        presetSelect.value = cmd.payload.preset;
       }
     });
   }
 
   public togglePause(): void {
-    this.isPaused = !this.isPaused;
-    this.commandBus.dispatch('TOGGLE_PAUSE', { paused: this.isPaused }, 'UI');
-
-    const icon = document.getElementById('uni-pause-icon');
-    const text = document.getElementById('uni-pause-text');
-    if (icon && text) {
-      icon.innerText = this.isPaused ? '▶️' : '⏸️';
-      text.innerText = this.isPaused ? 'Resume' : 'Pause';
-    }
+    const nextPaused = !this.isPaused;
+    this.commandBus.dispatch('TOGGLE_PAUSE', { paused: nextPaused }, 'UI');
 
     this.commandBus.dispatch(
       'SHOW_TOAST',
       {
-        message: this.isPaused ? '⏸️ Simulation Paused' : '▶️ Simulation Resumed',
-        icon: this.isPaused ? '⏸️' : '▶️'
+        message: nextPaused ? '⏸️ Simulation Paused' : '▶️ Simulation Resumed',
+        icon: nextPaused ? '⏸️' : '▶️'
       },
       'UI'
     );

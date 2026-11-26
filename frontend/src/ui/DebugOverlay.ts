@@ -112,9 +112,7 @@ export class DebugOverlay {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
 
-      if (e.key === 'd' || e.key === 'D') {
-        this.toggle();
-      } else if (e.key === 'Escape' && this.isVisible) {
+      if (e.key === 'Escape' && this.isVisible) {
         this.toggle();
       }
     });
@@ -301,7 +299,7 @@ export class DebugOverlay {
       <!-- Event Horizon Radius Slider -->
       <div style="margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
-          <span style="color: #8a99ad;">Horizon Radius ($r_s$):</span>
+          <span style="color: #8a99ad;">Horizon Radius (rₛ):</span>
           <span id="bh-val-horizon" style="color: #ff0844; font-weight: 600;">${this.bhEventHorizonRadius}</span>
         </div>
         <input id="bh-input-horizon" type="range" min="0.4" max="3.0" step="0.1" value="${this.bhEventHorizonRadius}" style="width: 100%; accent-color: #ff0844; cursor: pointer;" />

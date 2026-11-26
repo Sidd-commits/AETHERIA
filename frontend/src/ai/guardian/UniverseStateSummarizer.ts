@@ -233,7 +233,7 @@ export class UniverseStateSummarizer {
       anomalies.push({
         id: 'anom_high_kinetic',
         title: 'High Velocity Dispersion',
-        description: `Cosmic particles exhibit high turbulent dispersion ($\\\\sigma_v = ${velocityDispersion.toFixed(2)}$), indicating orbital chaos.`,
+        description: `Cosmic particles exhibit high turbulent dispersion (σᵥ = ${velocityDispersion.toFixed(2)}), indicating orbital chaos.`,
         severity: 'WARNING',
         timestamp: Date.now()
       });

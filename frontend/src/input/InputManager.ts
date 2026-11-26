@@ -93,6 +93,7 @@ export class InputManager {
       target &&
       (target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
         target.isContentEditable)
     );
   }
@@ -149,7 +150,10 @@ export class InputManager {
       this.commandBus.dispatch('TOGGLE_PERF', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'h' || e.key === 'H') {
       this.commandBus.dispatch('CHRONO_TOGGLE_HUD', undefined, 'MOUSE_KEYBOARD');
-    } else if (e.key === 'k' || e.key === 'K') {
+    } else if (e.key === 'k' || e.key === 'K' || e.key === ' ') {
+      if (e.key === ' ') {
+        e.preventDefault();
+      }
       this.commandBus.dispatch('TOGGLE_PAUSE', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'r' || e.key === 'R') {
       this.commandBus.dispatch('RESET_UNIVERSE', undefined, 'MOUSE_KEYBOARD');
@@ -158,6 +162,16 @@ export class InputManager {
         {
           message: '🔄 Universe Reset to Initial Equilibrium',
           icon: '🔄'
+        },
+        'MOUSE_KEYBOARD'
+      );
+    } else if (e.key === 'x' || e.key === 'X') {
+      this.commandBus.dispatch('TRIGGER_SUPERNOVA', { power: 1.2 }, 'MOUSE_KEYBOARD');
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: '💥 Catastrophic Supernova Detonated!',
+          icon: '💥'
         },
         'MOUSE_KEYBOARD'
       );
@@ -177,16 +191,6 @@ export class InputManager {
       this.commandBus.dispatch('CHRONO_RESUME_LIVE', undefined, 'MOUSE_KEYBOARD');
     } else if (e.key === 'j' || e.key === 'J') {
       this.commandBus.dispatch('CHRONO_REPLAY_LAST_EVENT', undefined, 'MOUSE_KEYBOARD');
-    } else if (e.key === ' ') {
-      this.commandBus.dispatch('TRIGGER_EXPLOSION', { power: 1.0 }, 'MOUSE_KEYBOARD');
-      this.commandBus.dispatch(
-        'SHOW_TOAST',
-        {
-          message: '💥 Supernova Triggered!',
-          icon: '💥'
-        },
-        'MOUSE_KEYBOARD'
-      );
     }
   };
 

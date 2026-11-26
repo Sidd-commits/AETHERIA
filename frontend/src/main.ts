@@ -178,7 +178,16 @@ export class AetheriaApp {
     });
 
     this.commandBus.on('TOGGLE_POPULATION_MONITOR', () => {
-      this.uiManager.getPopulationMonitor().toggle();
+      const visible = this.uiManager.getPopulationMonitor().toggle();
+      document.getElementById('btn-toggle-eco')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '🌿 Population Monitor Open (Press E)' : '🌿 Population Monitor Hidden',
+          icon: '🌿'
+        },
+        'UI'
+      );
     });
 
     // Voice AI Driven Simulation Commands
@@ -199,27 +208,80 @@ export class AetheriaApp {
     });
 
     this.commandBus.on('TOGGLE_VOICE_AI', () => {
-      this.uiManager.getVoiceAIHUD().toggle();
+      const visible = this.uiManager.getVoiceAIHUD().toggle();
+      document.getElementById('btn-toggle-voice')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '🎙️ Voice AI HUD Open (Press V)' : '🎙️ Voice AI HUD Hidden',
+          icon: '🎙️'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('TOGGLE_WORLD_GEN', () => {
-      this.uiManager.getWorldGenStudio().toggle();
+      const visible = this.uiManager.getWorldGenStudio().toggle();
+      document.getElementById('btn-toggle-worldgen')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '🌌 World Gen Studio Open (Press W)' : '🌌 World Gen Studio Hidden',
+          icon: '🌌'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('TOGGLE_INSPECTOR', () => {
-      this.uiManager.getCelestialInspector().toggle();
+      const visible = this.uiManager.getCelestialInspector().toggle();
+      document.getElementById('btn-toggle-inspector')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '🪐 Celestial Inspector Active (Key I)' : '🌑 Celestial Inspector Hidden',
+          icon: '🪐'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('TOGGLE_AETHER_OBSERVATORY', () => {
-      this.uiManager.getAIObservationPanel().toggle();
+      const visible = this.uiManager.getAIObservationPanel().toggle();
+      document.getElementById('btn-toggle-aether')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '👁️ AETHER Observatory Open (Press A)' : '👁️ AETHER Observatory Hidden',
+          icon: '👁️'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('TOGGLE_DEBUG', () => {
-      this.uiManager.getDebugOverlay().toggle();
+      const visible = this.uiManager.getDebugOverlay().toggle();
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '🛠️ Debug Mode Active (Press D)' : '🌑 Debug Mode Hidden',
+          icon: '🛠️'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('TOGGLE_PERF', () => {
-      this.uiManager.getPerformanceMonitor().toggle();
+      const visible = this.uiManager.getPerformanceMonitor().toggle();
+      document.getElementById('btn-toggle-perf')?.classList.toggle('active-glow', visible);
+      this.commandBus.dispatch(
+        'SHOW_TOAST',
+        {
+          message: visible ? '⚡ Performance HUD Active (Press P)' : '⚡ Performance HUD Hidden',
+          icon: '⚡'
+        },
+        'UI'
+      );
     });
 
     this.commandBus.on('GENERATE_PROCEDURAL_UNIVERSE', (cmd) => {

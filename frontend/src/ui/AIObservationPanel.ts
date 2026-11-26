@@ -321,9 +321,7 @@ export class AIObservationPanel {
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (e.key === 'a' || e.key === 'A') {
-        this.toggle();
-      } else if (e.key === 'Escape' && this.isVisible) {
+      if (e.key === 'Escape' && this.isVisible) {
         this.toggle();
       }
     });
@@ -331,6 +329,7 @@ export class AIObservationPanel {
 
   public toggle(): boolean {
     this.isVisible = !this.isVisible;
+    document.getElementById('btn-toggle-aether')?.classList.toggle('active-glow', this.isVisible);
     if (this.isVisible) {
       this.container.style.transform = 'translateX(-50%) translateY(0)';
       this.container.style.opacity = '1';
@@ -384,11 +383,14 @@ export class AIObservationPanel {
         `;
       }
 
+      const formatRichText = (text: string): string =>
+        escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color:#00f2fe;">$1</strong>');
+
       this.chatHistoryEl.innerHTML = `
         <div style="color: #00f2fe; font-weight: 600; margin-bottom: 6px;">Q: "${safeQ}"</div>
-        <div style="color: #ffffff; white-space: pre-line; margin-bottom: 6px;">${escapeHtml(response.answer)}</div>
+        <div style="color: #ffffff; white-space: pre-line; margin-bottom: 6px;">${formatRichText(response.answer)}</div>
         <div style="font-size: 10px; color: #8a99ad; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
-          <b>Reasoning:</b> ${escapeHtml(response.reasoning)}
+          <b>Reasoning:</b> ${formatRichText(response.reasoning)}
         </div>
         ${actionHtml}
       `;

@@ -274,16 +274,19 @@ export class PopulationMonitor {
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (e.key === 'e' || e.key === 'E') {
-        this.toggle();
-      } else if (e.key === 'Escape' && this.isVisible) {
+      if (e.key === 'Escape' && this.isVisible) {
         this.toggle();
       }
     });
   }
 
+  public getIsVisible(): boolean {
+    return this.isVisible;
+  }
+
   public toggle(): boolean {
     this.isVisible = !this.isVisible;
+    document.getElementById('btn-toggle-eco')?.classList.toggle('active-glow', this.isVisible);
     if (this.isVisible) {
       this.container.style.transform = 'translateX(0)';
       this.container.style.opacity = '1';

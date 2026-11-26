@@ -137,17 +137,17 @@ export class AetherGuardian {
 
       if (gravityConstant > 1.8) {
         issues.push(
-          `**Excessive Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Strong central attraction is overpowering orbital centripetal velocities, pulling bodies inward.`
+          `**Excessive Gravitational Constant (G = ${gravityConstant.toFixed(2)})**: Strong central attraction is overpowering orbital centripetal velocities, pulling bodies inward.`
         );
       } else if (gravityConstant < 0.4) {
         issues.push(
-          `**Weak Gravitational Constant ($G = ${gravityConstant.toFixed(2)}$)**: Low gravitational attraction is causing celestial particles to drift apart into deep space.`
+          `**Weak Gravitational Constant (G = ${gravityConstant.toFixed(2)})**: Low gravitational attraction is causing celestial particles to drift apart into deep space.`
         );
       }
 
       if (telemetry.stabilityFactors.velocityDispersion > 2.5) {
         issues.push(
-          `**High Velocity Dispersion ($\\\\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$)**: Particle kinetic turbulence is high, causing frequent collisions and orbital scattering.`
+          `**High Velocity Dispersion (σᵥ = ${telemetry.stabilityFactors.velocityDispersion})**: Particle kinetic turbulence is high, causing frequent collisions and orbital scattering.`
         );
       }
 
@@ -161,7 +161,7 @@ export class AetherGuardian {
         return {
           question: q,
           answer: `The universe is currently operating in a **Stable Equilibrium** with a Stability Score of **${stabilityScore}%** (${stabilityStatus}).`,
-          reasoning: `Gravitational forces and orbital velocities are in centripetal balance, and velocity dispersion is nominal ($\\\\sigma_v = ${telemetry.stabilityFactors.velocityDispersion}$).`,
+          reasoning: `Gravitational forces and orbital velocities are in centripetal balance, and velocity dispersion is nominal (σᵥ = ${telemetry.stabilityFactors.velocityDispersion}).`,
           metrics: { stabilityScore, stabilityStatus, gravityConstant }
         };
       }
@@ -171,7 +171,7 @@ export class AetherGuardian {
         answer:
           `The current **Stability Score is ${stabilityScore}% (${stabilityStatus})**. Key drivers of instability include:\n\n` +
           issues.map((iss, i) => `${i + 1}. ${iss}`).join('\n\n'),
-        reasoning: `Instability occurs when gravitational force ($F_g = G \\frac{M m}{r^2}$) exceeds centripetal equilibrium ($F_c = \\frac{m v^2}{r}$) or when singularities generate relativistic tidal shear.`,
+        reasoning: `Instability occurs when gravitational force (F_g = G·M·m / r²) exceeds centripetal equilibrium (F_c = m·v² / r) or when singularities generate relativistic tidal shear.`,
         metrics: {
           stabilityScore,
           stabilityStatus,
@@ -247,9 +247,9 @@ export class AetherGuardian {
         question: q,
         answer:
           `Particles are collapsing inward due to **${bh ? 'Singularity Accretion and ' : ''}Gravitational Attraction Coupled with Velocity Damping**.\n\n` +
-          `1. **Gravitational Pull**: Massive celestial bodies (e.g. central stars or singularities) exert an attractive force $F = G \\frac{M m}{r^2}$ pulling matter toward the barycenter.\n` +
-          `2. **Kinetic Damping**: Collision damping ($k_{damp} = 0.985$) gradually saps radial kinetic energy, causing particles to decay from unstable trajectories into central accretion wells.\n` +
-          `3. **Tidal Capture**: ${bh ? 'Black holes possess an event horizon where gravitational acceleration exceeds particle escape velocity, resulting in total absorption.' : 'Without sufficient tangential speed ($v = \\sqrt{G M / r}$), particles cannot sustain perpetual orbit.'}`,
+          `1. **Gravitational Pull**: Massive celestial bodies (e.g. central stars or singularities) exert an attractive force F = G·M·m / r² pulling matter toward the barycenter.\n` +
+          `2. **Kinetic Damping**: Collision damping (k_damp = 0.985) gradually saps radial kinetic energy, causing particles to decay from unstable trajectories into central accretion wells.\n` +
+          `3. **Tidal Capture**: ${bh ? 'Black holes possess an event horizon where gravitational acceleration exceeds particle escape velocity, resulting in total absorption.' : 'Without sufficient tangential speed (v = √(G·M / r)), particles cannot sustain perpetual orbit.'}`,
         reasoning: `Orbital mechanics dictate that any loss of tangential momentum in a gravitational potential well results in orbital decay toward the center of mass.`,
         metrics: {
           gravityConstant,
@@ -275,11 +275,11 @@ export class AetherGuardian {
         question: q,
         answer:
           `If you increase the gravitational constant from **G = ${gravityConstant.toFixed(2)}** to **G = ${newG}**, the following physical transformations will occur:\n\n` +
-          `1. **Orbital Contraction**: Planetary orbits will compress inward because the required orbital radius for balance scales inversely with gravity ($r \\propto \\frac{1}{G}$).\n` +
-          `2. **Accelerated Particle Collapse**: Cosmic dust and debris will be drawn toward central attractors at $1.5\\times$ higher acceleration.\n` +
-          `3. **Orbital Velocity Spikes**: Orbiting planets will need to speed up ($v_{orb} = \\sqrt{G M / r}$) to avoid falling into stars or black holes.\n` +
+          `1. **Orbital Contraction**: Planetary orbits will compress inward because the required orbital radius for balance scales inversely with gravity (r ∝ 1/G).\n` +
+          `2. **Accelerated Particle Collapse**: Cosmic dust and debris will be drawn toward central attractors at 1.5× higher acceleration.\n` +
+          `3. **Orbital Velocity Spikes**: Orbiting planets will need to speed up (v_orb = √(G·M / r)) to avoid falling into stars or black holes.\n` +
           `4. **Increased Singularity Accretion**: Black holes will pull in particles from a much wider gravitational radius.`,
-        reasoning: `Gravitational force is directly proportional to $G$. Amplifying $G$ shifts the equilibrium of the entire cosmic manifold toward gravitational collapse.`,
+        reasoning: `Gravitational force is directly proportional to G. Amplifying G shifts the equilibrium of the entire cosmic manifold toward gravitational collapse.`,
         metrics: {
           currentGravity: gravityConstant,
           projectedGravity: parseFloat(newG),

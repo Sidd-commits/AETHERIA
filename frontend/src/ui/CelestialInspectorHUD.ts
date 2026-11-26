@@ -135,9 +135,7 @@ export class CelestialInspectorHUD {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
 
-      if (e.key === 'i' || e.key === 'I') {
-        this.toggle();
-      } else if (e.key === 'Escape' && this.isVisible) {
+      if (e.key === 'Escape' && this.isVisible) {
         this.toggle(false);
       }
     });
@@ -145,6 +143,7 @@ export class CelestialInspectorHUD {
 
   public toggle(force?: boolean): boolean {
     this.isVisible = force !== undefined ? force : !this.isVisible;
+    document.getElementById('btn-toggle-inspector')?.classList.toggle('active-glow', this.isVisible);
     if (this.isVisible) {
       this.container.style.display = 'block';
       requestAnimationFrame(() => {
