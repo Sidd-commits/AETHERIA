@@ -5,6 +5,7 @@ import { UniverseConfigParser } from '../universe/generator/UniverseConfigParser
 import { WorldGenValidator } from '../universe/generator/WorldGenValidator';
 import { PALETTES } from '../config/palettes';
 import { escapeHtml } from '../utils/dom';
+import { BackendApiClient, BackendPreset } from '../services/BackendApiClient';
 
 /**
  * Natural-Language Procedural World Generation Studio
@@ -16,6 +17,8 @@ export class WorldGenStudio {
   private commandBus: CommandBus;
   private aiManager: AIManager;
   private parser: UniverseConfigParser;
+  private backendClient: BackendApiClient;
+  private backendPresets: BackendPreset[] = [];
 
   // State
   public currentStep: 1 | 2 | 3 = 1;
@@ -37,14 +40,16 @@ export class WorldGenStudio {
     this.aiManager = aiManager;
     this.commandBus = commandBus;
     this.parser = UniverseConfigParser.getInstance();
+    this.backendClient = new BackendApiClient();
 
     this.container = this.createDOM();
     document.body.appendChild(this.container);
 
     this.bindEvents();
 
-    // Initial pre-parsing of default prompt
+    // Initial pre-parsing of default prompt & non-blocking backend preset sync
     this.runSynthesis(this.promptText, false);
+    this.loadBackendPresets();
   }
 
   private createDOM(): HTMLElement {
@@ -110,6 +115,12 @@ export class WorldGenStudio {
             <div class="wg-presets-container">
               <div class="wg-presets-label">✨ Quick Inspiration Templates:</div>
               <div class="wg-preset-chips" id="wg-preset-chips"></div>
+            </div>
+
+            <!-- Live Backend Preset Library (Visible when Backend Online) -->
+            <div class="wg-presets-container" id="wg-backend-presets-wrap" style="display: none;">
+              <div class="wg-presets-label" style="color: #00f5a0;">⚡ Live Server Presets (Backend API):</div>
+              <div class="wg-preset-chips" id="wg-backend-preset-chips"></div>
             </div>
 
             <div class="wg-actions-row">
@@ -862,6 +873,46 @@ export class WorldGenStudio {
       if (e.key === 'Escape' && this.isVisible) {
         this.hide();
       }
+    });
+  }
+
+  private async loadBackendPresets(): Promise<void> {
+    const presets = await this.backendClient.fetchPresets();
+    if (presets.length === 0) return;
+    this.backendPresets = presets;
+
+    const wrap = this.container.querySelector('#wg-backend-presets-wrap') as HTMLElement | null;
+    const chipsEl = this.container.querySelector('#wg-backend-preset-chips') as HTMLElement | null;
+    if (!wrap || !chipsEl) return;
+
+    wrap.style.display = 'block';
+    chipsEl.innerHTML = this.backendPresets
+      .map(
+        (preset) => `
+      <button class="wg-preset-chip wg-backend-chip" data-backend-id="${escapeHtml(preset.id)}">
+        <div class="wg-chip-top">
+          <span class="wg-chip-title">⚡ ${escapeHtml(preset.name)}</span>
+          <span class="wg-chip-tag" style="color:#00f5a0;">${escapeHtml(preset.config.theme)}</span>
+        </div>
+        <div class="wg-chip-prompt">${escapeHtml(preset.description)}</div>
+      </button>
+    `
+      )
+      .join('');
+
+    chipsEl.querySelectorAll('.wg-backend-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const id = chip.getAttribute('data-backend-id');
+        const preset = this.backendPresets.find((p) => p.id === id);
+        if (!preset) return;
+        this.promptInput.value = preset.description;
+        this.promptText = preset.description;
+        this.updateCharCount();
+        const validation = WorldGenValidator.validate(preset.config);
+        this.currentValidation = validation;
+        this.renderConfiguration(validation);
+        this.setStep(2);
+      });
     });
   }
 

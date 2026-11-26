@@ -13,7 +13,9 @@ import { WorldGenStudio } from './WorldGenStudio';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { CelestialInspectorHUD } from './CelestialInspectorHUD';
 import { ChronoScrubberHUD } from './ChronoScrubberHUD';
+import { ShortcutsModal } from './ShortcutsModal';
 import { QualityScaler } from '../core/QualityScaler';
+import { BackendApiClient } from '../services/BackendApiClient';
 import { UniverseEngine } from '../universe/UniverseEngine';
 import { AIManager } from '../ai/AIManager';
 import { UniverseState, UniverseSnapshot } from '../types/universe';
@@ -41,6 +43,8 @@ export class UIManager {
   private perfMonitor: PerformanceMonitor;
   private celestialInspector: CelestialInspectorHUD;
   private chronoHUD: ChronoScrubberHUD;
+  private shortcutsModal: ShortcutsModal;
+  private backendClient: BackendApiClient;
 
   private videoElement: HTMLVideoElement | null = null;
   private toggleCamBtn: HTMLButtonElement | null = null;
@@ -52,6 +56,7 @@ export class UIManager {
   private toggleWorldGenBtn: HTMLButtonElement | null = null;
   private togglePerfBtn: HTMLButtonElement | null = null;
   private toggleInspectorBtn: HTMLButtonElement | null = null;
+  private toggleShortcutsBtn: HTMLButtonElement | null = null;
 
   constructor(
     worldState: WorldState,
@@ -67,6 +72,8 @@ export class UIManager {
     this.perfMonitor = new PerformanceMonitor(this.qualityScaler);
     this.celestialInspector = new CelestialInspectorHUD(this.commandBus);
     this.chronoHUD = new ChronoScrubberHUD(this.commandBus);
+    this.shortcutsModal = new ShortcutsModal();
+    this.backendClient = new BackendApiClient();
 
     this.hudController = new HUDController();
     this.chargeRingController = new ChargeRingController();
@@ -88,9 +95,27 @@ export class UIManager {
     this.toggleWorldGenBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-worldgen');
     this.togglePerfBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-perf');
     this.toggleInspectorBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-inspector');
+    this.toggleShortcutsBtn = getOptionalElement<HTMLButtonElement>('btn-toggle-shortcuts');
 
     this.bindButtons();
     this.bindStateUpdates();
+    this.checkBackendStatus();
+  }
+
+  private async checkBackendStatus(): Promise<void> {
+    const badge = getOptionalElement('backend-status-badge');
+    if (!badge) return;
+    const status = await this.backendClient.checkHealth();
+    badge.classList.remove('online', 'offline');
+    if (status.online) {
+      badge.classList.add('online');
+      badge.textContent = 'API: ONLINE';
+      badge.title = `Backend service connected (${this.backendClient.getBaseUrl()})`;
+    } else {
+      badge.classList.add('offline');
+      badge.textContent = 'STANDALONE';
+      badge.title = 'Running in 100% client-side offline simulation mode';
+    }
   }
 
   private bindButtons(): void {
@@ -128,6 +153,10 @@ export class UIManager {
 
     this.toggleInspectorBtn?.addEventListener('click', () => {
       this.commandBus.dispatch('TOGGLE_INSPECTOR', undefined, 'UI');
+    });
+
+    this.toggleShortcutsBtn?.addEventListener('click', () => {
+      this.commandBus.dispatch('TOGGLE_SHORTCUTS', undefined, 'UI');
     });
 
     // Reflect initial Ecosystem Monitor visibility on header nav button
@@ -206,5 +235,9 @@ export class UIManager {
 
   public getChronoHUD(): ChronoScrubberHUD {
     return this.chronoHUD;
+  }
+
+  public getShortcutsModal(): ShortcutsModal {
+    return this.shortcutsModal;
   }
 }

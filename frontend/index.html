@@ -81,6 +81,7 @@
           <div class="brand-subtitle">
             <span id="cam-status-dot" class="status-dot"></span>
             <span id="cam-status-text">INITIALIZING CAMERA...</span>
+            <span id="backend-status-badge" class="backend-status-badge" title="Backend API Microservice Connection">API: CHECKING</span>
           </div>
         </div>
 
@@ -141,9 +142,14 @@
             <span>Debug HUD</span>
           </button>
 
-          <button id="btn-toggle-cam" class="nav-btn" title="Toggle Webcam Background Feed">
+          <button id="btn-toggle-cam" class="nav-btn" title="Toggle Webcam Background Feed (C key)">
             <span class="btn-icon">📹</span>
             <span id="cam-btn-text">Webcam</span>
+          </button>
+
+          <button id="btn-toggle-shortcuts" class="nav-btn" title="Keyboard Shortcuts & Spatial Gesture Guide (? key)">
+            <span class="btn-icon">⌨️</span>
+            <span>Guide</span>
           </button>
         </nav>
 
