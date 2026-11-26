@@ -25,6 +25,8 @@ export class HandTracker {
   private isProcessingFrame: boolean = false;
   private lastInferenceTime: number = 0;
   private visionProcessingTimeMs: number = 0;
+  private lastLandmarks: HandLandmarks[] = [];
+  private frameLoopId: number | null = null;
 
   constructor(
     videoElement: HTMLVideoElement,
@@ -243,6 +245,9 @@ export class HandTracker {
         if (this.pipCanvas.height !== targetH) this.pipCanvas.height = targetH;
 
         this.pipCtx.drawImage(this.videoElement, 0, 0, this.pipCanvas.width, this.pipCanvas.height);
+        if (this.lastLandmarks.length > 0) {
+          this.drawHandPip(this.lastLandmarks);
+        }
 
         // Send frame to MediaPipe Hands if available (~30 FPS inference throttle)
         const now = performance.now();
@@ -261,10 +266,10 @@ export class HandTracker {
         }
       }
 
-      requestAnimationFrame(processFrame);
+      this.frameLoopId = requestAnimationFrame(processFrame);
     };
 
-    requestAnimationFrame(processFrame);
+    this.frameLoopId = requestAnimationFrame(processFrame);
   }
 
   private handleResults = (results: any): void => {
@@ -280,6 +285,7 @@ export class HandTracker {
     }
 
     const multiHandLandmarks: HandLandmarks[] = results.multiHandLandmarks || [];
+    this.lastLandmarks = multiHandLandmarks;
 
     // Draw skeletons
     if (multiHandLandmarks.length > 0) {
@@ -355,5 +361,19 @@ export class HandTracker {
 
   public isRunning(): boolean {
     return this.isTracking;
+  }
+
+  public stop(): void {
+    this.isTracking = false;
+    this.lastLandmarks = [];
+    if (this.frameLoopId !== null) {
+      cancelAnimationFrame(this.frameLoopId);
+      this.frameLoopId = null;
+    }
+    const stream = this.videoElement.srcObject as MediaStream | null;
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      this.videoElement.srcObject = null;
+    }
   }
 }

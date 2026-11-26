@@ -263,10 +263,18 @@ export class UniverseRenderer {
         this.trajectoryGroup.add(line);
       }
 
-      // Update positions
+      // Update positions & color safely
       const posAttr = line.geometry.getAttribute('position') as THREE.BufferAttribute;
-      (posAttr.array as Float32Array).set(traj.points);
+      const posArray = posAttr.array as Float32Array;
+      const copyLen = Math.min(posArray.length, traj.points.length);
+      posArray.set(traj.points.subarray(0, copyLen));
       posAttr.needsUpdate = true;
+      line.geometry.setDrawRange(0, Math.floor(copyLen / 3));
+
+      const mat = line.material as THREE.LineBasicMaterial;
+      if (mat.color.getStyle() !== traj.color) {
+        mat.color.set(traj.color);
+      }
     }
 
     // Prune removed trajectories

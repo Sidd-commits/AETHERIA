@@ -124,7 +124,28 @@ export class AetheriaApp {
     });
 
     this.commandBus.on('SPAWN_ENTITY', (cmd) => {
-      this.universeEngine.spawnEntity(cmd.payload.entity);
+      const entity = cmd.payload.entity;
+      if (entity.type === 'PLANET' && !entity.velocity) {
+        this.universeEngine.createPlanet({
+          name: entity.name,
+          radius: entity.radius,
+          mass: entity.mass,
+          color: typeof entity.color === 'string' ? entity.color : undefined,
+          orbitalRadius: entity.orbitalRadius,
+          position: entity.position
+        });
+      } else {
+        this.universeEngine.spawnEntity(entity);
+      }
+    });
+
+    // Synchronize particle colors whenever the active cosmic palette changes
+    let lastPaletteIndex = this.worldState.getState().activePaletteIndex;
+    this.worldState.subscribe((state) => {
+      if (state.activePaletteIndex !== lastPaletteIndex) {
+        lastPaletteIndex = state.activePaletteIndex;
+        this.universeEngine.applyPalette(lastPaletteIndex);
+      }
     });
 
     this.commandBus.on('SPAWN_BLACK_HOLE', (cmd) => {

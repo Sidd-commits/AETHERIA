@@ -177,10 +177,16 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
       text.includes('emerald') ||
       text.includes('red') ||
       text.includes('ruby') ||
+      text.includes('magenta') ||
+      text.includes('sunset') ||
+      text.includes('pink') ||
       text.includes('gold') ||
       text.includes('yellow') ||
+      text.includes('amber') ||
+      text.includes('orange') ||
       text.includes('purple') ||
       text.includes('violet') ||
+      text.includes('ultraviolet') ||
       text.includes('palette') ||
       text.includes('theme') ||
       text.includes('color')
@@ -239,27 +245,6 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
         },
         confidence: 0.94,
         explanation: `${isIncrease ? 'Amplifying' : isDecrease ? 'Attenuating' : 'Resetting'} gravitational constant by factor of ${multiplier}x.`
-      };
-    }
-
-    // 6. ORBIT REALIGNMENT ("Make all planets orbit the center", "Align orbits", "Synchronize planetary orbits")
-    if (
-      (text.includes('orbit') || text.includes('realign') || text.includes('align')) &&
-      (text.includes('all') ||
-        text.includes('center') ||
-        text.includes('planets') ||
-        text.includes('system') ||
-        text.includes('synchronize'))
-    ) {
-      return {
-        action: 'ALIGN_ORBITS',
-        parameters: {
-          center: { x: 0, y: 0, z: 0 },
-          speedMultiplier: 1.0
-        },
-        confidence: 0.95,
-        explanation:
-          'Re-calculating Keplerian orbital velocities and locking all celestial bodies into stable concentric orbits.'
       };
     }
 
@@ -522,7 +507,13 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
   }
 
   private extractPaletteIndex(text: string): number {
-    if (text.includes('ultraviolet') || text.includes('deep purple') || text.includes('theme 0'))
+    if (
+      text.includes('ultraviolet') ||
+      text.includes('purple') ||
+      text.includes('violet') ||
+      text.includes('void') ||
+      text.includes('theme 0')
+    )
       return 0;
     if (
       text.includes('cyan') ||
@@ -532,16 +523,19 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
     )
       return 1;
     if (
-      text.includes('emerald') ||
-      text.includes('aurora') ||
-      text.includes('green') ||
+      text.includes('sunset') ||
+      text.includes('magenta') ||
+      text.includes('pink') ||
+      text.includes('crimson') ||
+      text.includes('red') ||
       text.includes('theme 2')
     )
       return 2;
     if (
-      text.includes('supernova') ||
-      text.includes('crimson') ||
-      text.includes('red') ||
+      text.includes('emerald') ||
+      text.includes('aurora') ||
+      text.includes('green') ||
+      text.includes('lime') ||
       text.includes('theme 3')
     )
       return 3;
@@ -550,10 +544,17 @@ export class HeuristicLocalAdapter implements AICommandAdapter {
       text.includes('gold') ||
       text.includes('amber') ||
       text.includes('yellow') ||
+      text.includes('orange') ||
       text.includes('theme 4')
     )
       return 4;
-    if (text.includes('spectrum') || text.includes('rainbow') || text.includes('theme 5')) return 5;
+    if (
+      text.includes('spectrum') ||
+      text.includes('prismatic') ||
+      text.includes('rainbow') ||
+      text.includes('theme 5')
+    )
+      return 5;
     return -1;
   }
 }

@@ -46,6 +46,37 @@ export class ParticleSystem {
   }
 
   /**
+   * Apply a new color palette to cosmic substrate particles (preserving living organisms & radiant energy sparks)
+   */
+  public applyPalette(hexColors: string[]): void {
+    if (!hexColors || hexColors.length === 0) return;
+    const parsed = hexColors.map((hex) => {
+      const clean = hex.replace('#', '');
+      const num = parseInt(clean, 16);
+      return {
+        r: ((num >> 16) & 255) / 255,
+        g: ((num >> 8) & 255) / 255,
+        b: (num & 255) / 255
+      };
+    });
+
+    const { count, types, colors, targetColors } = this.buffer;
+    for (let i = 0; i < count; i++) {
+      // Only recolor matter/cosmic dust substrate so bioluminescent organisms and energy retain telemetry contrast
+      if (types[i] === 0) {
+        const c = parsed[i % parsed.length];
+        const i3 = i * 3;
+        colors[i3] = c.r;
+        colors[i3 + 1] = c.g;
+        colors[i3 + 2] = c.b;
+        targetColors[i3] = c.r;
+        targetColors[i3 + 1] = c.g;
+        targetColors[i3 + 2] = c.b;
+      }
+    }
+  }
+
+  /**
    * Reset and seed particle buffer with a specific distribution pattern
    */
   public seedAccretionDisk(

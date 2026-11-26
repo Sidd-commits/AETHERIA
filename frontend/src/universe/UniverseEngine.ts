@@ -19,6 +19,7 @@ import { SpacetimeGridSystem } from './systems/SpacetimeGridSystem';
 import { ChronoWarpEngine } from './chrono/ChronoWarpEngine';
 import { ChronoPlaybackMode, ChronoTimelineState } from '../types/chrono';
 import { ProceduralUniverseGenerator } from './generator/ProceduralUniverseGenerator';
+import { PALETTES } from '../config/palettes';
 
 export const DEFAULT_UNIVERSE_CONFIG: UniverseConfig = {
   gravityConstant: 1.0,
@@ -741,6 +742,13 @@ export class UniverseEngine {
       Math.min(this.particleSystem.getMaxCapacity(), Math.round(count))
     );
     this.particleSystem.setActiveCount(this.config.particleCount);
+  }
+
+  public applyPalette(paletteIndex: number): void {
+    const palette = PALETTES[Math.max(0, Math.min(PALETTES.length - 1, paletteIndex))];
+    if (palette) {
+      this.particleSystem.applyPalette(palette.colors);
+    }
   }
 
   public getEntities(): ReadonlyArray<UniverseEntity> {

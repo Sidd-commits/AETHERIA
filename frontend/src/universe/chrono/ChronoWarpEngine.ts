@@ -153,6 +153,12 @@ export class ChronoWarpEngine {
       dst.luminosity = src.luminosity;
     }
 
+    // Clear trailing entity slots so shrinking entity lists never retain stale IDs across wraps
+    for (let i = eCount; i < this.maxEntities; i++) {
+      if (!frame.entities[i].id) break;
+      frame.entities[i].id = '';
+    }
+
     // Advance circular write head
     this.writeHead = (this.writeHead + 1) % this.capacity;
     if (this.recordedCount < this.capacity) {
@@ -206,13 +212,15 @@ export class ChronoWarpEngine {
     particleBuffer.types.set(frame.types.subarray(0, frame.particleCount));
 
     // 2. Restore entities
+    const restoredIds = new Set<string>();
     const entityCount = frame.entities.length;
     for (let i = 0; i < entityCount; i++) {
       const snap = frame.entities[i];
       if (!snap.id) continue;
+      restoredIds.add(snap.id);
 
       let target = entities.find((e) => e.id === snap.id);
-      if (!target && i < entities.length) {
+      if (!target && i < entities.length && !restoredIds.has(entities[i].id)) {
         target = entities[i];
       }
 
@@ -232,6 +240,13 @@ export class ChronoWarpEngine {
         target.isDead = snap.isDead;
         if (snap.temperature !== undefined) target.temperature = snap.temperature;
         if (snap.luminosity !== undefined) target.luminosity = snap.luminosity;
+      }
+    }
+
+    // Hide entities spawned after this historical snapshot without losing their objects for forward scrubbing
+    for (let i = 0; i < entities.length; i++) {
+      if (!restoredIds.has(entities[i].id)) {
+        entities[i].isDead = true;
       }
     }
   }

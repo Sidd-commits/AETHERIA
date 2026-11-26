@@ -16,8 +16,10 @@ export class SceneManager {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    // 1. Scene
+    // 1. Scene & subtle ambient lighting for starless/eclipse scenarios
     this.scene = new THREE.Scene();
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+    this.scene.add(ambientLight);
 
     // 2. Camera
     this.camera = new THREE.PerspectiveCamera(

@@ -38,12 +38,20 @@ describe('AI Natural Language Command Parsing Unit Tests', () => {
     expect(result.command?.parameters.mass).toBeGreaterThanOrEqual(200);
   });
 
-  it('should parse "Make the universe blue" into SET_COLOR_PALETTE action', async () => {
-    const result = await adapter.parseCommand('Make the universe blue', mockContext);
+  it('should parse "Make the universe blue" and color themes into accurate PALETTES indices', async () => {
+    const blue = await adapter.parseCommand('Make the universe blue', mockContext);
+    expect(blue.success).toBe(true);
+    expect(blue.command?.action).toBe('SET_COLOR_PALETTE');
+    expect(blue.command?.parameters.paletteIndex).toBe(1);
 
-    expect(result.success).toBe(true);
-    expect(result.command?.action).toBe('SET_COLOR_PALETTE');
-    expect(result.command?.parameters.paletteIndex).toBeDefined();
+    const magenta = await adapter.parseCommand('Change colors to sunset magenta', mockContext);
+    expect(magenta.command?.parameters.paletteIndex).toBe(2);
+
+    const emerald = await adapter.parseCommand('Make the universe green', mockContext);
+    expect(emerald.command?.parameters.paletteIndex).toBe(3);
+
+    const voidTheme = await adapter.parseCommand('Set theme to ultraviolet purple', mockContext);
+    expect(voidTheme.command?.parameters.paletteIndex).toBe(0);
   });
 
   it('should parse "Increase gravity" into ADJUST_GRAVITY action', async () => {

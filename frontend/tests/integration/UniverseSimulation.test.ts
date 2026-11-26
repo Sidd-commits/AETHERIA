@@ -105,4 +105,27 @@ describe('UniverseEngine Multi-Tick Integration Tests', () => {
 
     expect(maxSpeed).toBeGreaterThan(0.5);
   });
+
+  it('should create AI planets in stable non-zero orbits and apply cosmic palettes dynamically', () => {
+    const planet = engine.createPlanet({ name: 'Kepler-Nova', orbitalRadius: 5.0 });
+    const speed = Math.hypot(planet.velocity.x, planet.velocity.y, planet.velocity.z);
+    const dist = Math.hypot(planet.position.x, planet.position.z);
+
+    expect(dist).toBeCloseTo(5.0, 1);
+    expect(speed).toBeGreaterThan(1.0);
+
+    // Recolor substrate particles with Void Ultraviolet palette (index 0: '#6b11ff')
+    engine.applyPalette(0);
+    const buffer = engine.getSnapshot().particles;
+    let foundMatterRecolor = false;
+    for (let i = 0; i < buffer.count; i++) {
+      if (buffer.types[i] === 0) {
+        // Violet has dominant blue channel (~1.0) and non-zero red
+        expect(buffer.colors[i * 3 + 2]).toBeGreaterThan(0.3);
+        foundMatterRecolor = true;
+        break;
+      }
+    }
+    expect(foundMatterRecolor).toBe(true);
+  });
 });
