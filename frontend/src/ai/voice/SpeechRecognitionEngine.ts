@@ -24,6 +24,7 @@ export class SpeechRecognitionEngine {
   private microphoneStream: MediaStream | null = null;
   private animFrameId: number | null = null;
   private shouldRestart: boolean = false;
+  private isStartingAudio: boolean = false;
 
   constructor() {
     this.initRecognition();
@@ -201,16 +202,29 @@ export class SpeechRecognitionEngine {
    * Initialize audio analyser for dynamic HUD waveform visualization
    */
   private async startAudioAnalysis(): Promise<void> {
-    if (this.analyser || this.audioContext) return; // Prevent duplicate audio pipelines
+    if (this.isStartingAudio || this.analyser || this.audioContext) return; // Prevent duplicate audio pipelines
+    this.isStartingAudio = true;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
 
-      this.microphoneStream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false
       });
+
+      // Guard against stop() called while awaiting microphone permission prompt
+      if (!this.isListening) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      this.microphoneStream = stream;
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtxClass) return;
+      if (!AudioCtxClass) {
+        stream.getTracks().forEach((t) => t.stop());
+        this.microphoneStream = null;
+        return;
+      }
 
       this.audioContext = new AudioCtxClass();
       const source = this.audioContext.createMediaStreamSource(this.microphoneStream);
@@ -238,6 +252,8 @@ export class SpeechRecognitionEngine {
       sampleLoop();
     } catch {
       // Microphone stream optional for waveform
+    } finally {
+      this.isStartingAudio = false;
     }
   }
 

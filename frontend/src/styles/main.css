@@ -517,7 +517,7 @@ body {
 /* Responsive styling & Control Decks */
 .universe-controls-panel,
 .chrono-scrubber-panel {
-  max-width: min(940px, calc(100vw - 32px));
+  max-width: min(1180px, calc(100vw - 32px));
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;

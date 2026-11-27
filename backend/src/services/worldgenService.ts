@@ -99,7 +99,10 @@ export class WorldgenService {
 
     // Extract numbers or keywords for stars
     let stars = 3;
-    if (lower.includes('binary') || lower.includes('two suns') || lower.includes('2 suns') || lower.includes('twin')) stars = 2;
+    const starRegexMatch = lower.match(/(\d+)\s*(?:suns?|stars?)/);
+    if (starRegexMatch) {
+      stars = Math.max(1, Math.min(20, parseInt(starRegexMatch[1], 10)));
+    } else if (lower.includes('binary') || lower.includes('two suns') || lower.includes('2 suns') || lower.includes('twin')) stars = 2;
     else if (lower.includes('three suns') || lower.includes('3 suns') || lower.includes('triple')) stars = 3;
     else if (lower.includes('one sun') || lower.includes('single star') || lower.includes('sol')) stars = 1;
     else if (lower.includes('five') || lower.includes('5 stars')) stars = 5;

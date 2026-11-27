@@ -168,10 +168,12 @@ export class PerformanceMonitor {
     style.textContent = `
       .perf-hud-panel {
         position: fixed;
-        top: 60px;
-        right: 20px;
-        width: 380px;
+        top: 68px;
+        right: 24px;
+        width: 360px;
         max-width: 90vw;
+        max-height: calc(100vh - 210px);
+        overflow-y: auto;
         background: rgba(8, 14, 28, 0.92);
         backdrop-filter: blur(14px);
         border: 1px solid rgba(0, 242, 254, 0.28);

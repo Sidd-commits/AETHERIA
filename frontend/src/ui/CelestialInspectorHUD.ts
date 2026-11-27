@@ -29,6 +29,8 @@ export class CelestialInspectorHUD {
       top: 80px;
       right: 24px;
       width: 290px;
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
       background: rgba(12, 16, 26, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);

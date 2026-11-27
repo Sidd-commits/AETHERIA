@@ -6,7 +6,7 @@
 
 [![CI Pipeline](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml/badge.svg)](https://github.com/Sidd-commits/AETHERIA/actions/workflows/ci.yml)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.3%20Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vitest Tests](https://img.shields.io/badge/Tests-95%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vitest Tests](https://img.shields.io/badge/Tests-97%20Passed-brightgreen?logo=vitest)](https://vitest.dev/)
 [![Code Quality](https://img.shields.io/badge/ESLint%209-Passing-4B32C3?logo=eslint)](https://eslint.org/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

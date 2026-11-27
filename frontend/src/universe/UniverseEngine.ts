@@ -168,6 +168,7 @@ export class UniverseEngine {
     if (this.activeCustomConfig) {
       this.generateFromConfig(this.activeCustomConfig);
     } else {
+      this.config.gravityConstant = 1.0;
       this.loadPreset(this.activePreset);
     }
   }

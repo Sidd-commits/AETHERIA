@@ -1021,7 +1021,7 @@ export class WorldGenStudio {
           <div class="wg-tel-label">Black Holes</div>
         </div>
         <div class="wg-tel-item">
-          <div class="wg-tel-val">5,000</div>
+          <div class="wg-tel-val">10,000+</div>
           <div class="wg-tel-label">Particles</div>
         </div>
         <div class="wg-tel-item">

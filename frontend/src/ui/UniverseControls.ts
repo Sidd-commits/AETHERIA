@@ -284,6 +284,13 @@ export class UniverseControls {
       if (valEl) valEl.textContent = `${g.toFixed(1)}×`;
     });
 
+    this.commandBus.on('RESET_UNIVERSE', () => {
+      const slider = document.getElementById('slider-uni-gravity') as HTMLInputElement | null;
+      const valEl = document.getElementById('uni-gravity-val');
+      if (slider) slider.value = '1.0';
+      if (valEl) valEl.textContent = '1.0×';
+    });
+
     this.commandBus.on('TOGGLE_PAUSE', (cmd) => {
       this.isPaused = cmd.payload?.paused !== undefined ? cmd.payload.paused : !this.isPaused;
       const icon = document.getElementById('uni-pause-icon');

@@ -47,9 +47,11 @@ export class PopulationMonitor {
     this.container.className = 'population-monitor-panel interactive';
     this.container.style.cssText = `
       position: absolute;
-      bottom: 140px;
+      bottom: 136px;
       right: 24px;
       width: 290px;
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
       background: rgba(10, 15, 26, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);

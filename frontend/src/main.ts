@@ -180,6 +180,11 @@ export class AetheriaApp {
     this.commandBus.on('TOGGLE_POPULATION_MONITOR', () => {
       const visible = this.uiManager.getPopulationMonitor().toggle();
       document.getElementById('btn-toggle-eco')?.classList.toggle('active-glow', visible);
+      if (visible && window.innerHeight < 860) {
+        this.uiManager.getCelestialInspector().toggle(false);
+        this.uiManager.getPerformanceMonitor().hide();
+        this.uiManager.getDebugOverlay().setVisible(false);
+      }
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
@@ -236,6 +241,13 @@ export class AetheriaApp {
     this.commandBus.on('TOGGLE_INSPECTOR', () => {
       const visible = this.uiManager.getCelestialInspector().toggle();
       document.getElementById('btn-toggle-inspector')?.classList.toggle('active-glow', visible);
+      if (visible) {
+        this.uiManager.getPerformanceMonitor().hide();
+        this.uiManager.getDebugOverlay().setVisible(false);
+        if (window.innerHeight < 860) {
+          this.uiManager.getPopulationMonitor().hide();
+        }
+      }
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
@@ -261,6 +273,13 @@ export class AetheriaApp {
 
     this.commandBus.on('TOGGLE_DEBUG', () => {
       const visible = this.uiManager.getDebugOverlay().toggle();
+      if (visible) {
+        this.uiManager.getCelestialInspector().toggle(false);
+        this.uiManager.getPerformanceMonitor().hide();
+        if (window.innerHeight < 860) {
+          this.uiManager.getPopulationMonitor().hide();
+        }
+      }
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
@@ -274,6 +293,13 @@ export class AetheriaApp {
     this.commandBus.on('TOGGLE_PERF', () => {
       const visible = this.uiManager.getPerformanceMonitor().toggle();
       document.getElementById('btn-toggle-perf')?.classList.toggle('active-glow', visible);
+      if (visible) {
+        this.uiManager.getCelestialInspector().toggle(false);
+        this.uiManager.getDebugOverlay().setVisible(false);
+        if (window.innerHeight < 860) {
+          this.uiManager.getPopulationMonitor().hide();
+        }
+      }
       this.commandBus.dispatch(
         'SHOW_TOAST',
         {
@@ -282,6 +308,13 @@ export class AetheriaApp {
         },
         'UI'
       );
+    });
+
+    // Allow clicking PiP monitor when camera is offline to retry webcam capture
+    document.getElementById('pip-container')?.addEventListener('click', () => {
+      if (!this.handTracker.isRunning()) {
+        this.handTracker.retryCamera();
+      }
     });
 
     this.commandBus.on('GENERATE_PROCEDURAL_UNIVERSE', (cmd) => {

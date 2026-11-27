@@ -128,4 +128,12 @@ describe('UniverseEngine Multi-Tick Integration Tests', () => {
     }
     expect(foundMatterRecolor).toBe(true);
   });
+
+  it('resets gravitational constant back to 1.0 equilibrium on default preset reset', () => {
+    engine.setGravity(3.2);
+    expect(engine.getConfig().gravityConstant).toBe(3.2);
+
+    engine.reset();
+    expect(engine.getConfig().gravityConstant).toBe(1.0);
+  });
 });

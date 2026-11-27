@@ -37,4 +37,14 @@ describe('Backend World Generation Endpoint', () => {
     expect(res.body.count).toBeGreaterThan(0);
     expect(Array.isArray(res.body.presets)).toBe(true);
   });
+
+  it('extracts arbitrary numeric star counts like "6 stars" accurately', async () => {
+    const res = await request(app)
+      .post('/api/worldgen/generate')
+      .send({ prompt: 'A vibrant nebula with 6 stars and 12 planets' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.config.stars).toBe(6);
+  });
 });
